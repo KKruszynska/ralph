@@ -1,0 +1,4 @@
+#event_name,ra,dec,lc_nmax,fit_nmax,catalogues,bands,path
+Gaia18cbf,241.16190,-41.10483,10,10,GaiaDR3,Gaia_BP Gaia_RP Gaia_G,
+GaiaDR3-ULENS-018,271.119,-29.8162,10,10,GaiaDR3,Gaia_BP Gaia_RP Gaia_G,
+GaiaDR3-ULENS-025,260.8781,-27.3788,10,10,GaiaDR3 GaiaDR2,Gaia_BP Gaia_RP Gaia_G,/home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_cmd/input/gdr3-ulens-025_result.csv
