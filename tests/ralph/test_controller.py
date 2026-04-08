@@ -5,6 +5,8 @@ import json
 
 import pytest
 
+from ralph.controller.controller import Controller
+
 
 class TestControllerPaths:
     '''
@@ -12,7 +14,7 @@ class TestControllerPaths:
     '''
 
     def test_launch_analysts(self):
-        from MFPipeline.controller.controller import Controller
+
 
         event_list = [#"GaiaDR3-ULENS-018",
                       "GaiaDR3-ULENS-025"

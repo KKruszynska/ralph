@@ -4,20 +4,19 @@ import json
 import sys
 import time
 
-from MFPipeline.analyst.analyst import Analyst
+from ralph.analyst.analyst import Analyst
 
-from MFPipeline.analyst.light_curve_analyst import LightCurveAnalyst
-from MFPipeline.analyst.fit_analyst import FitAnalyst
-from MFPipeline.analyst.cmd_analyst import CmdAnalyst
+from ralph.analyst.light_curve_analyst import LightCurveAnalyst
+from ralph.analyst.fit_analyst import FitAnalyst
+from ralph.analyst.cmd_analyst import CmdAnalyst
 
-from MFPipeline import logs
-from MFPipeline.analyst import analyst_tools
-
+from ralph import logs
+from ralph.analyst import analyst_tools
 
 class EventAnalyst(Analyst):
     """
     This is a class that analyzes one event.
-    It is a child of the :class:`MFPipeline.analyst.analyst.Analyst`
+    It is a child of the :class:`ralph.analyst.analyst.Analyst`
     It takes care of other sub-analysts that fit microlensing models to the light curve,
     create colour-magnitude diagrams and perform other additional tasks.
 

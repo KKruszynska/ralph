@@ -1,5 +1,7 @@
 import pandas as pd
-from MFPipeline import logs
+
+from ralph.logs import logs
+from ralph.analyst.cmd_analyst import CmdAnalyst
 
 scenario_file = {
         "path_input" : "tests/test_cmd/input/gdr3-ulens-025_result.csv",
@@ -64,7 +66,6 @@ class testCmdAnalyst():
         self.scenario = scenario
 
     def test_plot_gaia(self):
-        from MFPipeline.analyst.cmd_analyst import CmdAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -107,7 +108,6 @@ class testCmdAnalyst():
 
 
     def test_load_gaia(self):
-        from MFPipeline.analyst.cmd_analyst import CmdAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -149,7 +149,6 @@ class testCmdAnalyst():
         assert type(cmd_labels) == list
 
     def test_load_source_gaia(self):
-        from MFPipeline.analyst.cmd_analyst import CmdAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")

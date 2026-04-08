@@ -1,6 +1,6 @@
 import numpy as np
-from src.ralph.fitting_support import fit_pyLIMA
 
+from ralph.fitting_support import fit_pyLIMA
 
 def cmd_catalogues_to_bands(catalogue):
     """

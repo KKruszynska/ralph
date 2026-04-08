@@ -1,6 +1,6 @@
 import pytest
 
-from MFPipeline import logs
+from ralph import logs
 
 class testLogs():
     '''

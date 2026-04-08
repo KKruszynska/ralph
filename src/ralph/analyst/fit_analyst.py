@@ -2,9 +2,8 @@ import numpy as np
 import json
 import time
 
-from MFPipeline.analyst.analyst import Analyst
-from MFPipeline.fitting_support.pyLIMA import fit_pyLIMA
-
+from ralph.analyst.analyst import Analyst
+from ralph.fitting_support.pyLIMA import fit_pyLIMA
 
 class FitAnalyst(Analyst):
     """

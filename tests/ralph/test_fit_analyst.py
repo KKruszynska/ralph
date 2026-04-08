@@ -4,7 +4,8 @@ import numpy as np
 import json
 from collections import OrderedDict
 
-from MFPipeline import logs
+from ralph import logs
+from ralph.analyst.fit_analyst import FitAnalyst
 
 scenario_gaia = {
         "analyst_path": "tests/test_cmd/output/",
@@ -101,7 +102,6 @@ class testFitAnalyst:
         self.scenario = scenario
 
     def test_parse_config(self):
-        from MFPipeline.analyst.fit_analyst import FitAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -142,7 +142,6 @@ class testFitAnalyst:
         assert f_pack_config == dict.get("fitting_package")
 
     def test_check_ongoing(self):
-        from MFPipeline.analyst.fit_analyst import FitAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -183,7 +182,6 @@ class testFitAnalyst:
         assert status == True
 
     def test_fit(self):
-        from MFPipeline.analyst.fit_analyst import FitAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")

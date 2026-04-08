@@ -1,7 +1,9 @@
 import pytest
+
 import numpy as np
 
-from MFPipeline import logs
+from ralph import logs
+from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 
 scenario_gaia = {
         "path_outputs": "tests/test_cmd/output",
@@ -75,7 +77,6 @@ class testLCAnalyst:
         self.scenario = scenario
 
     def test_parse_config(self):
-        from MFPipeline.analyst.light_curve_analyst import LightCurveAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -119,7 +120,6 @@ class testLCAnalyst:
         assert mag_range_dict == dictionary["acceptable_mag_range"]
 
     def test_run_analyst(self):
-        from MFPipeline.analyst.light_curve_analyst import LightCurveAnalyst
 
         config = {}
         config["event_name"] = self.scenario.get("event_name")
@@ -162,7 +162,6 @@ class testLCAnalyst:
 
 class testBadLightCurves():
     def test_bad_lc(self):
-        from MFPipeline.analyst.light_curve_analyst import LightCurveAnalyst
 
         config = {}
         config["event_name"] = "Test_negative_errs"

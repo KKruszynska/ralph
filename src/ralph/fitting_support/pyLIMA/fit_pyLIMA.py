@@ -18,10 +18,8 @@ from pyLIMA.fits import stats
 
 from pyLIMA.models import PSPL_model
 
-from MFPipeline.fitting_support.fitter import Fitter
-from MFPipeline.fitting_support.pyLIMA import plots_pyLIMA
-
-
+from ralph.fitting_support.fitter import Fitter
+from ralph.fitting_support.pyLIMA import plots_pyLIMA
 
 class fitPyLIMA(Fitter):
     '''

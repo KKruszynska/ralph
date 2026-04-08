@@ -6,7 +6,6 @@ import os
 import subprocess
 from concurrent.futures import ProcessPoolExecutor
 
-# from MFPipeline import logs
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
                                   datefmt='%Y-%m-%d %H:%M:%S')

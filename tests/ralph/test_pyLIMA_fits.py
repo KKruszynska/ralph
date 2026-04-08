@@ -1,7 +1,7 @@
 import pytest
 
-from MFPipeline import logs
-from MFPipeline.fitting_support.pyLIMA.fit_pyLIMA import fitPyLIMA
+from ralph import logs
+from ralph.fitting_support.pyLIMA.fit_pyLIMA import fitPyLIMA
 
 scenario = {
     "event_name": "GaiaDR3-ULENS-025",

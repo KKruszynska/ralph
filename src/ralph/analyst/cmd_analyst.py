@@ -6,12 +6,12 @@ from plotly import graph_objs as go
 
 import os
 
-from MFPipeline.analyst.analyst import Analyst
+from ralph.analyst.analyst import Analyst
 
 class CmdAnalyst(Analyst):
     '''
     This is a class that creates a colour-magnitude diagram for one event, one catalogue and one solution.
-    It is a child of the :class:`MFPipeline.analyst.analyst.Analyst`
+    It is a child of the :class:`ralph.analyst.analyst.Analyst`
 
     A CMD Analyst doesn't need config dict, but it needs a self.config already initialized by
     another process.

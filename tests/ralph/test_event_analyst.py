@@ -1,5 +1,7 @@
 import pytest
 
+from ralph.analyst.event_analyst import EventAnalyst
+
 scenario_file_cat = {
     "event_name" : "GaiaDR3-ULENS-025",
     "ra" : 260.8781,
@@ -132,7 +134,6 @@ class testEventAnalyst:
         self.scenario = scenario
 
     def test_parse_config(self):
-        from MFPipeline.analyst.event_analyst import EventAnalyst
 
         event_name = self.scenario.get("event_name")
         analyst_path = self.scenario.get("analyst_path")
@@ -143,7 +144,6 @@ class testEventAnalyst:
         assert event_analyst.config == self.scenario.get("config_final")
 
     def test_run_analyst(self):
-        from MFPipeline.analyst.event_analyst import EventAnalyst
 
         event_name = self.scenario.get("event_name")
         analyst_path = self.scenario.get("analyst_path")

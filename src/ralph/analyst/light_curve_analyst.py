@@ -1,12 +1,12 @@
 from time import sleep
 import numpy as np
 
-from MFPipeline.analyst.analyst import Analyst
+from ralph.analyst.analyst import Analyst
 
 class LightCurveAnalyst(Analyst):
     """
     This is a class that performs light curve
-    It is a child of the :class:`MFPipeline.analyst.analyst.Analyst`
+    It is a child of the :class:`ralph.analyst.analyst.Analyst`
     It follows a flowchart specified here: link link link
 
     A Fit Analyst needs either a config_path or config_dict, otherwise it will not work.
