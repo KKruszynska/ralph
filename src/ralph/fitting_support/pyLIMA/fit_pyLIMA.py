@@ -1,37 +1,27 @@
-import logging
 
 import numpy as np
-
-from pyLIMA import event
-from pyLIMA import telescopes
-
-from pyLIMA.parallax import JPL_ephemerides
-
-from pyLIMA import toolbox
-from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
+from pyLIMA import event, telescopes, toolbox
+from pyLIMA.fits import TRF_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
-
-from pyLIMA.fits import TRF_fit
-from pyLIMA.fits import DE_fit
-
-from pyLIMA.fits import stats
-
 from pyLIMA.models import PSPL_model
+from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
+from pyLIMA.parallax import JPL_ephemerides
 
 from ralph.fitting_support.fitter import Fitter
 from ralph.fitting_support.pyLIMA import plots_pyLIMA
 
+
 class fitPyLIMA(Fitter):
-    '''
+    """
     Class with pyLIMA fitter.
 
     :param log: logger instance to which the logs will be written
-    '''
+    """
     def __init__(self, log):
         super().__init__(log)
 
     def setup_event (self, event_name, ra, dec, light_curves):
-        '''
+        """
         Set up pyLIMA event instance.
 
         :param event_name: name of the event
@@ -40,7 +30,7 @@ class fitPyLIMA(Fitter):
         :param light_curves: list, list of lists with event name, light curve, survey name and filter name.
 
         :return: pyLIMA event instance
-        '''
+        """
 
         event_to_fit = event.Event(ra=ra, dec=dec)
         event_to_fit.name = event_name
@@ -99,7 +89,7 @@ class fitPyLIMA(Fitter):
                  return_norm_lc=False,
                  use_boundaries=None,
                  ):
-        '''
+        """
         Perform a PSPL fit using the selected fit method.
 
         todo: Test which method is better. TRF or DE?
@@ -113,7 +103,7 @@ class fitPyLIMA(Fitter):
         :param use_boundaries: dict, dictionary containing boundaries defined by the User
 
         :return: list with results
-        '''
+        """
 
         # Setup event
         event_name = fit_name
@@ -182,13 +172,13 @@ class fitPyLIMA(Fitter):
         return model_parameters
 
     def gather_parameters(self, event, model_fit):
-        '''
+        """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
         in Microlensing Fitting Pipeline.
 
         :return: dictionary with all the parameters coming from the model.
-        '''
+        """
 
         param_keys = list(model_fit.fit_parameters.keys())
 
@@ -265,7 +255,7 @@ class fitPyLIMA(Fitter):
             toolbox.brightness_transformation.error_flux_to_error_magnitude(
                 model_params["fsource_"+tel_0+"_error"], model_params["fsource_"+tel_0]),3)
 
-        if "fblend_"+tel_0 in model_params.keys():
+        if "fblend_"+tel_0 in model_params:
             model_params["blend_mag_error"] = np.around(
                 toolbox.brightness_transformation.error_flux_to_error_magnitude(
                  model_params["fblend_"+tel_0+"_error"], model_params["fblend_"+tel_0]),3)
@@ -310,17 +300,17 @@ class fitPyLIMA(Fitter):
 
             res = model_fit.model_residuals(model_fit.fit_results["best_model"])
             sw_test = stats.normal_Shapiro_Wilk(
-                (np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0]))
+                np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0])
             )
             model_params["sw_test"] = np.around(sw_test[0], 3)
 
             ad_test = stats.normal_Anderson_Darling(
-                (np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0]))
+                np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0])
             )
             model_params["ad_test"] = np.around(ad_test[0], 3)
 
             ks_test = stats.normal_Kolmogorov_Smirnov(
-                (np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0]))
+                np.ravel(res[0]["photometry"][0]) / np.ravel(res[1]["photometry"][0])
             )
             model_params["ks_test"] = np.around(ks_test[0], 3)
 
@@ -341,11 +331,11 @@ class fitPyLIMA(Fitter):
         return model_params
 
     def get_aligned_data(self, model, parameters):
-        '''
+        """
         Taken from pyLIMA.outputs.pyLIMA_plots
 
         :return: list with arrays containing aligned data
-        '''
+        """
 
         pyLIMA_parameters = model.compute_pyLIMA_parameters(parameters)
 
@@ -440,7 +430,7 @@ def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, lo
         base_mag = toolbox.brightness_transformation.flux_to_magnitude(base_flux)
         err_base_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_base, base_flux)
     except Exception as err:
-        log.error(f"CMD Analyst: %s, %s" % (err, type(err)))
+        log.error("CMD Analyst: %s, %s" % (err, type(err)))
 
     return base_mag, err_base_mag
 
@@ -469,7 +459,7 @@ def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
         blend_mag = toolbox.brightness_transformation.flux_to_magnitude(blend_flux)
         err_blend_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_blend, blend_flux)
     except Exception as err:
-        log.error(f"CMD Analyst: %s, %s" % (err, type(err)))
+        log.error("CMD Analyst: %s, %s" % (err, type(err)))
 
     return blend_mag, err_blend_mag
 

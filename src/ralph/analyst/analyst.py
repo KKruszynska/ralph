@@ -1,5 +1,6 @@
 import yaml
 
+
 class Analyst:
     """
     This is a class that analyzes one event.
@@ -50,7 +51,7 @@ class Analyst:
             self.config["dec"] = float(event_config.get("dec"))
 
         except Exception as err:
-            print(f"Unexpected %s, %s" % (err, type(err)))
+            print("Unexpected %s, %s" % (err, type(err)))
 
     def update_names_paths(self, name):
         """

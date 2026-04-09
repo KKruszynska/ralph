@@ -1,4 +1,3 @@
-import pytest
 
 from ralph.analyst.event_analyst import EventAnalyst
 
@@ -12,13 +11,13 @@ scenario_file_cat = {
             "catalogue_1" : {
                              "name" : "Gaia_DR3",
                              "band" : ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-                             "cmd_path" : "tests/test_cmd/input/gdr3-ulens-025_result.csv",
+                             "cmd_path" : "tests/test_cmd/input/gdr3_ulens_025_result.csv",
                              "cmd_separator" : ",",
             },
             "catalogue_2" : {
                             "name" : "Gaia_DR2",
                             "band" : ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-                            "cmd_path" : "tests/test_cmd/input/gdr3-ulens-025_result.csv",
+                            "cmd_path" : "tests/test_cmd/input/gdr3_ulens_025_result.csv",
                             "cmd_separator" : ",",
             },
         },
@@ -38,7 +37,7 @@ scenario_file_cat = {
             {"catalogues":
                  [{"name": "Gaia_DR3",
                    "band": ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-                   "cmd_path": "/home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_cmd/input/gdr3-ulens-025_result.csv",
+                   "cmd_path": "/home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_cmd/input/gdr3_ulens_025_result.csv",
                    "cmd_separator": ","},
                 ]
              }

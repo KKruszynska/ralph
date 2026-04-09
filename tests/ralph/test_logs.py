@@ -1,11 +1,11 @@
-import pytest
 
 from ralph import logs
 
-class testLogs():
-    '''
+
+class testLogs:
+    """
     Class with tests
-    '''
+    """
     def test_create_log(self, log_level):
         log = logs.start_log("tests/test_logs/", log_level, event_name="test_%s"%log_level)
         log.debug("Hello! This is a debug.")

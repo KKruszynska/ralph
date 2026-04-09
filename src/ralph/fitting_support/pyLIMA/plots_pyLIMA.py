@@ -1,15 +1,8 @@
-import numpy as np
-
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import numpy as np
+import pyLIMA.outputs.pyLIMA_plots as pyLIMA_plots
 from cycler import cycler
 
-import pyLIMA.fits.objective_functions as pfof
-from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
-import pyLIMA.outputs.pyLIMA_plots as pyLIMA_plots
-
-from pyLIMA.toolbox import fake_telescopes, plots
-from pyLIMA import toolbox as ptool
 
 def define_plotting_dictionaries(telescope_names):
     # Fixed color for each telescope
@@ -27,8 +20,8 @@ def define_plotting_dictionaries(telescope_names):
     marker_cycle = MARKER_SYMBOLS[0][:n_telescopes]
     # color_cycle = cycler.cycler(color=hexcolor)
     # matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
-    color_dict = dict(zip(telescope_names, hexcolor))
-    marker_dict = dict(zip(telescope_names, marker_cycle))
+    color_dict = dict(zip(telescope_names, hexcolor, strict=False))
+    marker_dict = dict(zip(telescope_names, marker_cycle, strict=False))
     return color_dict, marker_dict
 
 def plot_pyLIMA(event, fit, log):

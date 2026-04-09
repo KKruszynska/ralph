@@ -2,6 +2,7 @@ import numpy as np
 
 from ralph.fitting_support import fit_pyLIMA
 
+
 def cmd_catalogues_to_bands(catalogue):
     """
     This function provides a list of bands used to create a CMD with the requested catalogue.

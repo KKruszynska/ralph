@@ -1,9 +1,11 @@
-import numpy as np
 import json
 import time
 
+import numpy as np
+
 from ralph.analyst.analyst import Analyst
 from ralph.fitting_support.pyLIMA import fit_pyLIMA
+
 
 class FitAnalyst(Analyst):
     """
@@ -64,8 +66,7 @@ class FitAnalyst(Analyst):
         :return: status of the fitting procedures.
         """
 
-        self.log.debug("Fit Analyst: Time elapsed for setting up the analyst: {:.2f} s".format(
-            time.time() - self.start_time))
+        self.log.debug(f"Fit Analyst: Time elapsed for setting up the analyst: {time.time() - self.start_time:.2f} s")
         self.log.info("Fit Analyst: Starting ongoing check fit.")
         self.log.info("Find PSPL starting parameters.")
         time_of_peak = self.find_time_of_peak()
@@ -102,9 +103,7 @@ class FitAnalyst(Analyst):
         if ongoing_ampl or ongoing_time or ongoing_mag:
             ongoing = True
 
-        self.log.debug("Fit Analyst: Time elapsed for ongoing check: {:.2f} s".format(
-            time.time() - self.start_time
-        ))
+        self.log.debug(f"Fit Analyst: Time elapsed for ongoing check: {time.time() - self.start_time:.2f} s")
 
         return ongoing, t_0
 
@@ -161,9 +160,7 @@ class FitAnalyst(Analyst):
             results = fit_pspl.fit_PSPL(fit_name, self.light_curves, starting_params, parallax, blend,
                                         return_norm_lc=return_norm_lc, use_boundaries=use_boundaries)
 
-        self.log.debug("Fit Analyst: Time elapsed for fitting: {:.2f} s".format(
-            time.time() - self.start_time
-        ))
+        self.log.debug(f"Fit Analyst: Time elapsed for fitting: {time.time() - self.start_time:.2f} s")
 
         return results
     def check_ongoing_time(self, model_params, time_now):
@@ -471,7 +468,7 @@ class FitAnalyst(Analyst):
         file_name = self.analyst_path + "fit_results.json"
         with open(file_name, "w", encoding="utf-8") as file:
             json.dump(self.best_results, file, ensure_ascii=False, indent=4)
-        self.log.debug("Fit Analyst: Results saved to {:s}.".format(file_name))
+        self.log.debug(f"Fit Analyst: Results saved to {file_name:s}.")
 
         # Save best results statistics
         file_name = self.analyst_path + "fit_stats.txt"

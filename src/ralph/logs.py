@@ -1,10 +1,10 @@
 import logging
-
-import sys
 import os
+import sys
+
 
 def start_log(log_location, log_type, event_name=None, stream=False):
-    '''
+    """
     Function that creates logs for analysts or controller.
     :param log_location: str, location of the log.
     :param log_type: str, which level of logging to initialize.
@@ -12,7 +12,7 @@ def start_log(log_location, log_type, event_name=None, stream=False):
     :param stream: optional, boolean, should the log be accessible through Kubernetes?
 
     :return: python logger
-    '''
+    """
 
     if (event_name != None):
         log = logging.getLogger('analyst_log')
@@ -50,15 +50,15 @@ def start_log(log_location, log_type, event_name=None, stream=False):
         log.addHandler(fh)
 
     log.info("Processing started. Opened log.")
-        
+
     return log
 
 def close_log(log):
-    '''
+    """
     Function that closes a log.
 
     :param log: logger instance to close
-    '''
+    """
 
     for handler in log.handlers:
         log.info('Processing complete.\n')

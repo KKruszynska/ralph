@@ -1,7 +1,7 @@
-from time import sleep
 import numpy as np
 
 from ralph.analyst.analyst import Analyst
+
 
 class LightCurveAnalyst(Analyst):
     """
@@ -86,11 +86,11 @@ class LightCurveAnalyst(Analyst):
 
 
     def flag_infinite_entries(self, light_curve):
-        '''
+        """
         Flags entries with non-finite values. Similar like in pyLIMA.
         :param light_curve: numpy array, an array containing JD, magnitude and error
         :return: mask with entries that don't have invalid magnitudes
-        '''
+        """
         mask_finite_mag = np.isfinite(light_curve[:,1])
         mask_finite_err = np.isfinite(light_curve[:, 2])
         final_mask = np.logical_and(mask_finite_mag, mask_finite_err)

@@ -1,4 +1,3 @@
-import pytest
 
 import numpy as np
 
@@ -69,9 +68,9 @@ scenario_gsa = {
         }
 
 class testLCAnalyst:
-    '''
+    """
     Class with tests
-    '''
+    """
     def __init__(self,
                  scenario):
         self.scenario = scenario
@@ -160,7 +159,7 @@ class testLCAnalyst:
             assert len(negative_errs[0]) == len([])
 
 
-class testBadLightCurves():
+class testBadLightCurves:
     def test_bad_lc(self):
 
         config = {}

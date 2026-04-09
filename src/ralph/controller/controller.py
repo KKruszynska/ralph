@@ -1,10 +1,10 @@
-import yaml
 import logging
-import sys
 import os
-
 import subprocess
+import sys
 from concurrent.futures import ProcessPoolExecutor
+
+import yaml
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
@@ -16,7 +16,7 @@ def run_parallel_analyst(command):
     subprocess.run(command, shell=False)
 
 class Controller:
-    '''
+    """
     Class that controls other analysts and their corresponding tasks.
     A controller has to be initialized with either config_path or config_dict specified. Otherwise, it will not work.
 
@@ -25,7 +25,7 @@ class Controller:
     :param config_dict: dictionary, optional, a dictionary containing configuration of the controller
     :param analyst_dicts: dictionary, optional, dictionary containing jsons with information for analysts
     :param stream: optional, boolean, should the log be accessible through Kubernetes?
-    '''
+    """
     def __init__(self,
                  event_list,
                  config_path=None,
@@ -74,11 +74,11 @@ class Controller:
             quit()
 
     def parse_config(self):
-        '''
+        """
         Function that parses the YAML file with configuration.
 
         :return: configuration in form of a dictionary.
-        '''
+        """
 
         config = {}
         try:
@@ -96,22 +96,22 @@ class Controller:
                 config["log_stream"] = controller_config.get("log_stream")
 
         except Exception as err:
-            logger.exception(f"Controller: %s, %s" % (err, type(err)))
+            logger.exception("Controller: %s, %s" % (err, type(err)))
             config = None
 
         return config
 
     def launch_analysts(self):
-        '''
+        """
         This function starts and parallelizes the :class:`MFPipeline.analyst.event_analyst.EventAnalyst`.
 
         :return: Status of work???
-        '''
+        """
 
-        logger.info(f"Controller: Start processing.")
+        logger.info("Controller: Start processing.")
         # First create all the commands to run the analysts
         commands = []
-        logger.debug(f"Controller: Creating the commands to launch analysts.")
+        logger.debug("Controller: Creating the commands to launch analysts.")
         for event in self.event_list:
             command = [self.config["python_compiler"],
                        self.config["software_dir"]+"event_analyst.py",
@@ -125,12 +125,12 @@ class Controller:
                 command.append(str(self.config["log_stream"]))
 
             if self.analyst_dicts is not None:
-                logger.debug(f"Controller: Analyst dicts specified.")
+                logger.debug("Controller: Analyst dicts specified.")
                 command.append("--config_dict")
                 command.append(str(self.analyst_dicts[event]))
             else:
                 logger.debug(
-                    f"Controller: Analyst dicts not specified, will look for information in their config files."
+                    "Controller: Analyst dicts not specified, will look for information in their config files."
                 )
                 command.append("--config_path")
                 command.append(self.config["events_path"] + str(event) + "/config." + self.config["config_type"])
@@ -138,17 +138,17 @@ class Controller:
             commands.append(command)
 
         #Running analysts in batches
-        logger.info(f"Controller: Commands created. Spawning processes.")
-        logger.debug(f"Controller: Max workers set as: %d."%self.config["group_processing_limit"])
+        logger.info("Controller: Commands created. Spawning processes.")
+        logger.debug("Controller: Max workers set as: %d."%self.config["group_processing_limit"])
 
         with ProcessPoolExecutor(max_workers=self.config["group_processing_limit"] ) as executor:
-            logger.debug(f"Controller: New process spawned.")
+            logger.debug("Controller: New process spawned.")
             executor.map(run_parallel_analyst, commands)
             # for result in executor.map(run_parallel_analyst, commands):
             #     print(result)
             # print(futures.result())
 
-        logger.info(f"Controller: Processing finished.")
+        logger.info("Controller: Processing finished.")
         for handler in logger.handlers:
             logger.info('Processing complete.\n')
             if isinstance(handler, logging.FileHandler):

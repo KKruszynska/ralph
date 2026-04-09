@@ -1,10 +1,10 @@
 import pandas as pd
 
-from ralph.logs import logs
 from ralph.analyst.cmd_analyst import CmdAnalyst
+from ralph.logs import logs
 
 scenario_file = {
-        "path_input" : "tests/test_cmd/input/gdr3-ulens-025_result.csv",
+        "path_input" : "tests/test_cmd/input/gdr3_ulens_025_result.csv",
         "separator" : ",",
         "path_outputs": "tests/test_cmd/output/",
         "event_name": "GDR3-ULENS-025",
@@ -57,10 +57,10 @@ scenario_gaia = {
             }
 }
 
-class testCmdAnalyst():
-    '''
+class testCmdAnalyst:
+    """
     Class with tests
-    '''
+    """
     def __init__(self,
                  scenario):
         self.scenario = scenario

@@ -1,15 +1,15 @@
+import os
+
 import numpy as np
 import pandas as pd
 from astroquery.gaia import Gaia
-
 from plotly import graph_objs as go
-
-import os
 
 from ralph.analyst.analyst import Analyst
 
+
 class CmdAnalyst(Analyst):
-    '''
+    """
     This is a class that creates a colour-magnitude diagram for one event, one catalogue and one solution.
     It is a child of the :class:`ralph.analyst.analyst.Analyst`
 
@@ -37,7 +37,7 @@ class CmdAnalyst(Analyst):
 
     * `parallax_quality` float, parallax over error constrain demanded for a catalogue search in Gaia catalogues,
     * `separator` str, separator used in the file with the catalogue
-    '''
+    """
     def __init__(self,
                  event_name,
                  analyst_path,
@@ -64,12 +64,12 @@ class CmdAnalyst(Analyst):
             quit()
 
     def add_cmd_config(self, catalogue, config_dict):
-        '''
+        """
         Add CMD configuration fields to analyst config.
 
         :param catalogue: str, catalogue name
         :param config_dict: dict, dictionary with analyst config
-        '''
+        """
 
         self.log.debug("CMD Analyst: Adding config.")
         cmd_config = \
@@ -83,13 +83,13 @@ class CmdAnalyst(Analyst):
                                                         self.file_path, self.optional_kwargs))
 
     def transform_source_data(self):
-        '''
+        """
         This function transforms a dictionary (`light_curve_data`) with source, blend and baseline information into two
         data structures, a pandas data frame with magnitudes assuigned in different filter to source, blend and baseline,
         and a list with band labels.
 
         :return: two data structures, a pandas data frame and band labels.
-        '''
+        """
         try:
             self.log.debug("CMD Analyst: Creating source and blend mags dataframe and labels.")
             d = []
@@ -110,19 +110,19 @@ class CmdAnalyst(Analyst):
             self.log.debug("CMD Analyst: Source and blend mags dataframe created.")
 
         except Exception as err:
-            self.log.exception(f"CMD Analyst: %s, %s" % (err, type(err)))
+            self.log.exception("CMD Analyst: %s, %s" % (err, type(err)))
             data = None
             labels = None
 
         return data, labels
 
     def load_catalogue_data(self):
-        '''
+        """
         Loads catalogue data based on the catalogue name, and then selects sources within radius. Either loads
         the catalogue from a file, when `file_path` was specified, or from a selected survey, using astroquery.
 
         :return: a pandas data frame with data to create a cmd, and a list with band labels
-        '''
+        """
 
         self.log.debug("CMD Analyst: Preparing to load the catalogue.")
         if self.file_path is not None:
@@ -148,7 +148,7 @@ class CmdAnalyst(Analyst):
         return data, labels
 
     def load_gaia_data(self, parallax_quality=5):
-        '''
+        """
         Loads data within a specified radius and of specified parallax quality from Gaia catalogues.
 
         :param catalogue_name: str, specified earlier, should contain words "Gaia" and "DRx", where x is the number of data release (currently supported 1, 2 and 3), for example `GaiaDR2` or `Gaia_DR3`,
@@ -156,7 +156,7 @@ class CmdAnalyst(Analyst):
         :param parallax_quality: float, optional, parallax over error lower limit.
 
         :return: pandas data frame with magnitudes and labels of the bands used; the bands are `Gaia_G`, `Gaia_BP`, and `Gaia_RP` corresponding to `phot_g_mean_mag`, `phot_bp_mean_mag` and `phot_rp_mean_mag`.
-        '''
+        """
         table_name = ""
         if "DR3" in self.catalogue_name:
             table_name = "gaiadr3"
@@ -198,18 +198,18 @@ class CmdAnalyst(Analyst):
             self.log.debug("CMD Analyst: Response reformatted to dataframe, labels created.")
 
         except Exception as err:
-            self.log.exception(f"CMD Analyst: %s, %s" % (err, type(err)))
+            self.log.exception("CMD Analyst: %s, %s" % (err, type(err)))
             data_frame = None
             labels = None
 
         return data_frame, labels
 
     def load_catalogue_from_file_data(self, separator=","):
-        '''
+        """
         Loads a file with catalogue data from path specified by the user in the configuration.
 
         :return: pandas data frame and labels of the bands
-        '''
+        """
 
         try:
             self.log.debug("CMD Analyst: Attempting to read the data from file.")
@@ -218,7 +218,7 @@ class CmdAnalyst(Analyst):
             self.log.debug("CMD Analyst: Data loaded to dataframe, labels created.")
 
         except Exception as err:
-            self.log.exception(f"CMD Analyst: %s, %s" % (err, type(err)))
+            self.log.exception("CMD Analyst: %s, %s" % (err, type(err)))
             data = None
             labels = None
 
@@ -226,7 +226,7 @@ class CmdAnalyst(Analyst):
 
 
     def plot_cmd(self, source_data, source_labels, cmd_data, cmd_labels):
-        '''
+        """
         Create a colour magnitude diagram with magnitudes obtained from fitting plotted on it.
 
         :param source_data: pandas dataframe with magnitudes obtained from fitting microlensing model
@@ -235,7 +235,7 @@ class CmdAnalyst(Analyst):
         :param cmd_labels: labels of filters in the `cmd_data`
 
         :return: status of creating a cmd plot
-        '''
+        """
 
         self.log.debug("CMD Analyst: Plotting CMD started.")
         for i in range(len(cmd_labels)):
@@ -321,7 +321,7 @@ class CmdAnalyst(Analyst):
                 cmd_status = True
 
             except Exception as err:
-                self.log.exception(f"CMD Analyst: %s, %s" % (err, type(err)))
+                self.log.exception("CMD Analyst: %s, %s" % (err, type(err)))
                 cmd_status = False
 
         return cmd_status

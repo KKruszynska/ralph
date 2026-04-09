@@ -1,8 +1,8 @@
-import pytest
 
-import numpy as np
 import json
 from collections import OrderedDict
+
+import numpy as np
 
 from ralph import logs
 from ralph.analyst.fit_analyst import FitAnalyst
@@ -94,9 +94,9 @@ scenario_gsa = {
         }
 
 class testFitAnalyst:
-    '''
+    """
     Class with tests
-    '''
+    """
     def __init__(self,
                  scenario):
         self.scenario = scenario

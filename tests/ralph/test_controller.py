@@ -1,17 +1,12 @@
-import glob, os
-import numpy as np
-import pandas as pd
-import json
 
-import pytest
 
 from ralph.controller.controller import Controller
 
 
 class TestControllerPaths:
-    '''
+    """
     Tests to check if controller works fine.
-    '''
+    """
 
     def test_launch_analysts(self):
 
@@ -251,9 +246,9 @@ class TestControllerPaths:
 #         controller.launch_analysts()
 
 class TestControllerPathsOngoing:
-    '''
+    """
     Tests to check if controller works fine.
-    '''
+    """
 
     def test_launch_analysts(self):
         from MFPipeline.controller.controller import Controller

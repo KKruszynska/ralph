@@ -1,17 +1,16 @@
-import numpy as np
-import yaml
 import json
 import sys
-import time
 
-from ralph.analyst.analyst import Analyst
-
-from ralph.analyst.light_curve_analyst import LightCurveAnalyst
-from ralph.analyst.fit_analyst import FitAnalyst
-from ralph.analyst.cmd_analyst import CmdAnalyst
+import numpy as np
+import yaml
 
 from ralph import logs
 from ralph.analyst import analyst_tools
+from ralph.analyst.analyst import Analyst
+from ralph.analyst.cmd_analyst import CmdAnalyst
+from ralph.analyst.fit_analyst import FitAnalyst
+from ralph.analyst.light_curve_analyst import LightCurveAnalyst
+
 
 class EventAnalyst(Analyst):
     """
@@ -46,7 +45,7 @@ class EventAnalyst(Analyst):
         # start
         self.log = logs.start_log(self.analyst_path, log_level, event_name=self.event_name, stream=stream)
         self.log.info("-------------------------------------------")
-        self.log.info("Event Analyst: Analyzing event {:s}".format(event_name))
+        self.log.info(f"Event Analyst: Analyzing event {event_name:s}")
         self.log.info("-------------------------------------------")
 
         if config_path is not None:
@@ -97,7 +96,7 @@ class EventAnalyst(Analyst):
                 self.light_curves = self.parse_light_curves(event_config.get("light_curves"))
 
         except Exception as err:
-            self.log.error(f"Event Analyst: %s, %s" % (err, type(err)))
+            self.log.error("Event Analyst: %s, %s" % (err, type(err)))
 
     def add_config_dict(self, conifg_dict):
         """
@@ -129,7 +128,7 @@ class EventAnalyst(Analyst):
                 self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
 
         except Exception as err:
-            self.log.error(f"Event Analyst: %s, %s" % (err, type(err)))
+            self.log.error("Event Analyst: %s, %s" % (err, type(err)))
 
     def parse_light_curves(self, lc_config):
         """
@@ -307,9 +306,9 @@ class EventAnalyst(Analyst):
                 plot_status = cmd_analyst.plot_cmd(source_data, source_labels, cmd_data, cmd_labels)
                 self.log.debug("Event Analyst: finished creating plot.")
                 if plot_status:
-                    self.log.info("Event Analyst: CMD plot created successfully for {:s}.".format(catalogue))
+                    self.log.info(f"Event Analyst: CMD plot created successfully for {catalogue:s}.")
                 else:
-                    self.log.error("Event Analyst: Problems while creating CMD plot for %s.".format(catalogue))
+                    self.log.error("Event Analyst: Problems while creating CMD plot for %s.")
 
 
 if __name__ == "__main__":
