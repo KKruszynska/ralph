@@ -1,4 +1,3 @@
-
 from ralph import logs
 
 
@@ -7,26 +6,66 @@ class TestLogs:
     Class with tests for logs.
     """
 
-    def test_create_log(self, log_level):
+    def __init__(self,
+                 log_level):
+        """
+        Constructor.
+
+        :param log_level: Log level (error, info, debug).
+        """
+
+        self.log_level = log_level
+
+    def test_create_log(self):
         """
         Create a logger instance and write all level of information in it.
         :param log_level: Log level (error, info, debug).
         """
-        log = logs.start_log('tests/ralph/data/output/',
-                             log_level,
-                             event_name=f'test_{log_level:s}'
-                             )
-        log.debug('Hello! This is a debug.')
-        log.info('Hello! This is an info.')
-        log.error('Hello! This is an error.')
+
+        self.log = logs.start_log('tests/ralph/data/output/',
+                                  self.log_level,
+                                  event_name=f'test_{self.log_level:s}'
+                                  )
+
+    def test_debug_log(self):
+        """
+        Test debug logger instance and write to it.
+        """
+        if self.log_level == 'debug':
+            self.log.debug('Hello! This is a debug.')
+
+    def test_error_log(self):
+        """
+        Test error logger instance and write to it.
+        """
+        if self.log_level == 'error':
+            self.log.error('Hello! This is an error.')
+
+    def test_info_log(self):
+        """
+        Test info logger instance and write to it.
+        """
+        self.log.info('Hello! This is an info.')
+
         # log.exception('Hello! This is an exeption.')
-        logs.close_log(log)
 
 def test_run():
     """
     Run all tests to check if the logs are working.
     """
-    test = TestLogs()
-    test.test_create_log('debug')
-    test.test_create_log('error')
+    test_debug = TestLogs('debug')
+    test_debug.test_create_log()
+    test_debug.test_debug_log()
+    logs.close_log(test_debug.log)
+
+    test_error = TestLogs('error')
+    test_error.test_create_log()
+    test_error.test_error_log()
+    logs.close_log(test_error.log)
+
+    test_info = TestLogs('info')
+    test_info.test_create_log()
+    test_info.test_info_log()
+    logs.close_log(test_info.log)
+
 
