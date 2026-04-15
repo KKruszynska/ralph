@@ -20,7 +20,10 @@ class fitPylima(Fitter):
     def __init__(self, log):
         super().__init__(log)
 
-    def setup_event (self, event_name, ra, dec, light_curves):
+    def setup_event (self, event_name,
+                     ra, dec,
+                     light_curves
+                     ):
         """
         Set up pylima event instance.
 
@@ -92,14 +95,14 @@ class fitPylima(Fitter):
 
         return event_to_fit
 
-    def fit_pspl(self, fit_name, light_curves, starting_params, parallax, blend,
+    def fit_pspl(self, fit_name, light_curves,
+                 starting_params,
+                 parallax, blend,
                  return_norm_lc=False,
                  use_boundaries=None,
                  ):
         """
         Perform a PSPL fit using the selected fit method.
-
-        todo: Test which method is better. TRF or DE?
 
         :param fit_name: str, label of the fit, used to save plots
         :param light_curves: list, list of lists with event name, light curve, survey name and filter name.
@@ -136,7 +139,7 @@ class fitPylima(Fitter):
 
         # Use boundries like in mop.toolbox.fittools
         if use_boundaries is None:
-            self.log.info('Using boundaries default for MFPipeline.')
+            self.log.info('Using boundaries default for ralph.')
             delta_t0 = 50.
             default_t0_lower = fit_event.fit_parameters['t0'][1][0]
             default_t0_upper = fit_event.fit_parameters['t0'][1][1]
@@ -182,7 +185,10 @@ class fitPylima(Fitter):
         """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
-        in Microlensing Fitting Pipeline.
+        in ralph.
+
+        :param event: pyLIMA event instance
+        :param model_fit: pyLIMA model
 
         :return: dictionary with all the parameters coming from the model.
         """
@@ -341,6 +347,9 @@ class fitPylima(Fitter):
         """
         Taken from pylima.outputs.pyLIMA_plots
 
+        :param model: pyLIMA model instance
+        :param parameters: pyLIMA model parameters
+
         :return: list with arrays containing aligned data
         """
 
@@ -412,7 +421,10 @@ class fitPylima(Fitter):
         return aligned_data, residuals
 
 
-def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, log):
+def return_baseline_mag(mag_source, err_mag_source,
+                        mag_blend, err_mag_blend,
+                        log
+                        ):
     """
     This function returns baseline magnitude based on source and blend magnitude.
 
@@ -420,7 +432,8 @@ def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, lo
     :param err_mag_source: source uncertainty in magnitudes
     :param mag_blend: blend brightness in magnitudes
     :param err_mag_blend: source uncertainty in magnitudes
-    :param fit_package: package used for fitting
+    :param log: log instance to write logs to
+
     :return: baseline brightness and its uncertainty in magnitudes
     """
     base_mag, err_base_mag = None, None
@@ -442,7 +455,9 @@ def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, lo
     return base_mag, err_base_mag
 
 
-def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
+def return_blend_mag(mag_source, err_mag_source,
+                     mag_base, err_mag_base,
+                     log):
     """
     This function returns blend magnitude based on source and baseline magnitude.
 
@@ -450,6 +465,8 @@ def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
     :param err_mag_source: source uncertainty in magnitudes
     :param mag_base: baseline brightness in magnitudes
     :param err_mag_base: baseline uncertainty in magnitudes
+    :param log: log instance to write logs to
+
     :return: blend brightness and its uncertainty in magnitudes
     """
     blend_mag, err_blend_mag = None, None

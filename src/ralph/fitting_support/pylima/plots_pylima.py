@@ -5,6 +5,15 @@ from cycler import cycler
 
 
 def define_plotting_dictionaries(telescope_names):
+    """
+    Define plotting dictionaries with telescopes having
+    consistent markers and colors.
+
+    :param telescope_names: list of telescope names
+
+    :return: Dictionaries with telescope name and assigned color (color_dict),
+    and telescope name and assigned marker (marker_dict).
+    """
     # Fixed color for each telescope
     # Similar like in pylima
     # Change matplotlib default colors
@@ -30,6 +39,7 @@ def plot_pylima(event, fit, log):
 
     :param event: pylima event, instance of an event for which the fit was performed
     :param fit: pylima fit, instance of a fit
+    :param log: logger instance
 
     """
     tel_names = []
