@@ -3,7 +3,10 @@ import os
 import sys
 
 
-def start_log(log_location, log_type, event_name=None, stream=False):
+def start_log(log_location, log_type,
+              event_name=None,
+              stream=False
+              ):
     """
     Function that creates logs for analysts or controller.
     :param log_location: str, location of the log.
@@ -38,7 +41,7 @@ def start_log(log_location, log_type, event_name=None, stream=False):
         log.addHandler(ch)
     else:
         if (event_name != None):
-            filename = log_location + '%s_analyst.log' % event_name
+            filename = log_location + f'{event_name}_analyst.log'
         else:
             filename = log_location + 'controller.log'
 
