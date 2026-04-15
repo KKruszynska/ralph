@@ -6,7 +6,7 @@ from cycler import cycler
 
 def define_plotting_dictionaries(telescope_names):
     # Fixed color for each telescope
-    # Similar like in pyLIMA
+    # Similar like in pylima
     # Change matplotlib default colors
     n_telescopes = len(telescope_names)
     color = plt.cm.jet(np.linspace(0.01, 0.99, n_telescopes))  # This returns RGBA; convert:
@@ -24,19 +24,19 @@ def define_plotting_dictionaries(telescope_names):
     marker_dict = dict(zip(telescope_names, marker_cycle, strict=False))
     return color_dict, marker_dict
 
-def plot_pyLIMA(event, fit, log):
+def plot_pylima(event, fit, log):
     """
     Producing plot of the fit, geometry and a corner plot of posteriors for the solution.
 
-    :param event: pyLIMA event, instance of an event for which the fit was performed
-    :param fit: pyLIMA fit, instance of a fit
+    :param event: pylima event, instance of an event for which the fit was performed
+    :param fit: pylima fit, instance of a fit
 
     """
     tel_names = []
     for tel in event.telescopes:
         tel_names.append(tel.name)
 
-    log.info("Fit Analyst: Plots: grabbing colours and markers.")
+    log.info('Fit Analyst: Plots: grabbing colours and markers.')
     color_dict, marker_dict = define_plotting_dictionaries(tel_names)
 
     custom_color = []
@@ -51,13 +51,13 @@ def plot_pyLIMA(event, fit, log):
     pyLIMA_plots.MARKERS_COLORS = custom_cycler
     pyLIMA_plots.MARKER_SYMBOLS = np.array([custom_marker])
 
-    log.info("Fit Analyst: Starting a plot.")
+    log.info('Fit Analyst: Starting a plot.')
 
     fit.fit_outputs(bokeh_plot=True)
-    log.info("Fit Analyst: Plotting finished.")
+    log.info('Fit Analyst: Plotting finished.')
 
     # try:
     #     fit.fit_outputs(bokeh_plot=True)
-    #     log.info("Fit Analyst: Plotting finished.")
+    #     log.info('Fit Analyst: Plotting finished.')
     # except Exception as err:
-    #     log.error(f"Fit Analyst: %s, %s" % (err, type(err)))
+    #     log.error(f'Fit Analyst: %s, %s' % (err, type(err)))
