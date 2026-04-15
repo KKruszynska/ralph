@@ -1,7 +1,7 @@
 from ralph import logs
 
 
-class TestLogs:
+class LogsTest:
     """
     Class with tests for logs.
     """
@@ -49,23 +49,46 @@ class TestLogs:
 
         # log.exception('Hello! This is an exeption.')
 
-def test_run():
+def run_debug_test():
     """
-    Run all tests to check if the logs are working.
+    Run the debug test for Ralph.
     """
-    test_debug = TestLogs('debug')
+
+    test_debug = LogsTest('debug')
     test_debug.test_create_log()
     test_debug.test_debug_log()
     logs.close_log(test_debug.log)
 
-    test_error = TestLogs('error')
+def run_error_test():
+    """
+    Run the error test for Ralph.
+    """
+
+    test_error = LogsTest('error')
     test_error.test_create_log()
     test_error.test_error_log()
     logs.close_log(test_error.log)
 
-    test_info = TestLogs('info')
+
+def run_info_test():
+    """
+    Run the info test for Ralph.
+    """
+
+    test_info = LogsTest('info')
     test_info.test_create_log()
     test_info.test_info_log()
     logs.close_log(test_info.log)
+
+
+def test_run():
+    """
+    Run all tests to check if the logs are working.
+    """
+
+    run_info_test()
+    run_debug_test()
+    run_error_test()
+
 
 
