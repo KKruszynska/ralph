@@ -119,9 +119,9 @@ class TestPylima:
                                    True)
 
         log.info('Fitting finished.')
-        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, "\
-                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, " \
-                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}"
+        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f},  \n"\
+                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f},  \n" \
+                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}\n"
                   )
 
         assert pytest.approx(params['t0'], abs=0.01) == 2457499.76
@@ -157,11 +157,11 @@ class TestPylima:
                                    )
 
         log.info('Fitting finished.')
-        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, "\
-                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, " \
-                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}, " \
-                  f"piEN = {params['piEN']:.3f} +- {params['piEN_error']:.3f}, " \
-                  f"piEE = {params['piEE']:.3f} +- {params['piEE_error']:.3f}"
+        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, \n"\
+                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, \n" \
+                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}, \n" \
+                  f"piEN = {params['piEN']:.3f} +- {params['piEN_error']:.3f}, \n" \
+                  f"piEE = {params['piEE']:.3f} +- {params['piEE_error']:.3f}\n"
                   )
 
         assert pytest.approx(params['t0'], abs=0.01) == 2457487.76

@@ -7,7 +7,7 @@ lc_analyst:
 
 fit_analyst:
     n_max : 10
-    fitting_package: pyLIMA
+    fitting_package: pylima
 
 cmd_analyst:
     catalogues:
