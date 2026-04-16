@@ -1,4 +1,4 @@
-from ralph import logs
+from ralph.toolbox import logs
 
 
 class LogsTest:
