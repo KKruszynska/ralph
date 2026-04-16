@@ -39,35 +39,40 @@ scenario_gaia = {
         ]
 }
 
-# scenario_gsa = {
-#         'path_outputs': 'tests/ralph/data/output/lc_analyst/',
-#         'event_name': 'Gaia24amo',
-#         'ra': 249.14892083,
-#         'dec': -53.74991944,
-#         'fit_analyst': {
-#             'fitting_package': 'pylima'
-#         },
-#         'lc_analyst': {
-#             'n_max': 5
-#         },
-#         'light_curves' : [
-#             {
-#             'survey': 'GSA',
-#             'band': 'G',
-#             'lc' : needs to be fixed
-#             },
-#             {
-#                 'survey': 'LCO',
-#                 'band': 'i',
-#                 'lc': needs to be fixed
-#                 },
-#             {
-#             'survey': 'LCO',
-#             'band': 'g',
-#             'lc': needs to be fixed
-#             },
-#         ],
-#         }
+scenario_gsa = {
+        'path_outputs': 'tests/ralph/data/output/lc_analyst/',
+        'event_name': 'Gaia24amo',
+        'ra': 249.14892083,
+        'dec': -53.74991944,
+        'fit_analyst': {
+            'fitting_package': 'pylima'
+        },
+        'lc_analyst': {
+            'n_max': 5
+        },
+        'light_curves' : [
+            {
+                'survey': 'GSA',
+                'band': 'G',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat',
+            },
+            {
+                'survey': 'LCO',
+                'band': 'g',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_g.dat',
+            },
+            {
+                'survey': 'LCO',
+                'band': 'r',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_r.dat',
+                },
+            {
+                'survey': 'LCO',
+                'band': 'i',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_i.dat',
+            },
+        ],
+        }
 
 class LightCurveAnalystTest:
     """
@@ -226,9 +231,9 @@ def test_run():
     test.test_parse_config()
     test.test_run_analyst()
 
-    # case = scenario_gsa
-    # test = TestLCAnalyst(case)
-    # test.test_run_analyst()
+    case = scenario_gsa
+    test = LightCurveAnalystTest(case)
+    test.test_run_analyst()
 
     test = BadLightCurvesTest()
     test.test_bad_lc()
