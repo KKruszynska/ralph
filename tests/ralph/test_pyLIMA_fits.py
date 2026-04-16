@@ -1,10 +1,7 @@
-import numpy as np
 import pytest
 
-from ralph.toolbox import logs
-import ralph.toolbox.input_tools as input_tools
-
 from ralph.fitting_support.pylima.fit_pylima import fitPylima
+from ralph.toolbox import input_tools, logs
 
 scenario = {
     'event_name': 'GaiaDR3-ULENS-025',
