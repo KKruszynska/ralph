@@ -5,8 +5,8 @@ from ralph.analyst.analyst import Analyst
 
 class LightCurveAnalyst(Analyst):
     """
-    This is a class that performs light curve
-    It is a child of the :class:`ralph.analyst.analyst.Analyst`
+    This is a class that performs light curve analysis.
+    It is a child of the :class:`ralph.analyst.analyst.Analyst`.
     It follows a flowchart specified here: link link link
 
     A Fit Analyst needs either a config_path or config_dict, otherwise it will not work.
@@ -18,6 +18,7 @@ class LightCurveAnalyst(Analyst):
     :param config_dict: dictionary, optional, dictionary with Event Analyst configuration
     :param config_path: str, optional, path to the YAML configuration file of the Event Analyst
     """
+
     def __init__(self,
                  event_name,
                  analyst_path,
@@ -57,8 +58,6 @@ class LightCurveAnalyst(Analyst):
         """
         Performing a quality check of the light curve and applying masks to invalid entries.
         A cleaned light curve will replace the old entry.
-
-        :return:
         """
 
         status = False
@@ -87,10 +86,11 @@ class LightCurveAnalyst(Analyst):
 
     def flag_infinite_entries(self, light_curve):
         """
-        Flags entries with non-finite values. Similar like in pyLIMA.
+        Flags entries with non-finite values. Similar like in pylima.
         :param light_curve: numpy array, an array containing JD, magnitude and error
         :return: mask with entries that don't have invalid magnitudes
         """
+
         mask_finite_mag = np.isfinite(light_curve[:,1])
         mask_finite_err = np.isfinite(light_curve[:, 2])
         final_mask = np.logical_and(mask_finite_mag, mask_finite_err)
@@ -99,19 +99,20 @@ class LightCurveAnalyst(Analyst):
 
     def flag_huge_errorbars(self, light_curve):
         """
-        Flag entries with huge errorbars.
+        Flag entries with huge errors.
         :param light_curve: numpy array, an array containing JD, magnitude and error
-        :return: mask containing entries that have huge uncertianity values
+        :return: mask containing entries that have huge uncertainty values
         """
 
         return 0.
 
     def flag_negative_errorbars(self, light_curve):
         """
-        Flags entries with negative errorbars.
+        Flags entries with negative errors.
         :param light_curve: numpy array, an array containing JD, magnitude and error
-        :return: mask with entries that don't have negative uncertianities
+        :return: mask with entries that don't have negative uncertainty
         """
+
         mask_neg_err = np.where(light_curve[:, 2] > 0)
 
         return mask_neg_err
@@ -123,6 +124,7 @@ class LightCurveAnalyst(Analyst):
         :param light_curve: numpy array, an array containing JD, magnitude and error
         :return: mask with entries that don't have invalid magnitudes
         """
+
         custom_range = self.acceptable_mag_range
         if custom_range is not None:
             mask_inv_mag = np.where((light_curve[:, 1] > custom_range["upper_limit"]) & (light_curve[:, 1] < custom_range["lower_limit"]))
@@ -137,6 +139,7 @@ class LightCurveAnalyst(Analyst):
         :param light_curve: numpy array, an array containing JD, magnitude and error
         :return: mask with entries that are not duplicated
         """
+
         unique_entries, unique_index = np.unique(light_curve[:,0], return_index = True)
         mask_unique = []
         for i in range(len(light_curve[:,0])):
