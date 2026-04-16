@@ -1,7 +1,9 @@
 import numpy as np
 import pytest
 
-from ralph import logs
+from ralph.toolbox import logs
+import ralph.toolbox.input_tools as input_tools
+
 from ralph.fitting_support.pylima.fit_pylima import fitPylima
 
 scenario = {
@@ -52,18 +54,18 @@ class TestPylima:
             lc_dict['band'] = lc['band']
 
             if 'Gaia' in lc_dict['survey']:
-                lc_dict['ephemeris'] = np.genfromtxt(lc['ephemeris'],
-                                                     skip_header = 94,
-                                                     skip_footer = 4159,
-                                                     unpack=True,
-                                                     usecols = (0,1,2,3),
-                                                     )
+                lc_dict['ephemeris'] = input_tools.load_ephemeris_from_path(
+                    lc['ephemeris'],
+                    # skip_header = 94,
+                    # skip_footer = 4159,
+                    usecols = (0,1,2,3),
+                )
 
-                data  = np.genfromtxt(lc['path'], unpack=True).T
+                data  = input_tools.load_light_curve_from_path(lc['path'])
                 data[:, 0] = data[:, 0] + 2450000.0
                 lc_dict['light_curve'] = data
             else:
-                lc_dict['light_curve'] = np.genfromtxt(lc['path'], unpack=True).T
+                lc_dict['light_curve'] = input_tools.load_light_curve_from_path(lc['path'])
 
             light_curves.append(lc_dict)
         self.light_curves = light_curves

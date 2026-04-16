@@ -1,5 +1,6 @@
 
 import numpy as np
+
 from pyLIMA import event, telescopes, toolbox
 from pyLIMA.fits import TRF_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
