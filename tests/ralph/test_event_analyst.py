@@ -30,7 +30,7 @@ scenario_file_cat = {
             "n_max": 10,
              },
         "fit_analyst": {
-            "fitting_package": "pyLIMA",
+            "fitting_package": "pylima",
             "n_max": 10,
         },
         "cmd_analyst":
@@ -53,7 +53,7 @@ scenario_gsa = {
             "n_max": 10,
         },
         "fit_analyst": {
-            "fitting_package": "pyLIMA"
+            "fitting_package": "pylima"
         },
         "light_curves" : [
             {
@@ -87,7 +87,7 @@ scenario_kwu = {
             "n_max": 10,
         },
         "fit_analyst": {
-            "fitting_package": "pyLIMA"
+            "fitting_package": "pylima"
         },
         "light_curves" : [
             {

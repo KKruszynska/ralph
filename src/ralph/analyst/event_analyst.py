@@ -4,12 +4,12 @@ import sys
 import numpy as np
 import yaml
 
-from ralph import logs
 from ralph.analyst import analyst_tools
 from ralph.analyst.analyst import Analyst
 from ralph.analyst.cmd_analyst import CmdAnalyst
 from ralph.analyst.fit_analyst import FitAnalyst
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
+from ralph.toolbox import logs
 
 
 class EventAnalyst(Analyst):

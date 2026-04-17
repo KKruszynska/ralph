@@ -4,7 +4,6 @@ import time
 import numpy as np
 
 from ralph.analyst.analyst import Analyst
-from ralph.fitting_support.pyLIMA import fit_pyLIMA
 
 
 class FitAnalyst(Analyst):

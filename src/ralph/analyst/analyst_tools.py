@@ -1,6 +1,6 @@
 import numpy as np
 
-from ralph.fitting_support import fit_pyLIMA
+from ralph.fitting_support.pylima import fit_pylima
 
 
 def cmd_catalogues_to_bands(catalogue):
@@ -31,8 +31,8 @@ def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, 
     baseline_mag, err_baseline_mag = None, None
 
     if not np.isnan(mag_source) and not np.isnan(mag_blend):
-        if fit_package == "pyLIMA":
-            baseline_mag, err_baseline_mag = fit_pyLIMA.return_baseline_mag(mag_source, err_source,
+        if fit_package == "pylima":
+            baseline_mag, err_baseline_mag = fit_pylima.return_baseline_mag(mag_source, err_source,
                                                                             mag_blend, err_blend,
                                                                             log)
 
@@ -52,8 +52,8 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
     blend_mag, err_blend_mag = None, None
 
     if not np.isnan(mag_source) and not np.isnan(mag_base):
-        if fit_package == "pyLIMA":
-            blend_mag, err_blend_mag = fit_pyLIMA.return_blend_mag(mag_source, err_source,
+        if fit_package == "pylima":
+            blend_mag, err_blend_mag = fit_pylima.return_blend_mag(mag_source, err_source,
                                                                    mag_base, err_base,
                                                                    log)
 

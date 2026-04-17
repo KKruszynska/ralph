@@ -21,11 +21,12 @@ class Controller:
     A controller has to be initialized with either config_path or config_dict specified. Otherwise, it will not work.
 
     :param event_list: list, a list with names of events that need to be analyzed by the pipeline
-    :param config_path: string, optional, a path to a YAML file that has the configuration parameters for the controller
+    :param config_path: string, optional, a path to a json file that has the configuration parameters for the controller
     :param config_dict: dictionary, optional, a dictionary containing configuration of the controller
     :param analyst_dicts: dictionary, optional, dictionary containing jsons with information for analysts
     :param stream: optional, boolean, should the log be accessible through Kubernetes?
     """
+
     def __init__(self,
                  event_list,
                  config_path=None,

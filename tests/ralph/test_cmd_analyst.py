@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ralph.analyst.cmd_analyst import CmdAnalyst
-from ralph.logs import logs
+from ralph.toolbox.logs import logs
 
 scenario_file = {
         "path_input" : "tests/test_cmd/input/gdr3_ulens_025_result.csv",

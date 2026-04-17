@@ -58,7 +58,7 @@ class TestControllerPaths:
 #             dictionary["lc_analyst"] = {}
 #             dictionary["lc_analyst"]["n_max"] = "%d"%event_info["lc_nmax"].values[idx][0]
 #             dictionary["fit_analyst"] = {}
-#             dictionary["fit_analyst"]["fitting_package"] = "pyLIMA"
+#             dictionary["fit_analyst"]["fitting_package"] = "pylima"
 #
 #             # cats = event_info["catalogues"].values[idx][0].split(" ")
 #             # cat_list = []
@@ -170,7 +170,7 @@ class TestControllerPaths:
 #                     "n_max": 10,
 #                 },
 #             "fit_analyst": {
-#                 "fitting_package": "pyLIMA",
+#                 "fitting_package": "pylima",
 #                 }
 #             }
 #
