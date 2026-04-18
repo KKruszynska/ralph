@@ -8,6 +8,7 @@ def cmd_catalogues_to_bands(catalogue):
     This function provides a list of bands used to create a CMD with the requested catalogue.
 
     :param catalogue: str, catalogue name
+
     :return: list of bands
     """
     bands = None
@@ -26,6 +27,8 @@ def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, 
     :param mag_blend: blend brightness in magnitudes
     :param err_blend: blend uncertainty in magnitudes
     :param fit_package: package used for fitting
+    :param log: logger instance
+
     :return: baseline brightness and its uncertainty in magnitudes
     """
     baseline_mag, err_baseline_mag = None, None
@@ -47,6 +50,8 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
     :param mag_base: baseline brightness in magnitudes
     :param err_base: baseline uncertainty in magnitudes
     :param fit_package: package used for fitting
+    :param log: logger instance
+
     :return: baseline brightness and its uncertainty in magnitudes
     """
     blend_mag, err_blend_mag = None, None
@@ -58,3 +63,111 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
                                                                    log)
 
     return [blend_mag, err_blend_mag]
+
+def placeholder(n_max):
+    """
+    Placeholder function to put in parts of the code that are not complete.
+
+    :param n_max: int, maxium number of the counter
+
+    :return: counted number, should be equal to n_max
+    """
+
+    count = 0
+    for i in range(n_max):
+        count += 1
+
+    return count
+
+def find_time_of_peak(light_curves):
+    """
+    Find the time of peak among all the light curves.
+
+    :param light_curves: list of light curves
+
+    :return: time of peak in JD
+    """
+
+    time_of_peak = 0.
+    max_amplitude = 0.
+    for entry in light_curves:
+        lc = np.asarray(entry['light_curve'])
+        idx_max = np.argmin(lc[:, 1])
+        amplitude = np.max(lc[:,1]) - lc[idx_max, 1]
+        time_max = lc[idx_max, 0]
+
+        if max_amplitude < amplitude:
+            time_of_peak, max_amplitude = time_max, amplitude
+
+    return time_of_peak
+
+def check_ongoing_time(model_params, time_now):
+    """
+    Checks if based on current time and model, the event reached baseline.
+    This check is passed if current time is smaller than the sum of the time
+    of peak and Einstein time.
+
+    :param model_params: dict, dictionary containing model parameters
+    :param time_now: float, current time in JD
+
+    :return: boolean flag if the event is ongoing
+    """
+    ongoing = False
+    t_0, t_E = model_params['t0'], model_params['tE']
+
+    if t_0 + t_E < time_now:
+        ongoing = True
+
+    return ongoing
+
+def check_ongoing_amplitude(aligned_data, residuals, baseline_mag):
+    """
+    Checks if the event is over or not, comparing baseline magnitude, magnitude
+    of the last point aligned with the model and the standard deviation of the
+    model residuals.
+
+    :param aligned_data: numpy array, array containing photometric data alligned to a microlensing model
+    :param residuals: numpy array, array containing residuals of the microlensing model
+    :param baseline_mag: float, baseline magnitude of the model
+
+    :return: boolean, is the event over and the time of the last point
+    """
+    ongoing = False
+
+    # find standard deviation
+    sigmas = []
+    for data in residuals:
+        sigmas.append(np.std(data[:, 1]))
+    sigmas = np.asarray(sigmas)
+    std_mag = np.sqrt(np.sum(sigmas ** 2))
+
+    # Find last data point
+    t_last = 0
+    for data in aligned_data:
+        if data[-1, 0] > t_last:
+            t_last = data[-1, 0]
+            if np.abs(data[-1, 1] - baseline_mag) > std_mag:
+                ongoing = True
+
+    return ongoing, t_last
+
+def check_ongoing_magnification(model_params, time_now):
+    """
+    Checks if the event is ongoing based on microlensing model's magnification.
+
+    :param model_params: dict, dictionary containing microlensing model parameters
+    :param time_now: current time
+
+    :return: boolean flag if the event is still ongoing
+    """
+    ongoing = False
+    t_0, u_0, t_E = model_params['t0'], model_params['u0'], model_params['tE']
+
+    tau = (time_now - t_0) / t_E
+    u = np.sqrt(u_0**2 + tau**2)
+    amplification = (u**2 + 2) / (u * np.sqrt(u**2 +4))
+
+    if amplification > 1.05:
+        ongoing = True
+
+    return ongoing
