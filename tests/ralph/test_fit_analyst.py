@@ -105,7 +105,7 @@ class FitAnalystTest:
             band = entry['band']
             light_curve = input_tools.load_light_curve_from_path(entry['path'])
 
-            if any('Gaia', 'GSA') in entry['survey']:
+            if  any(s in entry['survey'] for s in ['Gaia', 'GSA']):
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols = (0,1,2,3),
@@ -113,6 +113,7 @@ class FitAnalystTest:
 
                 light_curves.append({
                     'light_curve': light_curve,
+                    'ephemeris': ephemeris,
                     'survey': survey,
                     'band': band,
                 })
@@ -145,23 +146,28 @@ class FitAnalystTest:
         for entry in config['light_curves']:
             survey = entry['survey']
             band = entry['band']
-            if 'path' in entry:
-                light_curve = np.genfromtxt(entry['path'], unpack=True)
+            light_curve = input_tools.load_light_curve_from_path(entry['path'])
+
+            if  any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+                ephemeris = input_tools.load_ephemeris_from_path(
+                    entry['ephemeris'],
+                    usecols=(0, 1, 2, 3),
+                )
+
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
+                    'ephemeris': ephemeris,
                     'survey': survey,
-                    'band': band
-                })
-            elif 'lc' in entry:
-                if type(entry['lc']) == type([1, 1]):
-                    light_curve = entry['lc']
-                else:
-                    light_curve = json.loads(entry['lc'])
+                    'band': band,
+                }
+                )
+            else:
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
                     'survey': survey,
-                    'band': band
-                })
+                    'band': band,
+                }
+                )
 
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=False)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
@@ -185,23 +191,28 @@ class FitAnalystTest:
         for entry in config['light_curves']:
             survey = entry['survey']
             band = entry['band']
-            if 'path' in entry:
-                light_curve = np.genfromtxt(entry['path'], unpack=True)
+            light_curve = input_tools.load_light_curve_from_path(entry['path'])
+
+            if any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+                ephemeris = input_tools.load_ephemeris_from_path(
+                    entry['ephemeris'],
+                    usecols=(0, 1, 2, 3),
+                )
+
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
+                    'ephemeris': ephemeris,
                     'survey': survey,
-                    'band': band
-                })
-            elif 'lc' in entry:
-                if type(entry['lc']) == type([1, 1]):
-                    light_curve = entry['lc']
-                else:
-                    light_curve = json.loads(entry['lc'])
+                    'band': band,
+                }
+                )
+            else:
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
                     'survey': survey,
-                    'band': band
-                })
+                    'band': band,
+                }
+                )
 
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=False)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
@@ -220,7 +231,7 @@ class FitAnalystTest:
 
 
 def test_run():
-    case = scenario_gsa
+    case = scenario_gaia
     test = FitAnalystTest(case)
     test.test_parse_config()
     test.test_check_ongoing()
