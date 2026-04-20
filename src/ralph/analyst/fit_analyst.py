@@ -357,13 +357,13 @@ class FitAnalyst(Analyst):
             if 'piEN' in params:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"\
-                    f"t0={params['t0(']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"\
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"\
                     f"piEN={params['piEN']:.2f}, piEE={params['piEE']:.2f}\n"
                 )
             else:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"\
-                    f"t0={params['t0(']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
                 )
 
         # Save results
@@ -377,9 +377,8 @@ class FitAnalyst(Analyst):
         # Save best results statistics
         file_name = self.analyst_path + 'fit_stats.txt'
         with open(file_name, 'w', encoding='utf-8') as file:
-            file.write(f'{0:20s} : {1:7s} {2:7s} {3:7s} {4:7s} {5:7s} {6:7s} {7:7s}\n'.format(
-                '# name', 'chi2', 'red_chi2', 'SW', 'AD', 'KS', 'AIC', 'BIC'
-            ))
+            file.write(f"{'# name':>20s} : {'chi2':>7s} {'red_chi2':>7s}" \
+                       f"{'SW':>7s} {'AD':>7s} {'KS':>7s} {'AIC':>7s} {'BIC':>7s}\n")
             file.write('#--------------------------------------------------------------------------------\n')
             for model in self.best_results:
                 params = self.best_results[model]
