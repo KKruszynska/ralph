@@ -55,6 +55,11 @@ testpaths = [
 ]
 addopts = "--doctest-modules --doctest-glob=*.rst"
 
+[tool.pytest]
+filterwarnings = [
+    "ignore::UserWarning",
+]
+
 [tool.black]
 line-length = 110
 [tool.isort]
