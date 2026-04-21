@@ -56,8 +56,10 @@ class fitPylima(Fitter):
             if 'Gaia' in survey:
                 # get spacecraft positions
                 if entry['ephemeris'] is not None:
+                    self.log.debug(f'Loading provided ephemeris for Gaia.')
                     ephemeris = entry['ephemeris']
                 else:
+                    self.log.debug(f'Downloading ephemeris from JPL for Gaia.')
                     ephemeris = JPL_ephemerides.horizons_API('Gaia',
                                                              lc[:,0],
                                                              observatory='Geocentric')[1]
@@ -89,7 +91,7 @@ class fitPylima(Fitter):
             event_to_fit.telescopes.append(telescope)
 
         # print(survey_to_align)
-        self.log.debug('Survey to align data to: %s', survey_to_align)
+        self.log.debug(f'Survey to align data to: {survey_to_align:s}')
         event_to_fit.find_survey(survey_to_align)
         event_to_fit.check_event()
 
