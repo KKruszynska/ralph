@@ -60,22 +60,22 @@ scenario_gsa = {
                 'survey': 'GSA',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_GSA_G.dat',
             },
             {
                 'survey': 'LCO',
                 'band': 'g',
-                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_g.dat',
+                'path' : 'tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_g.dat',
             },
             {
                 'survey': 'LCO',
                 'band': 'r',
-                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_r.dat',
+                'path' : 'tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_r.dat',
                 },
             {
                 'survey': 'LCO',
                 'band': 'i',
-                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_i.dat',
+                'path' : 'tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_i.dat',
             },
         ],
         }
@@ -250,6 +250,6 @@ class FitAnalystTest:
 def test_run():
     case = scenario_gaia
     test = FitAnalystTest(case)
-    # test.test_parse_config()
-    # test.test_check_ongoing()
+    test.test_parse_config()
+    test.test_check_ongoing()
     test.test_fit()
