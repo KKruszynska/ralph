@@ -56,10 +56,10 @@ class fitPylima(Fitter):
             if 'Gaia' in survey:
                 # get spacecraft positions
                 if entry['ephemeris'] is not None:
-                    self.log.debug(f'Loading provided ephemeris for Gaia.')
+                    self.log.debug('Loading provided ephemeris for Gaia.')
                     ephemeris = entry['ephemeris']
                 else:
-                    self.log.debug(f'Downloading ephemeris from JPL for Gaia.')
+                    self.log.debug('Downloading ephemeris from JPL for Gaia.')
                     ephemeris = JPL_ephemerides.horizons_API('Gaia',
                                                              lc[:,0],
                                                              observatory='Geocentric')[1]

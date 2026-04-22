@@ -1,12 +1,9 @@
+import json
+
 import pytest
 
-import json
-from collections import OrderedDict
-
-import numpy as np
-
 from ralph.analyst.fit_analyst import FitAnalyst
-from ralph.toolbox import logs, input_tools
+from ralph.toolbox import input_tools, logs
 
 scenario_gaia = {
         'analyst_path': 'tests/ralph/data/output/fit_analyst/',
@@ -14,7 +11,8 @@ scenario_gaia = {
         'ra': 260.8781,
         'dec': -27.3788,
         'fit_analyst': {
-            'fitting_package': 'pyLIMA'
+            'fitting_package': 'pyLIMA',
+            'ongoing_magnification_thershold': 1.10,
         },
         'light_curves' : [
             {
@@ -53,7 +51,8 @@ scenario_gsa = {
             'n_max': 10,
         },
         'fit_analyst': {
-            'fitting_package': 'pyLIMA'
+            'fitting_package': 'pyLIMA',
+            'ongoing_magnification_thershold': 1.10,
         },
         'light_curves' : [
             {
@@ -185,7 +184,7 @@ class FitAnalystTest:
         status, t0 = analyst.perform_ongoing_check()
         logs.close_log(log)
 
-        assert status == True
+        assert status
 
     def test_fit(self):
         """
@@ -248,6 +247,9 @@ class FitAnalystTest:
 
 
 def test_run():
+    """
+    Run all tests.
+    """
     case = scenario_gaia
     test = FitAnalystTest(case)
     test.test_parse_config()

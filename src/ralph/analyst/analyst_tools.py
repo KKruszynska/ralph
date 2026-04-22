@@ -126,7 +126,7 @@ def check_ongoing_amplitude(aligned_data, residuals, baseline_mag):
     of the last point aligned with the model and the standard deviation of the
     model residuals.
 
-    :param aligned_data: numpy array, array containing photometric data alligned to a microlensing model
+    :param aligned_data: numpy array, array containing photometric data aligned to a microlensing model
     :param residuals: numpy array, array containing residuals of the microlensing model
     :param baseline_mag: float, baseline magnitude of the model
 
@@ -151,10 +151,12 @@ def check_ongoing_amplitude(aligned_data, residuals, baseline_mag):
 
     return ongoing, t_last
 
-def check_ongoing_magnification(model_params, time_now):
+def check_ongoing_magnification(threshold, model_params, time_now):
     """
     Checks if the event is ongoing based on microlensing model's magnification.
 
+    :param threshold: float, threshold for microlensing model's magnification, if larger
+                       the event is considered ongoing
     :param model_params: dict, dictionary containing microlensing model parameters
     :param time_now: current time
 
@@ -165,9 +167,9 @@ def check_ongoing_magnification(model_params, time_now):
 
     tau = (time_now - t_0) / t_E
     u = np.sqrt(u_0**2 + tau**2)
-    amplification = (u**2 + 2) / (u * np.sqrt(u**2 +4))
+    magnification = (u**2 + 2) / (u * np.sqrt(u**2 +4))
 
-    if amplification > 1.05:
+    if magnification > threshold:
         ongoing = True
 
     return ongoing

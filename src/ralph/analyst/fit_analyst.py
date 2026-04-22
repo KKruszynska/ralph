@@ -3,10 +3,10 @@ import time
 
 import numpy as np
 
-from ralph.analyst.analyst import Analyst
 from ralph.analyst import analyst_tools
-
+from ralph.analyst.analyst import Analyst
 from ralph.fitting_support import pylima
+
 
 class FitAnalyst(Analyst):
     """
@@ -58,6 +58,7 @@ class FitAnalyst(Analyst):
 
         self.log.debug('Fit Analyst: Reading fit config.')
         self.config['fitting_package'] = config['fit_analyst']['fitting_package']
+        self.config['ongoing_magnification_thershold'] = config['fit_analyst']['ongoing_magnification_thershold']
         self.log.debug('Fit Analyst: Finished reading fit config.')
 
     def perform_ongoing_check(self):
@@ -99,7 +100,8 @@ class FitAnalyst(Analyst):
         self.start_time = time.time()
         ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(aligned_data, residuals, baseline_mag)
         ongoing_time = analyst_tools.check_ongoing_time(fit_params_PSPL_nopar, t_last)
-        ongoing_mag = analyst_tools.check_ongoing_magnification(fit_params_PSPL_nopar, t_last)
+        ongoing_mag = analyst_tools.check_ongoing_magnification(self.config['ongoing_magnification_thershold'],
+                                                                fit_params_PSPL_nopar, t_last)
 
         ongoing = False
         if ongoing_ampl or ongoing_time or ongoing_mag:
@@ -110,7 +112,8 @@ class FitAnalyst(Analyst):
         return ongoing, t_0
 
 
-    def fit_PSPL(self, fit_name, starting_params, parallax, blend, return_norm_lc=False, use_boundaries=None):
+    def fit_PSPL(self, fit_name, starting_params, parallax, blend,
+                 return_norm_lc=False, use_boundaries=None):
         """
         Perform a Point Source Point Lens fit.
 
