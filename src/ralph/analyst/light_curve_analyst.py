@@ -60,8 +60,6 @@ class LightCurveAnalyst(Analyst):
         A cleaned light curve will replace the old entry.
         """
 
-        status = False
-
         self.log.info("LC Analyst: Start quality check.")
         for entry in self.light_curves:
             #extract np array with the light curve
@@ -81,6 +79,7 @@ class LightCurveAnalyst(Analyst):
             mask_neg_err = self.flag_negative_errorbars(prel_lc)
             fin_lc = cleaned_lc[mask_neg_err]
             entry["lc"] = fin_lc
+
         self.log.info("LC Analyst: Quality check ended.")
 
 
