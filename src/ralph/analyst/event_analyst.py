@@ -75,25 +75,26 @@ class EventAnalyst(Analyst):
                     event_config = json.load(file)
                     file.close()
 
-                if "lc_analyst" in event_config:
-                    self.config["lc_analyst"] = event_config.get("lc_analyst")
-                    self.log.info("Event Analyst: Light Curve Analyst configuration received.")
-                else:
-                    self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
+            if "lc_analyst" in event_config:
+                self.config["lc_analyst"] = event_config.get("lc_analyst")
+                self.log.info("Event Analyst: Light Curve Analyst configuration received.")
+            else:
+                self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
 
-                if "fit_analyst" in event_config:
-                    self.config["fit_analyst"] = event_config.get("fit_analyst")
-                    self.log.info("Event Analyst: Fit Analyst configuration received.")
-                else:
-                    self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
+            if "fit_analyst" in event_config:
+                self.config["fit_analyst"] = event_config.get("fit_analyst")
+                self.log.info("Event Analyst: Fit Analyst configuration received.")
+            else:
+                self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
 
-                if "cmd_analyst" in event_config:
-                    self.config["cmd_analyst"] = event_config.get("cmd_analyst")
-                    self.log.info("Event Analyst: CMD Analyst configuration received.")
-                else:
-                    self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
+            if "cmd_analyst" in event_config:
+                self.config["cmd_analyst"] = event_config.get("cmd_analyst")
+                self.log.info("Event Analyst: CMD Analyst configuration received.")
+            else:
+                self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
 
-                self.light_curves = self.parse_light_curves(event_config.get("light_curves"))
+            self.light_curves = self.parse_light_curves(event_config.get("light_curves"))
+            self.log.info("Event Analyst: Light curves received.")
 
         except Exception as err:
             self.log.error("Event Analyst: %s, %s" % (err, type(err)))
@@ -147,13 +148,13 @@ class EventAnalyst(Analyst):
                     "survey": survey,
                     "band": band
                 })
-            elif "lc" in entry:
-                if type(entry["lc"]) == type([1,1]):
-                    light_curve = entry["lc"]
+            elif "light_curve" in entry:
+                if type(entry["light_curve"]) is type([1,1]):
+                    light_curve = entry["light_curve"]
                 else:
-                    light_curve = json.loads(entry["lc"])
+                    light_curve = json.loads(entry["light_curve"])
                 light_curves.append({
-                    "lc": light_curve,
+                    "light_curve": light_curve,
                     "survey": survey,
                     "band": band
                 })
@@ -308,7 +309,7 @@ class EventAnalyst(Analyst):
                 if plot_status:
                     self.log.info(f"Event Analyst: CMD plot created successfully for {catalogue:s}.")
                 else:
-                    self.log.error("Event Analyst: Problems while creating CMD plot for %s.")
+                    self.log.error(f"Event Analyst: Problems while creating CMD plot for {catalogue:s}.")
 
 
 if __name__ == "__main__":
