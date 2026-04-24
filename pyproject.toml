@@ -47,15 +47,21 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "src/ralph/_version.py"
 
-[tool.pytest.ini_options]
+#[tool.pytest.ini_options]
+#testpaths = [
+#    "tests",
+#    "src",
+#    "docs",
+#]
+#addopts = "--doctest-modules --doctest-glob=*.rst"
+
+[tool.pytest]
 testpaths = [
     "tests",
     "src",
     "docs",
 ]
-addopts = "--doctest-modules --doctest-glob=*.rst"
-
-[tool.pytest]
+addopts = ["--doctest-modules", "--doctest-glob=*.rst"]
 filterwarnings = [
     "ignore::UserWarning",
 ]
