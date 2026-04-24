@@ -57,8 +57,13 @@ class FitAnalyst(Analyst):
         """
 
         self.log.debug('Fit Analyst: Reading fit config.')
+
         self.config['fitting_package'] = config['fit_analyst']['fitting_package']
-        self.config['ongoing_magnification_thershold'] = config['fit_analyst']['ongoing_magnification_thershold']
+        self.config['ongoing_magnification_thershold'] = config['fit_analyst'].get('ongoing_magnification_thershold',
+                                                                                   1.05)
+        self.config['ongoing_amplitude_thershold'] = config['fit_analyst'].get('ongoing_amplitude_thershold',
+                                                                               1.0)
+
         self.log.debug('Fit Analyst: Finished reading fit config.')
 
     def perform_ongoing_check(self):
@@ -98,10 +103,17 @@ class FitAnalyst(Analyst):
         self.log.info('Identify ongoing event.')
         baseline_mag = fit_params_PSPL_nopar['baseline_magnitude']
         self.start_time = time.time()
-        ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(aligned_data, residuals, baseline_mag)
+
+        # todo: this currently supports only PSPL, but it should support more models, if we have them from the
+        # todo: past. This should be consulted with the system flowchart though.
+
+        ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(self.config['ongoing_amplitude_thershold'],
+                                                                     aligned_data, residuals, baseline_mag
+                                                                     )
         ongoing_time = analyst_tools.check_ongoing_time(fit_params_PSPL_nopar, t_last)
         ongoing_mag = analyst_tools.check_ongoing_magnification(self.config['ongoing_magnification_thershold'],
-                                                                fit_params_PSPL_nopar, t_last)
+                                                                fit_params_PSPL_nopar, t_last
+                                                                )
 
         ongoing = False
         if ongoing_ampl or ongoing_time or ongoing_mag:
@@ -129,7 +141,7 @@ class FitAnalyst(Analyst):
 
         self.start_time = time.time()
         results = {}
-        if self.config['fitting_package'] == 'pyLIMA':
+        if self.config['fitting_package'].lower() == 'pylima':
             fit_pspl = pylima.fit_pylima.fitPylima(self.log)
             results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params, parallax, blend,
                                         return_norm_lc=return_norm_lc, use_boundaries=use_boundaries)

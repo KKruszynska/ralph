@@ -13,6 +13,7 @@ scenario_gaia = {
         'fit_analyst': {
             'fitting_package': 'pyLIMA',
             'ongoing_magnification_thershold': 1.10,
+            'ongoing_amplitude_thershold': 1.0,
         },
         'light_curves' : [
             {
@@ -53,6 +54,7 @@ scenario_gsa = {
         'fit_analyst': {
             'fitting_package': 'pyLIMA',
             'ongoing_magnification_thershold': 1.10,
+            'ongoing_amplitude_thershold': 1.0,
         },
         'light_curves' : [
             {
@@ -100,6 +102,8 @@ class FitAnalystTest:
         config['fit_analyst'] = {}
         dict = self.scenario.get('fit_analyst')
         config['fit_analyst']['fitting_package'] = dict.get('fitting_package')
+        config['fit_analyst']['ongoing_magnification_thershold'] = dict.get('ongoing_magnification_thershold')
+        config['fit_analyst']['ongoing_amplitude_thershold'] = dict.get('ongoing_amplitude_thershold')
         config['light_curves'] = self.scenario.get('light_curves')
 
         light_curves = []
@@ -132,9 +136,13 @@ class FitAnalystTest:
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=True)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
         f_pack_config = analyst.config['fit_analyst']['fitting_package']
+        on_mag_t_config = analyst.config['fit_analyst']['ongoing_magnification_thershold']
+        on_ampl_t_config = analyst.config['fit_analyst']['ongoing_amplitude_thershold']
         logs.close_log(log)
 
         assert f_pack_config == dict.get('fitting_package')
+        assert on_mag_t_config == dict.get('ongoing_magnification_thershold')
+        assert on_ampl_t_config == dict.get('ongoing_amplitude_thershold')
 
     def test_check_ongoing(self):
         """
@@ -148,6 +156,8 @@ class FitAnalystTest:
         config['fit_analyst'] = {}
         dict = self.scenario.get('fit_analyst')
         config['fit_analyst']['fitting_package'] = dict.get('fitting_package')
+        config['fit_analyst']['ongoing_magnification_thershold'] = dict.get('ongoing_magnification_thershold')
+        config['fit_analyst']['ongoing_amplitude_thershold'] = dict.get('ongoing_amplitude_thershold')
         config['light_curves'] = self.scenario.get('light_curves')
 
         light_curves = []
@@ -198,6 +208,8 @@ class FitAnalystTest:
         config['fit_analyst'] = {}
         dict = self.scenario.get('fit_analyst')
         config['fit_analyst']['fitting_package'] = dict.get('fitting_package')
+        config['fit_analyst']['ongoing_magnification_thershold'] = dict.get('ongoing_magnification_thershold')
+        config['fit_analyst']['ongoing_amplitude_thershold'] = dict.get('ongoing_amplitude_thershold')
         config['light_curves'] = self.scenario.get('light_curves')
 
         light_curves = []

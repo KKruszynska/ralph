@@ -34,7 +34,7 @@ def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, 
     baseline_mag, err_baseline_mag = None, None
 
     if not np.isnan(mag_source) and not np.isnan(mag_blend):
-        if fit_package == "pylima":
+        if fit_package.lower() == "pylima":
             baseline_mag, err_baseline_mag = fit_pylima.return_baseline_mag(mag_source, err_source,
                                                                             mag_blend, err_blend,
                                                                             log)
@@ -57,7 +57,7 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
     blend_mag, err_blend_mag = None, None
 
     if not np.isnan(mag_source) and not np.isnan(mag_base):
-        if fit_package == "pylima":
+        if fit_package.lower() == "pylima":
             blend_mag, err_blend_mag = fit_pylima.return_blend_mag(mag_source, err_source,
                                                                    mag_base, err_base,
                                                                    log)
@@ -120,12 +120,14 @@ def check_ongoing_time(model_params, time_now):
 
     return ongoing
 
-def check_ongoing_amplitude(aligned_data, residuals, baseline_mag):
+def check_ongoing_amplitude(threshold, aligned_data, residuals, baseline_mag):
     """
     Checks if the event is over or not, comparing baseline magnitude, magnitude
     of the last point aligned with the model and the standard deviation of the
     model residuals.
 
+    :param threshold: float, if the amplitude is larger than threshold amount of standard deviation of
+                      the light curve, then the event is considered ongoing
     :param aligned_data: numpy array, array containing photometric data aligned to a microlensing model
     :param residuals: numpy array, array containing residuals of the microlensing model
     :param baseline_mag: float, baseline magnitude of the model
@@ -146,7 +148,7 @@ def check_ongoing_amplitude(aligned_data, residuals, baseline_mag):
     for data in aligned_data:
         if data[-1, 0] > t_last:
             t_last = data[-1, 0]
-            if np.abs(data[-1, 1] - baseline_mag) > std_mag:
+            if np.abs(data[-1, 1] - baseline_mag) > threshold * std_mag:
                 ongoing = True
 
     return ongoing, t_last
