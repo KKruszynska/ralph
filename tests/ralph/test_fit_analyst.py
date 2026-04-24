@@ -37,7 +37,7 @@ scenario_gaia = {
             {
                 'survey': 'OGLE',
                 'band': 'I',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_OGLE.dat',
             },
         ],
         'fit_result' : 'tests/ralph/data/input/test_results/gdr3_ulens_025_fit_results.json'
