@@ -108,7 +108,7 @@ class LightCurveAnalystTest:
 
             light_curves.append({
                 'event_name': config['event_name'],
-                'lc': light_curve,
+                'light_curve': light_curve,
                 'survey': survey,
                 'band': band,
             })
@@ -149,7 +149,7 @@ class LightCurveAnalystTest:
             if ('path' in entry):
                 light_curve = input_tools.load_light_curve_from_path(entry['path'])
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
                     'survey': survey,
                     'band': band
                 })
@@ -160,7 +160,7 @@ class LightCurveAnalystTest:
         logs.close_log(log)
 
         for entry in analyst.light_curves:
-            light_curve = entry['lc']
+            light_curve = entry['light_curve']
             negative_errs = np.where(light_curve[:, 2] < 0)
             assert len(negative_errs[0]) == len([])
 
@@ -185,7 +185,7 @@ class BadLightCurvesTest:
         dict = {
                 'survey': 'Gaia',
                 'band': 'G',
-                'lc': [[2457000., 17.00, -0.02], [2457001., 17.01, np.nan], [2457002., 17.02, 0.02],
+                'light_curve': [[2457000., 17.00, -0.02], [2457001., 17.01, np.nan], [2457002., 17.02, 0.02],
                        [2457003., np.inf, 0.02], [2457004., 17.04, -0.02], [2457005., 17.05, 0.02],
                        [2457006., np.nan, 0.02], [2457007., 17.09, 0.02], [2457008., 17.2, 0.02],
                        [2457006., 17.0, np.inf], [2457007., 17.09, 0.02], [2457008., 17.2, 0.02], ],
@@ -194,12 +194,16 @@ class BadLightCurvesTest:
         light_curves = [dict]
         config['light_curves'] = light_curves
 
-        log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=True)
-        analyst = LightCurveAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
+        log = logs.start_log(path_outputs, 'debug',
+                             event_name=config['event_name'], stream=True
+                             )
+        analyst = LightCurveAnalyst(config['event_name'], path_outputs,
+                                    light_curves, log, config_dict=config
+                                    )
         analyst.perform_quality_check()
 
         for entry in analyst.light_curves:
-            lc = entry['lc']
+            lc = entry['light_curve']
 
             negative_errs = np.where(lc[:, 2] < 0)
             assert len(negative_errs[0]) == len([])

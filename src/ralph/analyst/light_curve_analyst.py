@@ -36,10 +36,10 @@ class LightCurveAnalyst(Analyst):
 
         if (config_dict != None):
             self.add_lc_config(config_dict)
-        elif("lc_analyst" in self.config):
+        elif('lc_analyst' in self.config):
             self.add_lc_config(self.config)
         else:
-            self.log.error("LC Analyst: Error! Light Curve Analyst needs information.")
+            self.log.error('LC Analyst: Error! Light Curve Analyst needs information.')
             quit()
 
 
@@ -50,9 +50,9 @@ class LightCurveAnalyst(Analyst):
         :param config_dict: dict, dictionary with analyst config
         """
 
-        self.log.debug("LC Analyst: Reading lc config.")
-        self.acceptable_mag_range = config["lc_analyst"].get("acceptable_mag_range", None)
-        self.log.debug("LC Analyst: Finished reading lc config.")
+        self.log.debug('LC Analyst: Reading lc config.')
+        self.acceptable_mag_range = config['lc_analyst'].get('acceptable_mag_range', None)
+        self.log.debug('LC Analyst: Finished reading lc config.')
 
     def perform_quality_check(self):
         """
@@ -60,27 +60,27 @@ class LightCurveAnalyst(Analyst):
         A cleaned light curve will replace the old entry.
         """
 
-        self.log.info("LC Analyst: Start quality check.")
+        self.log.info('LC Analyst: Start quality check.')
         for entry in self.light_curves:
             #extract np array with the light curve
-            lc = np.array(entry["lc"])
+            lc = np.array(entry['light_curve'])
 
-            self.log.debug("LC Analyst: Masking bad data.")
+            self.log.debug('LC Analyst: Masking bad data.')
             mask_duplicate = self.flag_duplicate_entries(lc)
             mask_inf_entry = self.flag_infinite_entries(lc)
             prel_mask = np.logical_and(mask_inf_entry, mask_duplicate)
             prel_lc = lc[prel_mask]
-            self.log.debug("LC Analyst: Applying non numerical and duplicates mask.")
+            self.log.debug('LC Analyst: Applying non numerical and duplicates mask.')
 
             mask_inv_mags = self.flag_invalid_mags(prel_lc)
-            self.log.debug("LC Analyst: Applying bad data mask.")
+            self.log.debug('LC Analyst: Applying bad data mask.')
             cleaned_lc = prel_lc[mask_inv_mags]
 
             mask_neg_err = self.flag_negative_errorbars(prel_lc)
             fin_lc = cleaned_lc[mask_neg_err]
-            entry["lc"] = fin_lc
+            entry['light_curve'] = fin_lc
 
-        self.log.info("LC Analyst: Quality check ended.")
+        self.log.info('LC Analyst: Quality check ended.')
 
 
     def flag_infinite_entries(self, light_curve):
@@ -126,7 +126,9 @@ class LightCurveAnalyst(Analyst):
 
         custom_range = self.acceptable_mag_range
         if custom_range is not None:
-            mask_inv_mag = np.where((light_curve[:, 1] > custom_range["upper_limit"]) & (light_curve[:, 1] < custom_range["lower_limit"]))
+            mask_inv_mag = np.where((light_curve[:, 1] > custom_range['upper_limit']) &
+                                    (light_curve[:, 1] < custom_range['lower_limit'])
+                                    )
         else:
             mask_inv_mag = np.where((light_curve[:, 1] > -10) & (light_curve[:, 1] < 40))
 
