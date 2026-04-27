@@ -58,7 +58,7 @@ scenario_gsa = {
         },
         'light_curves' : [
             {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
                 'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_GSA_G.dat',
@@ -112,26 +112,22 @@ class FitAnalystTest:
             band = entry['band']
             data = input_tools.load_light_curve_from_path(entry['path'])
 
-            if  any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+            ephemeris = None
+            if entry is 'ephemeris':
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols = (0,1,2,3),
                 )
 
+            if 'GDR3-ULENS' in config['event_name'] and 'Gaia' in survey:
                 data[:, 0] = data[:, 0] + 2450000.0
 
-                light_curves.append({
-                    'light_curve': data,
-                    'ephemeris': ephemeris,
-                    'survey': survey,
-                    'band': band,
-                })
-            else:
-                light_curves.append({
-                    'light_curve': data,
-                    'survey': survey,
-                    'band': band,
-                })
+            light_curves.append({
+                'light_curve': data,
+                'ephemeris': ephemeris,
+                'survey': survey,
+                'band': band,
+            })
 
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=True)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
@@ -166,28 +162,22 @@ class FitAnalystTest:
             band = entry['band']
             data = input_tools.load_light_curve_from_path(entry['path'])
 
-            if any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+            ephemeris = None
+            if entry == 'ephemeris':
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols=(0, 1, 2, 3),
                 )
 
+            if 'GDR3-ULENS' in config['event_name'] and 'Gaia' in survey:
                 data[:, 0] = data[:, 0] + 2450000.0
 
-                light_curves.append({
-                    'light_curve': data,
-                    'ephemeris': ephemeris,
-                    'survey': survey,
-                    'band': band,
-                }
-                )
-            else:
-                light_curves.append({
-                    'light_curve': data,
-                    'survey': survey,
-                    'band': band,
-                }
-                )
+            light_curves.append({
+                'light_curve': data,
+                'ephemeris': ephemeris,
+                'survey': survey,
+                'band': band,
+            })
 
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=False)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
@@ -218,28 +208,22 @@ class FitAnalystTest:
             band = entry['band']
             data = input_tools.load_light_curve_from_path(entry['path'])
 
-            if any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+            ephemeris = None
+            if entry is 'ephemeris':
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols=(0, 1, 2, 3),
                 )
 
+            if 'GDR3-ULENS' in config['event_name'] and 'Gaia' in survey:
                 data[:, 0] = data[:, 0] + 2450000.0
 
-                light_curves.append({
-                    'light_curve': data,
-                    'ephemeris': ephemeris,
-                    'survey': survey,
-                    'band': band,
-                }
-                )
-            else:
-                light_curves.append({
-                    'light_curve': data,
-                    'survey': survey,
-                    'band': band,
-                }
-                )
+            light_curves.append({
+                'light_curve': data,
+                'ephemeris': ephemeris,
+                'survey': survey,
+                'band': band,
+            })
 
         log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=False)
         analyst = FitAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)

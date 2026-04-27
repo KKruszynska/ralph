@@ -52,7 +52,7 @@ scenario_gsa = {
         },
         'light_curves' : [
             {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
                 'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat',
             },
@@ -183,7 +183,7 @@ class BadLightCurvesTest:
         config['lc_analyst']['n_max'] = 10.
 
         dict = {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
                 'lc': [[2457000., 17.00, -0.02], [2457001., 17.01, np.nan], [2457002., 17.02, 0.02],
                        [2457003., np.inf, 0.02], [2457004., 17.04, -0.02], [2457005., 17.05, 0.02],

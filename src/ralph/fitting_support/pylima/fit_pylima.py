@@ -42,6 +42,7 @@ class fitPylima(Fitter):
         survey_to_align = ''
         max_n_points = 0
         for entry in light_curves:
+
             lc = np.array(entry['light_curve'])
             survey = entry['survey']
             band = entry['band']
@@ -53,16 +54,15 @@ class fitPylima(Fitter):
                 max_n_points = len(lc[:,0])
                 t_min, t_max = np.min(lc[:,0]), np.max(lc[:,0])
 
-            if 'Gaia' in survey:
-                # get spacecraft positions
-                if entry['ephemeris'] is not None:
-                    self.log.debug('Loading provided ephemeris for Gaia.')
-                    ephemeris = entry['ephemeris']
-                else:
-                    self.log.debug('Downloading ephemeris from JPL for Gaia.')
-                    ephemeris = JPL_ephemerides.horizons_API('Gaia',
-                                                             lc[:,0],
-                                                             observatory='Geocentric')[1]
+
+            if entry['ephemeris'] is not None:
+                self.log.debug('Loading provided ephemeris.')
+                ephemeris = entry['ephemeris']
+            # elif any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+            #     self.log.debug('Downloading ephemeris from JPL for Gaia.')
+            #     ephemeris = JPL_ephemerides.horizons_API('Gaia',
+            #                                              lc[:,0],
+            #                                              observatory='Geocentric')[1]
 
                 spacecraft_positions = {
                     'photometry': ephemeris
@@ -75,9 +75,10 @@ class fitPylima(Fitter):
                     lightcurve_names = ['time', 'mag', 'err_mag'],
                     lightcurve_units = ['JD', 'mag', 'mag'],
                     location = 'Space',
-                    spacecraft_name = 'Gaia',
+                    spacecraft_name = survey,
                     spacecraft_positions = spacecraft_positions
                 )
+
             else:
                 telescope = telescopes.Telescope(
                     name = survey+'_'+band,

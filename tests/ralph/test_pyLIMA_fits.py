@@ -50,7 +50,7 @@ class TestPylima:
             lc_dict['survey'] = lc['survey']
             lc_dict['band'] = lc['band']
 
-            if 'Gaia' in lc_dict['survey']:
+            if 'ephemeris' in lc:
                 lc_dict['ephemeris'] = input_tools.load_ephemeris_from_path(
                     lc['ephemeris'],
                     # skip_header = 94,
@@ -58,13 +58,15 @@ class TestPylima:
                     usecols = (0,1,2,3),
                 )
 
-                data  = input_tools.load_light_curve_from_path(lc['path'])
+            data  = input_tools.load_light_curve_from_path(lc['path'])
+
+            if 'Gaia' in lc['survey']:
                 data[:, 0] = data[:, 0] + 2450000.0
-                lc_dict['light_curve'] = data
-            else:
-                lc_dict['light_curve'] = input_tools.load_light_curve_from_path(lc['path'])
+
+            lc_dict['light_curve'] = data
 
             light_curves.append(lc_dict)
+
         self.light_curves = light_curves
         self.event_name = scenario['event_name']
 
@@ -124,8 +126,8 @@ class TestPylima:
                   f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}\n"
                   )
 
-        assert pytest.approx(params['t0'], abs=0.01) == 2457499.76
-        assert pytest.approx(params['u0'], abs=0.01) == -0.28
+        assert pytest.approx(params['t0'], abs=0.01) == 2457499.77
+        assert pytest.approx(params['u0'], abs=0.01) == -0.283
         assert pytest.approx(params['tE'], abs=0.01) == 115.73
         logs.close_log(log)
 
@@ -164,11 +166,11 @@ class TestPylima:
                   f"piEE = {params['piEE']:.3f} +- {params['piEE_error']:.3f}\n"
                   )
 
-        assert pytest.approx(params['t0'], abs=0.01) == 2457487.76
-        assert pytest.approx(params['u0'], abs=0.01) == 0.11
-        assert pytest.approx(params['tE'], abs=0.01) == 176.19
-        assert pytest.approx(params['piEN'], abs=0.01) == 0.58
-        assert pytest.approx(params['piEE'], abs=0.01) == 0.30
+        assert pytest.approx(params['t0'], abs=0.01) == 2457487.77
+        assert pytest.approx(params['u0'], abs=0.01) == 0.119
+        assert pytest.approx(params['tE'], abs=0.01) == 176.20
+        assert pytest.approx(params['piEN'], abs=0.01) == 0.582
+        assert pytest.approx(params['piEE'], abs=0.01) == 0.305
 
         logs.close_log(log)
 
