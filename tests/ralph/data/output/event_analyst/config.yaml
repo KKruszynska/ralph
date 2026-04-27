@@ -18,7 +18,7 @@ cmd_analyst:
                 - Gaia_G
                 - Gaia_BP
                 - Gaia_RP
-            cmd_path: tests/ralph/data/input/cmd/gdr3-ulens-025_result.csv
+            cmd_path: tests/ralph/data/input/cmd/gdr3_ulens_025_result.csv
             cmd_separator: ","
 
 light_curves:

@@ -22,35 +22,10 @@ scenario_file_cat = {
                  [{'name': 'Gaia_DR3',
                    'band': ['Gaia_G', 'Gaia_BP', 'Gaia_RP'],
                    'cmd_path':
-                       'tests/ralph/data/input/cmd/gdr3-ulens-025_result.csv',
+                       'tests/ralph/data/input/cmd/gdr3_ulens_025_result.csv',
                    'cmd_separator': ','},
                 ]
              },
-        'light_curves' : [
-            {
-                'survey': 'Gaia',
-                'band': 'G',
-                'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
-           },
-            {
-                'survey': 'Gaia',
-                'band': 'BP',
-                'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_BP.dat',
-                },
-            {
-                'survey': 'Gaia',
-                'band': 'RP',
-                'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_RP.dat',
-            },
-            {
-                'survey': 'OGLE',
-                'band': 'I',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_OGLE.dat',
-            },
-        ]
     }
 }
 
@@ -69,10 +44,10 @@ scenario_gsa = {
         },
         'light_curves' : [
             {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_GSA_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat',
             },
             {
                 'survey': 'LCO',
@@ -107,7 +82,7 @@ scenario_kwu = {
         },
         'light_curves' : [
             {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
                 'path' : 'tests/ralph/data/input/light_curves/AT2024kwu_Gaia_G.dat',
@@ -140,7 +115,6 @@ scenario_kwu = {
         ]
 }
 
-
 class EventAnalystTest:
     """
     Class with Event Analyst tests
@@ -164,14 +138,9 @@ class EventAnalystTest:
         event_analyst.parse_config(analyst_path+'config.yaml')
 
         assert type(event_analyst.config) is type(self.scenario.get('config_final'))
-        print('parsed config:')
+
         for element in event_analyst.config:
-            print(element, event_analyst.config[element])
-        print('==============================')
-        print('Config parsed should look like')
-        for element in self.scenario.get('config_final'):
-            print(element, self.scenario.get('config_final')[element])
-        assert event_analyst.config is self.scenario.get('config_final')
+            assert event_analyst.config[element] == self.scenario.get('config_final')[element]
 
     def test_run_analyst(self):
         """

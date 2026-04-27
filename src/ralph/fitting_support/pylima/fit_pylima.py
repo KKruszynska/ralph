@@ -55,7 +55,7 @@ class fitPylima(Fitter):
                 t_min, t_max = np.min(lc[:,0]), np.max(lc[:,0])
 
 
-            if entry['ephemeris'] is not None:
+            if 'ephemeris' in entry and entry['ephemeris'] is not None:
                 self.log.debug('Loading provided ephemeris.')
                 ephemeris = entry['ephemeris']
             # elif any(s in entry['survey'] for s in ['Gaia', 'GSA']):

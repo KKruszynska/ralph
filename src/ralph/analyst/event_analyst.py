@@ -9,7 +9,7 @@ from ralph.analyst.analyst import Analyst
 from ralph.analyst.cmd_analyst import CmdAnalyst
 from ralph.analyst.fit_analyst import FitAnalyst
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
-from ralph.toolbox import logs
+from ralph.toolbox import logs, input_tools
 
 
 class EventAnalyst(Analyst):
@@ -44,9 +44,9 @@ class EventAnalyst(Analyst):
 
         # start
         self.log = logs.start_log(self.analyst_path, log_level, event_name=self.event_name, stream=stream)
-        self.log.info("-------------------------------------------")
-        self.log.info(f"Event Analyst: Analyzing event {event_name:s}")
-        self.log.info("-------------------------------------------")
+        self.log.info('-------------------------------------------')
+        self.log.info(f'Event Analyst: Analyzing event {event_name:s}')
+        self.log.info('-------------------------------------------')
 
         if config_path is not None:
             self.parse_config(config_path)
@@ -54,7 +54,7 @@ class EventAnalyst(Analyst):
         elif config_dict is not None:
             self.add_config_dict(config_dict)
         else:
-            self.log.error("Event Analyst: Error! Event Analyst needs information.")
+            self.log.error('Event Analyst: Error! Event Analyst needs information.')
             quit()
 
     def parse_event_config(self, config_path):
@@ -65,39 +65,39 @@ class EventAnalyst(Analyst):
         """
 
         try:
-            file_format = config_path.split(".")[-1]
+            file_format = config_path.split('.')[-1]
 
-            if file_format == "yaml":
+            if file_format == 'yaml':
                 with open(config_path, 'r') as file:
                     event_config = yaml.safe_load(file)
-            elif file_format == "json":
+            elif file_format == 'json':
                 with open(config_path, 'r') as file:
                     event_config = json.load(file)
                     file.close()
 
-            if "lc_analyst" in event_config:
-                self.config["lc_analyst"] = event_config.get("lc_analyst")
-                self.log.info("Event Analyst: Light Curve Analyst configuration received.")
+            if 'lc_analyst' in event_config:
+                self.config['lc_analyst'] = event_config.get('lc_analyst')
+                self.log.info('Event Analyst: Light Curve Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No Light Curve Analyst config, it will not be launched.')
 
-            if "fit_analyst" in event_config:
-                self.config["fit_analyst"] = event_config.get("fit_analyst")
-                self.log.info("Event Analyst: Fit Analyst configuration received.")
+            if 'fit_analyst' in event_config:
+                self.config['fit_analyst'] = event_config.get('fit_analyst')
+                self.log.info('Event Analyst: Fit Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No Fit Analyst config, it will not be launched.')
 
-            if "cmd_analyst" in event_config:
-                self.config["cmd_analyst"] = event_config.get("cmd_analyst")
-                self.log.info("Event Analyst: CMD Analyst configuration received.")
+            if 'cmd_analyst' in event_config:
+                self.config['cmd_analyst'] = event_config.get('cmd_analyst')
+                self.log.info('Event Analyst: CMD Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No CMD Analyst config, it will not be launched.')
 
-            self.light_curves = self.parse_light_curves(event_config.get("light_curves"))
-            self.log.info("Event Analyst: Light curves received.")
+            self.light_curves = self.parse_light_curves(event_config.get('light_curves'))
+            self.log.info('Event Analyst: Light curves received.')
 
         except Exception as err:
-            self.log.error("Event Analyst: %s, %s" % (err, type(err)))
+            self.log.error('Event Analyst: %s, %s' % (err, type(err)))
 
     def add_config_dict(self, conifg_dict):
         """
@@ -108,28 +108,28 @@ class EventAnalyst(Analyst):
         """
 
         try:
-            self.light_curves = self.parse_light_curves(conifg_dict.get("light_curves"))
+            self.light_curves = self.parse_light_curves(conifg_dict.get('light_curves'))
 
-            if "lc_analyst" in conifg_dict:
-                self.config["lc_analyst"] = conifg_dict.get("lc_analyst")
-                self.log.info("Event Analyst: Light Curve Analyst configuration received.")
+            if 'lc_analyst' in conifg_dict:
+                self.config['lc_analyst'] = conifg_dict.get('lc_analyst')
+                self.log.info('Event Analyst: Light Curve Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No Light Curve Analyst config, it will not be launched.')
 
-            if "fit_analyst" in conifg_dict:
-                self.config["fit_analyst"] = conifg_dict.get("fit_analyst")
-                self.log.info("Event Analyst: Fit Analyst configuration received.")
+            if 'fit_analyst' in conifg_dict:
+                self.config['fit_analyst'] = conifg_dict.get('fit_analyst')
+                self.log.info('Event Analyst: Fit Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No Fit Analyst config, it will not be launched.')
 
-            if "cmd_analyst" in conifg_dict:
-                self.config["cmd_analyst"] = conifg_dict.get("cmd_analyst")
-                self.log.info("Event Analyst: CMD Analyst configuration received.")
+            if 'cmd_analyst' in conifg_dict:
+                self.config['cmd_analyst'] = conifg_dict.get('cmd_analyst')
+                self.log.info('Event Analyst: CMD Analyst configuration received.')
             else:
-                self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
+                self.log.info('Event Analyst: No CMD Analyst config, it will not be launched.')
 
         except Exception as err:
-            self.log.error("Event Analyst: %s, %s" % (err, type(err)))
+            self.log.error('Event Analyst: %s, %s' % (err, type(err)))
 
     def parse_light_curves(self, lc_config):
         """
@@ -139,27 +139,36 @@ class EventAnalyst(Analyst):
         """
         light_curves = []
         for entry in lc_config:
-            survey = entry["survey"]
-            band = entry["band"]
-            if "path" in entry:
-                light_curve = np.genfromtxt(entry["path"], unpack=True)
-                light_curves.append({
-                    "lc": light_curve,
-                    "survey": survey,
-                    "band": band
-                })
-            elif "light_curve" in entry:
-                if type(entry["light_curve"]) is type([1,1]):
-                    light_curve = entry["light_curve"]
+            survey = entry['survey']
+            band = entry['band']
+
+            if 'path' in entry:
+                light_curve = input_tools.load_light_curve_from_path(entry['path'])
+
+                if 'ephemeris' in entry:
+                    ephemeris = input_tools.load_ephemeris_from_path(
+                        entry['ephemeris'],
+                        usecols=(0, 1, 2, 3),
+                    )
+
+                    light_curves.append({
+                        'light_curve': light_curve,
+                        'ephemeris': ephemeris,
+                        'survey': survey,
+                        'band': band,
+
+                    })
+                    self.log.debug(f'Event Analyst: Loaded light curve with ephemeris for {survey}, {band}.')
                 else:
-                    light_curve = json.loads(entry["light_curve"])
-                light_curves.append({
-                    "light_curve": light_curve,
-                    "survey": survey,
-                    "band": band
-                })
+                    light_curves.append({
+                        'light_curve': light_curve,
+                        'survey': survey,
+                        'band': band,
+
+                    })
+                    self.log.debug(f'Event Analyst: Loaded light curve without ephemeris for {survey}, {band}.')
             else:
-                self.log.error("Event Analyst: Problem! No light curve data specified")
+                self.log.error('Event Analyst: Problem! No light curve data specified')
 
         return light_curves
 
@@ -172,19 +181,19 @@ class EventAnalyst(Analyst):
         :return: status?
         """
 
-        self.log.info("Event Analyst: Processing started.")
+        self.log.info('Event Analyst: Processing started.')
 
-        if "lc_analyst" in self.config:
+        if 'lc_analyst' in self.config:
             self.run_lc_analyst()
 
-        if "fit_analyst" in self.config:
+        if 'fit_analyst' in self.config:
             self.run_fit_analyst()
 
-        if "cmd_analyst" in self.config:
+        if 'cmd_analyst' in self.config:
             self.run_cmd_analyst()
 
-        self.log.info("Event Analyst: Processing finished.")
-        self.log.info("-------------------------------------------")
+        self.log.info('Event Analyst: Processing finished.')
+        self.log.info('-------------------------------------------')
         logs.close_log(self.log)
 
     def run_lc_analyst(self):
@@ -195,36 +204,36 @@ class EventAnalyst(Analyst):
 
         lc_quality_status = False
 
-        self.log.info("Event Analyst: Starting Light Curve Analyst.")
+        self.log.info('Event Analyst: Starting Light Curve Analyst.')
         lc_analyst = LightCurveAnalyst(self.event_name, self.analyst_path, self.light_curves,
                                        self.log,
                                        config_dict=self.config
                                        )
-        self.log.debug("Event Analyst: Light Curve Analyst Created.")
-        self.log.debug("Event Analyst: Starting Light Curve quality check.")
+        self.log.debug('Event Analyst: Light Curve Analyst Created.')
+        self.log.debug('Event Analyst: Starting Light Curve quality check.')
         lc_quality_status = lc_analyst.perform_quality_check()
-        self.log.debug("Event Analyst: Light Curve quality check ended.")
+        self.log.debug('Event Analyst: Light Curve quality check ended.')
 
         if lc_quality_status:
-            self.log.info("Event Analyst: Lc quality procedures finished successfully.")
+            self.log.info('Event Analyst: Lc quality procedures finished successfully.')
         else:
-            self.log.info("Event Analyst: LC Analyst finished with errors.")
+            self.log.info('Event Analyst: LC Analyst finished with errors.')
 
     def run_fit_analyst(self):
         """
         Launch Fit Analyst to find all fitting microlensing events.
         """
 
-        self.log.info("Event Analyst: Starting Fit Analyst.")
+        self.log.info('Event Analyst: Starting Fit Analyst.')
         fit_analyst = FitAnalyst(self.event_name, self.analyst_path, self.light_curves,
                                  self.log,
                                  config_dict=self.config
                                  )
-        self.log.debug("Event Analyst: Fit Analyst created.")
-        self.log.debug("Event Analyst: Starting fitting.")
+        self.log.debug('Event Analyst: Fit Analyst created.')
+        self.log.debug('Event Analyst: Starting fitting.')
         fit_analyst.perform_fit()
         self.fit_results = fit_analyst.best_results
-        self.log.debug("Event Analyst: Fitting finished.")
+        self.log.debug('Event Analyst: Fitting finished.')
 
     def run_cmd_analyst(self):
         """
@@ -234,8 +243,8 @@ class EventAnalyst(Analyst):
         """
         cmd_plot_status = []
 
-        for dictionary in self.config["cmd_analyst"]["catalogues"]:
-            catalogue = dictionary["name"]
+        for dictionary in self.config['cmd_analyst']['catalogues']:
+            catalogue = dictionary['name']
             for solution in self.fit_results:
                 results = self.fit_results[solution]
                 bands = analyst_tools.cmd_catalogues_to_bands(catalogue)
@@ -246,22 +255,22 @@ class EventAnalyst(Analyst):
                     no_total, no_blend = True, True
                     for i, key in enumerate(results):
                         if b in key:
-                            if "total" in key:
+                            if 'total' in key:
                                 no_total = False
-                                if "mag_err" in key:
+                                if 'mag_err' in key:
                                     base_err = results[key]
-                                elif "mag" in key:
+                                elif 'mag' in key:
                                     base_mag = results[key]
-                            elif "source" in key:
-                                if "mag_err" in key:
+                            elif 'source' in key:
+                                if 'mag_err' in key:
                                     source_err = results[key]
-                                elif "mag" in key:
+                                elif 'mag' in key:
                                     source_mag = results[key]
-                            elif "blend" in key:
+                            elif 'blend' in key:
                                 no_blend = False
-                                if "mag_err" in key:
+                                if 'mag_err' in key:
                                     blend_err = results[key]
-                                elif "mag" in key:
+                                elif 'mag' in key:
                                     blend_mag = results[key]
 
                     source[b] = [source_mag, source_err]
@@ -273,108 +282,108 @@ class EventAnalyst(Analyst):
                         blend[b] = [blend_mag, blend_err]
                         fs, fb = source[b], blend[b]
                         base[b] = analyst_tools.get_baseline_mag(fs[0], fs[1], fb[0], fb[1],
-                                                                 self.config["fit_analyst"]["fitting_package"],
+                                                                 self.config['fit_analyst']['fitting_package'],
                                                                  self.log)
                     elif no_blend and base_mag is not None:
                         base[b] = [base_mag, base_err]
                         fs, fbase = source[b], base[b]
                         blend[b] = analyst_tools.get_blend_mag(fs[0], fs[1], fbase[0], fbase[1],
-                                                               self.config["fit_analyst"]["fitting_package"],
+                                                               self.config['fit_analyst']['fitting_package'],
                                                                self.log)
                     else:
                         base[b] = [base_mag, base_err]
                         blend[b] = [blend_mag, blend_err]
 
 
-                self.log.info("Event Analyst: Starting CMD analyst for %s" % catalogue)
+                self.log.info('Event Analyst: Starting CMD analyst for %s' % catalogue)
                 light_curve_data = {'baseline': base,
                                     'source': source,
                                     'blend': blend}
-                self.log.debug("Event Analyst: Got light curve data.")
+                self.log.debug('Event Analyst: Got light curve data.')
 
-                cmd_analyst = CmdAnalyst(self.config["event_name"]+"_"+solution, self.analyst_path, catalogue, light_curve_data,
+                cmd_analyst = CmdAnalyst(self.config['event_name']+'_'+solution, self.analyst_path, catalogue, light_curve_data,
                                          self.log,
                                          config_dict=self.config
                                          )
-                self.log.debug("Event Analyst: CMD Analyst created.")
+                self.log.debug('Event Analyst: CMD Analyst created.')
 
                 source_data, source_labels = cmd_analyst.transform_source_data()
-                self.log.debug("Event Analyst: Finished transforming source data.")
+                self.log.debug('Event Analyst: Finished transforming source data.')
 
                 cmd_data, cmd_labels = cmd_analyst.load_catalogue_data()
-                self.log.debug("Event Analyst: Finished loading catalogue data.")
+                self.log.debug('Event Analyst: Finished loading catalogue data.')
 
                 plot_status = cmd_analyst.plot_cmd(source_data, source_labels, cmd_data, cmd_labels)
-                self.log.debug("Event Analyst: finished creating plot.")
+                self.log.debug('Event Analyst: finished creating plot.')
                 if plot_status:
-                    self.log.info(f"Event Analyst: CMD plot created successfully for {catalogue:s}.")
+                    self.log.info(f'Event Analyst: CMD plot created successfully for {catalogue:s}.')
                 else:
-                    self.log.error(f"Event Analyst: Problems while creating CMD plot for {catalogue:s}.")
+                    self.log.error(f'Event Analyst: Problems while creating CMD plot for {catalogue:s}.')
 
 
-if __name__ == "__main__":
-    log_level = ""
+if __name__ == '__main__':
+    log_level = ''
     stream = False
-    event = ""
-    analyst_path = ""
-    config_path = ""
+    event = ''
+    analyst_path = ''
+    config_path = ''
     error = False
-    error_string = ""
-    print("============================= Hello!!")
+    error_string = ''
+    print('============================= Hello!!')
 
-    if "--event_name" in sys.argv:
-        idx = sys.argv.index("--event_name")
+    if '--event_name' in sys.argv:
+        idx = sys.argv.index('--event_name')
         event += sys.argv[idx + 1]
     else:
         error = True
-        error_string += "Event Analyst: Error! Missing event name!\n"
+        error_string += 'Event Analyst: Error! Missing event name!\n'
 
-    if "--analyst_path" in sys.argv:
-        idx = sys.argv.index("--analyst_path")
+    if '--analyst_path' in sys.argv:
+        idx = sys.argv.index('--analyst_path')
         analyst_path += sys.argv[idx + 1]
     else:
         error = True
-        error_string += "Event Analyst: Error! Missing analyst path!\n"
+        error_string += 'Event Analyst: Error! Missing analyst path!\n'
 
-    if "--log_level" in sys.argv:
-        idx = sys.argv.index("--log_level")
+    if '--log_level' in sys.argv:
+        idx = sys.argv.index('--log_level')
         log_level += sys.argv[idx + 1]
     else:
         error = True
-        error_string += "Event Analyst: Error! Missing log level information!\n"
+        error_string += 'Event Analyst: Error! Missing log level information!\n'
 
-    if "--stream" in sys.argv:
-        idx = sys.argv.index("--stream")
-        if sys.argv[idx + 1] == "True":
+    if '--stream' in sys.argv:
+        idx = sys.argv.index('--stream')
+        if sys.argv[idx + 1] == 'True':
             stream = True,
         else:
             stream = False
 
-    if "--config_path" in sys.argv:
-        idx = sys.argv.index("--config_path")
+    if '--config_path' in sys.argv:
+        idx = sys.argv.index('--config_path')
         config_path += sys.argv[idx + 1]
         event_analyst = EventAnalyst(event, analyst_path, log_level,
                                      config_path=config_path,
                                      stream=stream
                                      )
-    elif "--config_dict" in sys.argv:
-        idx = sys.argv.index("--config_dict")
+    elif '--config_dict' in sys.argv:
+        idx = sys.argv.index('--config_dict')
         config = json.loads(sys.argv[idx + 1])
         event_analyst = EventAnalyst(event, analyst_path, log_level,
                                      config_dict=config
                                      )
     else:
         error = True
-        error_string += "Event Analyst: Error! No config specified!"
+        error_string += 'Event Analyst: Error! No config specified!'
 
     if error:
         if (len(log_level) > 0) and (len(analyst_path) > 0):
             log = logs.start_log(analyst_path, log_level, event_name=event, stream=stream)
-            log.error("Event Analyst: Error encountered while running an Event Analyst.\n")
+            log.error('Event Analyst: Error encountered while running an Event Analyst.\n')
             log.error(error_string)
             logs.close_log(log)
         else:
-            print("Event Analyst: Error encountered while running an Event Analyst.\n")
+            print('Event Analyst: Error encountered while running an Event Analyst.\n')
             print(error_string)
     else:
         event_analyst.run_single_analyst()
