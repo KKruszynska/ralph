@@ -113,7 +113,7 @@ class FitAnalystTest:
             data = input_tools.load_light_curve_from_path(entry['path'])
 
             ephemeris = None
-            if entry is 'ephemeris':
+            if entry == 'ephemeris':
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols = (0,1,2,3),
@@ -209,7 +209,7 @@ class FitAnalystTest:
             data = input_tools.load_light_curve_from_path(entry['path'])
 
             ephemeris = None
-            if entry is 'ephemeris':
+            if entry == 'ephemeris':
                 ephemeris = input_tools.load_ephemeris_from_path(
                     entry['ephemeris'],
                     usecols=(0, 1, 2, 3),
