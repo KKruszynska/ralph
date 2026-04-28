@@ -4,9 +4,10 @@ dec: -29.8162
 
 lc_analyst:
     n_max : 10
+    ongoing_magnification_thershold: 1.10
+    ongoing_amplitude_thershold: 1.0
 
 fit_analyst:
-    n_max : 10
     fitting_package: pylima
 
 cmd_analyst:
@@ -20,28 +21,31 @@ cmd_analyst:
 light_curves:
     - survey: Gaia
       band: G
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_mod_G.dat
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_G.dat
 
     - survey: Gaia
       band: BP
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_mod_BP.dat
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_BP.dat
 
     - survey: Gaia
       band: RP
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_mod_RP.dat
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_RP.dat
 
     - survey: OGLE
       band: I
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_corr_OGLE-2016-BLG-1396.dat
+      path: tests/ralph/data/input/light_curves/OGLE_2016_BLG_1396_I.dat
 
     - survey: KMTNet_A
       band: I
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_clean_KMT-2016-BLG-0738_KMTA_I.dat
+      path: tests/ralph/data/input/light_curves/KMT_2016_BLG_0738_KMTA_I.dat
 
     - survey: KMTNet_C
       band: I
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_clean_KMT-2016-BLG-0738_KMTC_I.dat
+      path: tests/ralph/data/input/light_curves/KMT_2016_BLG_0738_KMTC_I.dat
 
     - survey: KMTNet_S
       band: I
-      path: /home/katarzyna/Documents/Microlensing_Fitting_Pipeline/Microlensing_Fitting_Pipeline/tests/test_controller/light_curves/GaiaDR3-ULENS-018_clean_KMT-2016-BLG-0738_KMTS_I.dat
+      path: tests/ralph/data/input/light_curves/KMT_2016_BLG_0738_KMTS_I.dat
