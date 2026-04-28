@@ -11,11 +11,11 @@ scenario_file_cat = {
         'dec': -27.3788,
         'lc_analyst': {
             'n_max': 10,
+            'ongoing_magnification_thershold': 1.10,
+            'ongoing_amplitude_thershold': 1.0,
              },
         'fit_analyst': {
             'fitting_package': 'pylima',
-            'ongoing_magnification_thershold': 1.10,
-            'ongoing_amplitude_thershold': 1.0,
         },
         'cmd_analyst':
             {'catalogues':
@@ -36,11 +36,11 @@ scenario_gsa = {
         'analyst_path': 'tests/ralph/data/output/event_analyst/',
         'lc_analyst': {
             'n_max': 10,
+            'ongoing_magnification_thershold': 1.10,
+            'ongoing_amplitude_thershold': 1.0,
         },
         'fit_analyst': {
             'fitting_package': 'pylima',
-            'ongoing_magnification_thershold': 1.10,
-            'ongoing_amplitude_thershold': 1.0,
         },
         'light_curves' : [
             {
@@ -74,11 +74,11 @@ scenario_kwu = {
         'analyst_path': 'tests/ralph/data/output/event_analyst/',
         'lc_analyst': {
             'n_max': 10,
+            'ongoing_magnification_thershold': 1.10,
+            'ongoing_amplitude_thershold': 1.0,
         },
         'fit_analyst': {
             'fitting_package': 'pylima',
-            'ongoing_magnification_thershold': 1.10,
-            'ongoing_amplitude_thershold': 1.0,
         },
         'light_curves' : [
             {
