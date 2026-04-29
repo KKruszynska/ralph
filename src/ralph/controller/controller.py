@@ -143,8 +143,7 @@ class Controller:
                     will look for information in their config files.'
                 )
                 command.append('--config_path')
-                command.append(f"{self.config['events_path']}{str(event)}\
-                               /config.{self.config['config_type']}"
+                command.append(f"{self.config['events_path']}{str(event)}/config.{self.config['config_type']}"
                                )
 
             commands.append(command)

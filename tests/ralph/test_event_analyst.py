@@ -1,12 +1,12 @@
 from ralph.analyst.event_analyst import EventAnalyst
 
 scenario_file_cat = {
-    'event_name' : 'GaiaDR3-ULENS-025',
+    'event_name' : 'GaiaDR3_ULENS_025',
     'ra' : 260.8781,
     'dec' : -27.3788,
     'analyst_path' : 'tests/ralph/data/output/event_analyst/',
     'config_final' : {
-        'event_name': 'GaiaDR3-ULENS-025',
+        'event_name': 'GaiaDR3_ULENS_025',
         'ra': 260.8781,
         'dec': -27.3788,
         'lc_analyst': {

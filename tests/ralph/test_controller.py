@@ -1,34 +1,5 @@
 from ralph.controller.controller import Controller
 
-
-class TestControllerPaths:
-    """
-    Tests to check if controller works fine.
-    """
-
-    def test_launch_analysts(self):
-
-
-        event_list = [#'GaiaDR3-ULENS-018',
-                      'GaiaDR3-ULENS-025'
-                      ]
-        config = {
-            'python_compiler': 'python',
-            'group_processing_limit': 1,
-            'events_path':
-                'tests/test_controller/',
-            'software_dir':
-                'MFPipeline/analyst/',
-            'config_type': 'yaml',
-            'log_stream': False,
-            'log_location':
-                'tests/test_controller/',
-            'log_level': 'debug'
-            }
-
-        controller = Controller(event_list, config_dict=config)
-        controller.launch_analysts()
-
 # class TestControllerDicts:
 #     """
 #     Tests to check if controller works fine.
@@ -40,7 +11,7 @@ class TestControllerPaths:
 #
 #
 #         event_list = ['GaiaDR3-ULENS-018',
-#                       'GaiaDR3-ULENS-025',
+#                       'GaiaDR3_ULENS_025',
 #                       ]
 #
 #         event_info = pd.read_csv('tests/test_controller/events_info.csv', header=0)
@@ -52,7 +23,8 @@ class TestControllerPaths:
 #             dictionary = {}
 #             idx = event_info.index[event_info['#event_name'] == event].tolist()
 #             dictionary['event_name'] = event
-#             dictionary['ra'], dictionary['dec'] = '%f'%event_info['ra'].values[idx][0], '%f'%event_info['dec'].values[idx][0]
+#             dictionary['ra'], '%f'%event_info['ra'].values[idx][0]
+#             dictionary['dec'] = '%f'%event_info['dec'].values[idx][0]
 #             dictionary['lc_analyst'] = {}
 #             dictionary['lc_analyst']['n_max'] = '%d'%event_info['lc_nmax'].values[idx][0]
 #             dictionary['fit_analyst'] = {}
@@ -126,7 +98,7 @@ class TestControllerPaths:
 #         from MFPipeline.controller.controller import Controller
 #
 #         # event_list = ['Gaia24amo', 'Gaia24cbz', 'AT2024kwu', 'GaiaDR3-ULENS-018',
-#         #               'GaiaDR3-ULENS-025']
+#         #               'GaiaDR3_ULENS_025']
 #
 #         # event_list = ['Gaia24amo', 'AT2024kwu', 'GaiaDR3-ULENS-018']
 #         event_list = ['Gaia24amo']
@@ -148,7 +120,7 @@ class TestControllerPaths:
 #                 'ra': 271.119,
 #                 'dec': -29.8162,
 #             },
-#             'GaiaDR3-ULENS-025': {
+#             'GaiaDR3_ULENS_025': {
 #                 'ra': 260.8781,
 #                 'dec': -27.3788,
 #             },
@@ -243,10 +215,43 @@ class TestControllerPaths:
 #         controller = Controller(event_list, config_dict=config, analyst_dicts=analyst_jsons)
 #         controller.launch_analysts()
 
-class TestControllerPathsOngoing:
+class ControllerPathsTest:
     """
     Tests to check if controller works fine.
     """
+
+    def __init__(self,
+                 final_answers):
+        self.final_answers = final_answers
+
+    def test_launch_analysts(self):
+        event_list = [
+                      'GaiaDR3_ULENS_025',
+                      ]
+        config = {
+            'python_compiler': 'python',
+            'group_processing_limit': 1,
+            'events_path':
+                'tests/ralph/data/input/controller/',
+            'software_dir':
+                'src/ralph/analyst/',
+            'config_type': 'yaml',
+            'log_stream': False,
+            'log_location':
+                'tests/ralph/data/output/controller_launch/',
+            'log_level': 'debug'
+            }
+
+        controller = Controller(event_list, config_dict=config)
+        controller.launch_analysts()
+
+class ControllerPathsOngoingTest:
+    """
+    Tests to check if controller works fine.
+    """
+    def __init__(self,
+                 final_answers):
+        self.final_answers = final_answers
 
     def test_launch_analysts(self):
         """
@@ -256,21 +261,34 @@ class TestControllerPathsOngoing:
         # event_list = ['Gaia24amo', 'Gaia24cbz', 'AT2024kwu', 'GaiaDR3_ULENS_018',
         #               'GaiaDR3_ULENS_025']
 
-        event_list = ['AT2024kwu', 'GaiaDR3-ULENS-018']
+        event_list = ['AT2024kwu', 'GaiaDR3_ULENS_018']
 
         config = {
             'python_compiler': 'python',
             'group_processing_limit': 2,
-            'config_type': 'json',
+            'config_type': 'yaml',
             'events_path':
                 'tests/ralph/data/input/controller/',
             'software_dir':
                 'src/ralph/analyst/',
             'log_stream': False,
             'log_location':
-                'tests/ralph/data/output/controller/',
+                'tests/ralph/data/output/controller_analysts/',
             'log_level': 'debug'
         }
 
         controller = Controller(event_list, config_dict=config)
         controller.launch_analysts()
+
+def test_run():
+    """
+    Run all tests.
+    """
+
+    final_answers = []
+
+    test = ControllerPathsTest
+    test.test_launch_analysts(final_answers)
+
+    test = ControllerPathsOngoingTest
+    test.test_launch_analysts(final_answers)
