@@ -1,4 +1,4 @@
-event_name: GaiaDR3-ULENS-018
+event_name: GaiaDR3_ULENS_018
 ra: 271.1194
 dec: -29.8162
 
@@ -22,17 +22,17 @@ light_curves:
     - survey: Gaia
       band: G
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_G.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_Gaia_G.dat
 
     - survey: Gaia
       band: BP
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_BP.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_Gaia_BP.dat
 
     - survey: Gaia
       band: RP
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_RP.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_018_Gaia_RP.dat
 
     - survey: OGLE
       band: I
