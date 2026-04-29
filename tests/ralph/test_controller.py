@@ -217,7 +217,7 @@ from ralph.controller.controller import Controller
 
 class ControllerPathsTest:
     """
-    Tests to check if controller works fine.
+    Tests to check if controller works for a finished event.
     """
 
     def __init__(self,
@@ -225,6 +225,9 @@ class ControllerPathsTest:
         self.final_answers = final_answers
 
     def test_launch_analysts(self):
+        """
+        Run controller to check if it works.
+        """
         event_list = [
                       'GaiaDR3_ULENS_025',
                       ]
@@ -247,7 +250,7 @@ class ControllerPathsTest:
 
 class ControllerPathsOngoingTest:
     """
-    Tests to check if controller works fine.
+    Tests to check if controller works fine for ongoing events.
     """
     def __init__(self,
                  final_answers):
