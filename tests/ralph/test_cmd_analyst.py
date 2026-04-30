@@ -1,197 +1,177 @@
 import pandas as pd
 
 from ralph.analyst.cmd_analyst import CmdAnalyst
-from ralph.toolbox.logs import logs
+from ralph.toolbox import logs
 
 scenario_file = {
-        "path_input" : "tests/test_cmd/input/gdr3_ulens_025_result.csv",
-        "separator" : ",",
-        "path_outputs": "tests/test_cmd/output/",
-        "event_name": "GDR3-ULENS-025",
-        "ra": 260.8781,
-        "dec": -27.3788,
-        "catalogue_name": "Gaia_DR3",
-        "catalogue_bands" : ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-        "light_curve_data": {
-            "baseline": {
-                "Gaia_G": 16.12,
-                "Gaia_BP": 17.78,
-                "Gaia_RP": 14.88
+        'path_input' : 'tests/ralph/data/input/cmd/gdr3_ulens_025_result.csv',
+        'separator' : ',',
+        'path_outputs': 'tests/ralph/data/output/cmd_analyst/',
+        'event_name': 'GDR3_ULENS_025',
+        'ra': 260.8781,
+        'dec': -27.3788,
+        'catalogue_name': 'Gaia_DR3',
+        'catalogue_bands' : ['Gaia_G', 'Gaia_BP', 'Gaia_RP'],
+        'light_curve_data': {
+            'baseline': {
+                'Gaia_G': [16.12, 0.01, 0.01],
+                'Gaia_BP': [17.78, 0.01, 0.02],
+                'Gaia_RP': [14.88, 0.01, 0.02],
             },
-            "source": {
-                "Gaia_G": 16.14,
-                "Gaia_BP": 17.79,
-                "Gaia_RP": 14.91
+            'source': {
+                'Gaia_G': [16.14,  0.01, 0.01],
+                'Gaia_BP': [17.79, 0.02, 0.02],
+                'Gaia_RP': [14.91, 0.01, 0.02],
             },
-            "blend": {
-                "Gaia_G": 20.37,
-                "Gaia_BP": 22.78,
-                "Gaia_RP": 18.69
+            'blend': {
+                'Gaia_G': [20.37, 0.01, 0.01],
+                'Gaia_BP': [22.78, 0.02, 0.02],
+                'Gaia_RP': [18.69, 0.01, 0.02],
                 },
             }
 }
 
-scenario_gaia = {
-        "path_outputs": "tests/test_cmd/output",
-        "event_name": "GDR3-ULEN-025",
-        "ra": 260.8781,
-        "dec": -27.3788,
-        "catalogue_name": "Gaia_DR3",
-        "catalogue_bands" : ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-        "light_curve_data": {
-            "baseline": {
-                "Gaia_G": 16.12,
-                "Gaia_BP": 17.78,
-                "Gaia_RP": 14.88
-            },
-            "source": {
-                "Gaia_G": 16.14,
-                "Gaia_BP": 17.79,
-                "Gaia_RP": 14.91
-            },
-            "blend": {
-                "Gaia_G": 20.37,
-                "Gaia_BP": 22.78,
-                "Gaia_RP": 18.69
-                },
-            }
-}
+# scenario_gaia = {
+#         'path_outputs': 'tests/test_cmd/output',
+#         'event_name': 'GDR3_ULEN_025',
+#         'ra': 260.8781,
+#         'dec': -27.3788,
+#         'catalogue_name': 'Gaia_DR3',
+#         'catalogue_bands' : ['Gaia_G', 'Gaia_BP', 'Gaia_RP'],
+#         'light_curve_data': {
+#             'baseline': {
+#                 'Gaia_G': 16.12,
+#                 'Gaia_BP': 17.78,
+#                 'Gaia_RP': 14.88
+#             },
+#             'source': {
+#                 'Gaia_G': 16.14,
+#                 'Gaia_BP': 17.79,
+#                 'Gaia_RP': 14.91
+#             },
+#             'blend': {
+#                 'Gaia_G': 20.37,
+#                 'Gaia_BP': 22.78,
+#                 'Gaia_RP': 18.69
+#                 },
+#             }
+# }
 
-class testCmdAnalyst:
+class CmdAnalystTest:
     """
-    Class with tests
+    Class with tests.
     """
+
     def __init__(self,
                  scenario):
         self.scenario = scenario
 
-    def test_plot_gaia(self):
+    def load_scenario(self):
+        """
+        Load test scenario file.
+        """
 
-        config = {}
-        config["event_name"] = self.scenario.get("event_name")
-        config["ra"], config["dec"] = self.scenario.get("ra"), self.scenario.get("dec")
+        config = {
+            'event_name': self.scenario.get('event_name'),
+            'ra': self.scenario.get('ra'),
+            'dec': self.scenario.get('dec'),
+        }
 
         cats = []
 
-        catalogue = self.scenario.get("catalogue_name")
-        path_outputs = self.scenario.get("path_outputs")
-        catalogue_bands = self.scenario.get("catalogue_bands")
-        light_curve_data = self.scenario.get("light_curve_data")
+        catalogue = self.scenario.get('catalogue_name')
+        path_outputs = self.scenario.get('path_outputs')
+        catalogue_bands = self.scenario.get('catalogue_bands')
+        light_curve_data = self.scenario.get('light_curve_data')
 
-        if self.scenario.get("path_input") is not None:
-            sep = self.scenario.get("separator")
-            path_input = self.scenario.get("path_input")
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-                "cmd_path": path_input,
-                "separator": sep,
-                }
+        if self.scenario.get('path_input') is not None:
+            sep = self.scenario.get('separator')
+            path_input = self.scenario.get('path_input')
+            config_dict = {
+                'name': catalogue,
+                'band': catalogue_bands,
+                'cmd_path': path_input,
+                'separator': sep,
+            }
         else:
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-                }
+            config_dict = {
+                'name': catalogue,
+                'band': catalogue_bands,
+            }
 
-        cats.append(dict)
-        config["cmd_analyst"] = {}
-        config["cmd_analyst"]["catalogues"] = cats
-        log = logs.start_log(path_outputs, 'debug', event_name=config["event_name"], stream=True)
-        analyst = CmdAnalyst(config["event_name"], path_outputs, catalogue, light_curve_data, log, config_dict=config)
+        cats.append(config_dict)
+        config['cmd_analyst'] = {
+            'catalogues': cats
+        }
+
+        return config, path_outputs, light_curve_data
+
+    def test_plot_gaia(self):
+        """
+        Test if plots are created.
+        """
+
+        config, path_outputs, light_curve_data = self.load_scenario()
+        log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'])
+        analyst = CmdAnalyst(config['event_name'], path_outputs,
+                             config['cmd_analyst']['catalogues'][0]['name'],
+                             light_curve_data,
+                             log, config_dict=config)
 
         source_data, source_labels = analyst.transform_source_data()
         cmd_data, cmd_labels = analyst.load_catalogue_data()
         plot_status = analyst.plot_cmd(source_data, source_labels, cmd_data, cmd_labels)
         logs.close_log(log)
 
-        # assert plot_status == True
-
+        # assert if plot exists at expected location
+        assert plot_status
 
     def test_load_gaia(self):
+        """
+        Check if data is loaded correctly.
+        """
 
-        config = {}
-        config["event_name"] = self.scenario.get("event_name")
-        config["ra"], config["dec"] = self.scenario.get("ra"), self.scenario.get("dec")
-
-        cats = []
-
-        catalogue = self.scenario.get("catalogue_name")
-        path_outputs = self.scenario.get("path_outputs")
-        catalogue_bands = self.scenario.get("catalogue_bands")
-        light_curve_data = self.scenario.get("light_curve_data")
-
-        if self.scenario.get("path_input") is not None:
-            sep = self.scenario.get("separator")
-            path_input = self.scenario.get("path_input")
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-                "cmd_path": path_input,
-                "separator": sep,
-            }
-        else:
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-            }
-
-        cats.append(dict)
-        config["cmd_analyst"] = {}
-        config["cmd_analyst"]["catalogues"] = cats
-        log = logs.start_log(path_outputs, 'debug', event_name=config["event_name"], stream=True)
-        analyst = CmdAnalyst(config["event_name"], path_outputs, catalogue, light_curve_data, log, config_dict=config)
+        config, path_outputs, light_curve_data = self.load_scenario()
+        log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'])
+        analyst = CmdAnalyst(config['event_name'], path_outputs,
+                             config['cmd_analyst']['catalogues'][0]['name'],
+                             light_curve_data,
+                             log, config_dict=config
+                             )
 
         cmd_data, cmd_labels = analyst.load_catalogue_data()
 
         logs.close_log(log)
 
-        assert type(cmd_data) == pd.DataFrame
-        assert type(cmd_labels) == list
+        assert type(cmd_data) is pd.DataFrame
+        assert type(cmd_labels) is list
 
     def test_load_source_gaia(self):
+        """
+        Check if source information is loaded correctly.
+        """
 
-        config = {}
-        config["event_name"] = self.scenario.get("event_name")
-        config["ra"], config["dec"] = self.scenario.get("ra"), self.scenario.get("dec")
-
-        cats = []
-
-        catalogue = self.scenario.get("catalogue_name")
-        path_outputs = self.scenario.get("path_outputs")
-        catalogue_bands = self.scenario.get("catalogue_bands")
-        light_curve_data = self.scenario.get("light_curve_data")
-
-        if self.scenario.get("path_input") is not None:
-            sep = self.scenario.get("separator")
-            path_input = self.scenario.get("path_input")
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-                "cmd_path": path_input,
-                "separator": sep,
-            }
-        else:
-            dict = {
-                "name": catalogue,
-                "band": catalogue_bands,
-            }
-
-        cats.append(dict)
-        config["cmd_analyst"] = {}
-        config["cmd_analyst"]["catalogues"] = cats
-        log = logs.start_log(path_outputs, 'debug', event_name=config["event_name"])
-        analyst = CmdAnalyst(config["event_name"], path_outputs, catalogue, light_curve_data, log, config_dict=config)
+        config, path_outputs, light_curve_data = self.load_scenario()
+        log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'])
+        analyst = CmdAnalyst(config['event_name'], path_outputs,
+                             config['cmd_analyst']['catalogues'][0]['name'],
+                             light_curve_data,
+                             log, config_dict=config
+                             )
 
         source_data, source_labels = analyst.transform_source_data()
 
         logs.close_log(log)
 
-        assert type(source_data) ==  pd.DataFrame
-        assert type(source_labels) ==  list
+        assert type(source_data) is  pd.DataFrame
+        assert type(source_labels) is  list
 
 def test_run():
+    """
+    Run all tests.
+    """
     case = scenario_file
-    test = testCmdAnalyst(case)
+    test = CmdAnalystTest(case)
     test.test_load_source_gaia()
     test.test_load_gaia()
     test.test_plot_gaia()
