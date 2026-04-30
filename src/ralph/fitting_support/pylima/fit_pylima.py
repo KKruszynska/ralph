@@ -5,7 +5,6 @@ from pyLIMA.fits import TRF_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
-from pyLIMA.parallax import JPL_ephemerides
 
 from ralph.fitting_support.fitter import Fitter
 from ralph.fitting_support.pylima import plots_pylima

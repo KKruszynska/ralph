@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import subprocess
@@ -5,7 +6,6 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 
 import yaml
-import json
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
