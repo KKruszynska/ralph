@@ -7,7 +7,7 @@ from ralph.toolbox import input_tools, logs
 
 scenario_gaia = {
         'analyst_path': 'tests/ralph/data/output/fit_analyst/',
-        'event_name': 'GDR3-ULENS-025',
+        'event_name': 'GDR3_ULENS_025',
         'ra': 260.8781,
         'dec': -27.3788,
         'fit_analyst': {
@@ -20,19 +20,19 @@ scenario_gaia = {
                 'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_G.dat',
            },
             {
                 'survey': 'Gaia',
                 'band': 'BP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_BP.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_BP.dat',
                 },
             {
                 'survey': 'Gaia',
                 'band': 'RP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_RP.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_RP.dat',
             },
             {
                 'survey': 'OGLE',
@@ -214,9 +214,6 @@ class FitAnalystTest:
                     entry['ephemeris'],
                     usecols=(0, 1, 2, 3),
                 )
-
-            if 'GDR3-ULENS' in config['event_name'] and 'Gaia' in survey:
-                data[:, 0] = data[:, 0] + 2450000.0
 
             light_curves.append({
                 'light_curve': data,
