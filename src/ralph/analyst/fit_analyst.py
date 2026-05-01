@@ -85,12 +85,22 @@ class FitAnalyst(Analyst):
                            }
 
         self.log.info('Perform PSPL fit without blend and parallax.')
-        results = self.fit_PSPL(self.analyst_path+'_PSPL_no_blend_no_piE',
-                                starting_params,
-                                False,
-                                False,
-                                return_norm_lc=True,
-                                )
+
+        if self.config['fitting_package'].lower() == 'pylima':
+            results = self.fit_PSPL(self.analyst_path + 'PSPL_no_blend_no_piE',
+                                    starting_params,
+                                    False,
+                                    False,
+                                    return_norm_lc=True,
+                                    fitting_method='DE'
+                                    )
+        else:
+            results = self.fit_PSPL(self.analyst_path+'PSPL_no_blend_no_piE',
+                                    starting_params,
+                                    False,
+                                    False,
+                                    return_norm_lc=True,
+                                    )
 
         fit_params_PSPL_nopar = results[0]
         t_0 = fit_params_PSPL_nopar['t0']
@@ -115,6 +125,9 @@ class FitAnalyst(Analyst):
                                                                 fit_params_PSPL_nopar, t_last
                                                                 )
 
+        print('==================')
+        print(f'Ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}')
+        print('==================')
         ongoing = False
         if ongoing_ampl or ongoing_time or ongoing_mag:
             ongoing = True
@@ -125,7 +138,7 @@ class FitAnalyst(Analyst):
 
 
     def fit_PSPL(self, fit_name, starting_params, parallax, blend,
-                 return_norm_lc=False, use_boundaries=None):
+                 return_norm_lc=False, use_boundaries=None, fitting_method=None):
         """
         Perform a Point Source Point Lens fit.
 
@@ -142,9 +155,24 @@ class FitAnalyst(Analyst):
         self.start_time = time.time()
         results = {}
         if self.config['fitting_package'].lower() == 'pylima':
-            fit_pspl = pylima.fit_pylima.fitPylima(self.log)
-            results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params, parallax, blend,
-                                        return_norm_lc=return_norm_lc, use_boundaries=use_boundaries)
+            if fitting_method is not None:
+                self.log.debug(f'Fit Analyst: Using fitting method: {fitting_method}')
+                if fitting_method == 'DE':
+                    fit_pspl = pylima.fit_pylima.fitPylima(self.log)
+                    results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params,
+                                                parallax, blend,
+                                                return_norm_lc=return_norm_lc,
+                                                use_boundaries=use_boundaries,
+                                                fitting_method=fitting_method,
+                                                )
+            else:
+                self.log.debug(f'Fit Analyst: Using default fitting method')
+                fit_pspl = pylima.fit_pylima.fitPylima(self.log)
+                results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params,
+                                            parallax, blend,
+                                            return_norm_lc=return_norm_lc,
+                                            use_boundaries=use_boundaries
+                                            )
 
         self.log.debug(f'Fit Analyst: Time elapsed for fitting: {time.time() - self.start_time:.2f} s')
 
@@ -169,7 +197,7 @@ class FitAnalyst(Analyst):
                            't_E': 40., }
 
         self.log.info('Perform PSPL fit.')
-        results = self.fit_PSPL(self.analyst_path+'_PSPL_blend_no_piE',
+        results = self.fit_PSPL(self.analyst_path+'PSPL_blend_no_piE',
                                 starting_params,
                                 False,
                                 True,
@@ -182,7 +210,7 @@ class FitAnalyst(Analyst):
         starting_params['t_0'] = t_0
         starting_params['pi_EN'] = 0.0
         starting_params['pi_EE'] = 0.0
-        results = self.fit_PSPL(self.analyst_path+'_PSPL_blend_piE',
+        results = self.fit_PSPL(self.analyst_path+'PSPL_blend_piE',
                                 starting_params,
                                 True,
                                 True,
@@ -193,7 +221,7 @@ class FitAnalyst(Analyst):
         model_ok = self.evaluate_PSPL(results)
         if not model_ok:
             self.log.info('Perform PSPL with parallax without blend fit.')
-            results = self.fit_PSPL(self.analyst_path+'_PSPL_noblend_par',
+            results = self.fit_PSPL(self.analyst_path+'PSPL_noblend_par',
                                     starting_params,
                                     True,
                                     False,
@@ -214,7 +242,7 @@ class FitAnalyst(Analyst):
 
         self.log.info('Fit Analyst: Starting finished event fit.')
         self.log.info('Find PSPL starting parameters.')
-        time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
+        # time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
         starting_params = {'ra': self.config['ra'],
                            'dec': self.config['dec'],
                            't_0': t_0,
@@ -222,7 +250,7 @@ class FitAnalyst(Analyst):
                            't_E': 40., }
 
         self.log.info('Perform PSPL with blend fit.')
-        results = self.fit_PSPL(self.analyst_path+'_PSPL_blend_no_piE',
+        results = self.fit_PSPL(self.analyst_path+'PSPL_blend_no_piE',
                                 starting_params,
                                 False,
                                 True,
@@ -245,9 +273,9 @@ class FitAnalyst(Analyst):
                     starting_params['pi_EN'] = pi_en
                     starting_params['pi_EE'] = pi_ee
                     boundaries = {
-                        'tE_lower': 0.,
-                        'tE_upper': 3000.
+                        'tE': [0.0, 1000.0]
                     }
+
                     signs = ''
                     for element in [u_0, pi_en, pi_ee]:
                         if element > 0.:
@@ -256,27 +284,22 @@ class FitAnalyst(Analyst):
                             signs += 'm'
 
                     if u_0 > 0.:
-                        boundaries['u0_lower'] = -0.05
-                        boundaries['u0_upper'] = 2.
+                        boundaries['u0'] = [-0.05, 2.]
                     else:
-                        boundaries['u0_lower'] = -2.
-                        boundaries['u0_upper'] = 0.05
+                        boundaries['u0'] = [-2.0, 0.05]
 
                     if pi_en > 0.:
-                        boundaries['piEN_lower'] = -0.05
-                        boundaries['piEN_upper'] = 2.0
+                        boundaries['piEN'] = [-0.05, 2.]
                     else:
-                        boundaries['piEN_lower'] = -2.0
-                        boundaries['piEN_upper'] = 0.05
-                    if pi_ee > 0.:
-                        boundaries['piEE_lower'] = -0.05
-                        boundaries['piEE_upper'] = 2.0
-                    else:
-                        boundaries['piEE_lower'] = -2.0
-                        boundaries['piEE_upper'] = 0.05
+                        boundaries['piEN'] = [-2.0, 0.05]
 
-                    self.log.info('Fit Analyst:  Starting fitting model {:s}'.format('PSPL_blend_piE_'+signs))
-                    results = self.fit_PSPL(self.analyst_path+'_PSPL_blend_piE_' + signs,
+                    if pi_ee > 0.:
+                        boundaries['piEE'] = [-0.05, 2.]
+                    else:
+                        boundaries['piEE'] = [-2.0, 0.05]
+
+                    self.log.info('Fit Analyst:  Starting fitting model PSPL_blend_piE_{signs}')
+                    results = self.fit_PSPL(self.analyst_path+'PSPL_blend_piE_' + signs,
                                             starting_params,
                                             True,
                                             True,
@@ -285,7 +308,7 @@ class FitAnalyst(Analyst):
                     self.best_results['PSPL_blend_piE_'+signs] = results
                     starting_params['t_0'] = results['t0']
 
-                    self.log.info('Fit Analyst:  Finished fitting model {:s}'.format('PSPL_blend_piE_'+signs))
+                    self.log.info(f'Fit Analyst:  Finished fitting model PSPL_blend_piE_{signs}')
 
         # self.log.debug('Fit Analyst: Best models:')
         # for model in self.best_results:
@@ -346,18 +369,18 @@ class FitAnalyst(Analyst):
         :return: dictionary with all found models
         """
 
-        self.log.debug('Fit Analysy: Performing a fit.')
+        self.log.debug('Fit Analyst: Performing a fit.')
         ongoing, t_0 = self.perform_ongoing_check()
 
-        self.log.debug('Fit Analysy: Event identified as ongoing? %s.'%(ongoing))
+        self.log.debug(f'Fit Analyst: Event identified as ongoing? {ongoing}.')
         if ongoing:
-            self.log.info('Fit Analysy: Performing an ongoing fit.')
+            self.log.info('Fit Analyst: Performing an ongoing fit.')
             self.perform_ongoing_fit(t_0)
             # perform model evaluation here
             # perform anomaly finder on best model
 
         else:
-            self.log.info('Fit Analysy: Performing a finished event fit.')
+            self.log.info('Fit Analyst: Performing a finished event fit.')
             self.perform_finished_fit_PSPL(t_0)
             # perform model evaluation here
             # perform anomaly finder on best model
@@ -392,8 +415,8 @@ class FitAnalyst(Analyst):
         # Save best results statistics
         file_name = self.analyst_path + 'fit_stats.txt'
         with open(file_name, 'w', encoding='utf-8') as file:
-            file.write(f"{'# name':>20s} : {'chi2':>7s} {'red_chi2':>7s}" \
-                       f"{'SW':>7s} {'AD':>7s} {'KS':>7s} {'AIC':>7s} {'BIC':>7s}\n")
+            file.write(f"{'# name':<20s} : {'chi2':<7s} {'red_chi2':<7s}" \
+                       f"{'SW':<7s} {'AD':<7s} {'KS':<7s} {'AIC':<7s} {'BIC':<7s}\n")
             file.write('#--------------------------------------------------------------------------------\n')
             for model in self.best_results:
                 params = self.best_results[model]

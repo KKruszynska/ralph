@@ -1,7 +1,7 @@
 
 import numpy as np
 from pyLIMA import event, telescopes, toolbox
-from pyLIMA.fits import TRF_fit, stats
+from pyLIMA.fits import TRF_fit, DE_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
@@ -102,6 +102,7 @@ class fitPylima(Fitter):
                  parallax, blend,
                  return_norm_lc=False,
                  use_boundaries=None,
+                 fitting_method=None,
                  ):
         """
         Perform a PSPL fit using the selected fit method.
@@ -113,6 +114,7 @@ class fitPylima(Fitter):
         :param blend: boolean, fit with blending?
         :param return_norm_lc: boolean, optional, return light curve data aligned to the model?
         :param use_boundaries: dict, dictionary containing boundaries defined by the User
+        :param fitting_method: str, label of the type of fitter used in pyLIMA
 
         :return: list with results
         """
@@ -136,7 +138,11 @@ class fitPylima(Fitter):
             self.log.info('Fitting without microlensing parallax.')
             pspl = PSPL_model.PSPLmodel(event, parallax=['None', 0.], blend_flux_parameter=blend_param)
 
-        fit_event = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                fit_event = DE_fit.DEfit(pspl,loss_function='soft_l1')
+        else:
+            fit_event = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
         # fit_event = DE_fit.DEfit(pspl)
 
         # Use boundries like in mop.toolbox.fittools
@@ -146,24 +152,25 @@ class fitPylima(Fitter):
             default_t0_lower = fit_event.fit_parameters['t0'][1][0]
             default_t0_upper = fit_event.fit_parameters['t0'][1][1]
             fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            fit_event.fit_parameters['tE'][1] = [0., 3000.]
-            fit_event.fit_parameters['u0'][1] = [-2.0, 2.0]
+            fit_event.fit_parameters['tE'][1] = [0., 1000.]
+            fit_event.fit_parameters['u0'][1] = [0.0, 2.0]
             if parallax:
                 fit_event.fit_parameters['piEN'][1] = [-2.0, 2.0]
                 fit_event.fit_parameters['piEE'][1] = [-2.0, 2.0]
         else:
             self.log.info('Using boundaries passed by the User.')
-            # t_0 stays the same
-            delta_t0 = 10.
-            default_t0_lower = fit_event.fit_parameters['t0'][1][0]
-            default_t0_upper = fit_event.fit_parameters['t0'][1][1]
-            fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            # t_E, u_0 and pi_E params passed by user
-            fit_event.fit_parameters['tE'][1] = [use_boundaries['tE_lower'], use_boundaries['tE_upper']]
-            fit_event.fit_parameters['u0'][1] = [use_boundaries['u0_lower'], use_boundaries['u0_upper']]
-            if parallax:
-                fit_event.fit_parameters['piEN'][1] = [use_boundaries['piEN_lower'], use_boundaries['piEN_upper']]
-                fit_event.fit_parameters['piEE'][1] = [use_boundaries['piEE_lower'], use_boundaries['piEE_upper']]
+            for key in use_boundaries:
+                fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
+
+            # default_t0_lower = fit_event.fit_parameters['t0'][1][0]
+            # default_t0_upper = fit_event.fit_parameters['t0'][1][1]
+            # fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
+            # # t_E, u_0 and pi_E params passed by user
+            # fit_event.fit_parameters['tE'][1] = [use_boundaries['tE_lower'], use_boundaries['tE_upper']]
+            # fit_event.fit_parameters['u0'][1] = [use_boundaries['u0_lower'], use_boundaries['u0_upper']]
+            # if parallax:
+            #     fit_event.fit_parameters['piEN'][1] = [use_boundaries['piEN_lower'], use_boundaries['piEN_upper']]
+            #     fit_event.fit_parameters['piEE'][1] = [use_boundaries['piEE_lower'], use_boundaries['piEE_upper']]
 
         self.log.info('Staring fit.')
         fit_event.fit()
@@ -171,7 +178,7 @@ class fitPylima(Fitter):
 
         # This will have to be modified to be compatible with MOP
         self.log.debug('Convert model parameters to dictionary.')
-        model_parameters = self.gather_parameters(event, fit_event)
+        model_parameters = self.gather_parameters(event, fit_event, fitting_method=fitting_method)
 
         # Produce fit outputs here
         plots_pylima.plot_pylima(event, fit_event, self.log)
@@ -183,7 +190,7 @@ class fitPylima(Fitter):
 
         return model_parameters
 
-    def gather_parameters(self, event, model_fit):
+    def gather_parameters(self, event, model_fit, fitting_method=None):
         """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
@@ -191,6 +198,7 @@ class fitPylima(Fitter):
 
         :param event: pyLIMA event instance
         :param model_fit: pyLIMA model
+        :param fitting_method: str, label of the type of fitter used in pyLIMA
 
         :return: dictionary with all the parameters coming from the model.
         """
@@ -206,19 +214,40 @@ class fitPylima(Fitter):
                 ndp = 3
             else:
                 ndp = 5
-            model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
-            model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
+            if fitting_method is not None:
+                if fitting_method == 'DE':
+                    print(model_fit.fit_results)
+                # model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
+                # model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
+                #
+                # # Save fluxes transformed to magnitudes
+                # if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
+                #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                #         model_fit.fit_results['best_model'][i]
+                #     ), 3
+                #     )
+                #     model_params[key + '_mag_error'] = np.around(
+                #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
+                #             model_fit.fit_results['best_model'][i],
+                #         ),
+                #         3
+                #     )
+            else:
+                model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
+                model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
 
             # Save fluxes transformed to magnitudes
-            if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
-                model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                    model_fit.fit_results['best_model'][i]), 3)
-                model_params[key + '_mag_error'] = np.around(
-                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                        np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
-                        model_fit.fit_results['best_model'][i],
-                        ),
-                    3)
+                if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
+                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                        model_fit.fit_results['best_model'][i]), 3)
+                    model_params[key + '_mag_error'] = np.around(
+                        toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                            np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
+                            model_fit.fit_results['best_model'][i],
+                            ),
+                        3)
+
             # if 'fblend' in key:
             #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
             #         model_fit.fit_results['best_model'][i]), 3)

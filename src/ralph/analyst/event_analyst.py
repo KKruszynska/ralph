@@ -58,9 +58,10 @@ class EventAnalyst(Analyst):
 
     def parse_event_config(self, config_path):
         """
-        Parse YAML file with configuration, turn it into a dictionary and to
+        Parse file with configuration and turn it into a dictionary.
 
-        :param config_path: str, path with YAML file containing additional information needed for an Event Analyst.
+        :param config_path: str, path with YAML or JSON file
+                            containing configuration information needed for an Event Analyst.
         """
 
         try:
@@ -328,7 +329,6 @@ if __name__ == '__main__':
     config_path = ''
     error = False
     error_string = ''
-    print('============================= Hello!!')
 
     if '--event_name' in sys.argv:
         idx = sys.argv.index('--event_name')
