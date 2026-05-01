@@ -1,6 +1,7 @@
 event_name: GaiaDR3_ULENS_025
 ra: 260.8781
 dec: -27.3788
+analyst_path: 'tests/ralph/data/output/event_analyst/GDR3_ULENS_025',
 
 lc_analyst:
     n_max : 10

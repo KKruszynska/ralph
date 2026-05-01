@@ -113,3 +113,9 @@ target/
 # IPython
 profile_default/
 ipython_config.py
+
+# files created by unit tests
+tests/ralph/data/input/*.html
+tests/ralph/data/output/*.html
+tests/ralph/data/output/*/fit_results.json
+tests/ralph/data/output/*/fit_stats.txt
