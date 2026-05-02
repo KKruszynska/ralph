@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from ralph.toolbox import logs
 
 
@@ -22,7 +25,7 @@ class LogsTest:
         :param log_level: Log level (error, info, debug).
         """
 
-        self.log = logs.start_log('tests/ralph/data/output/',
+        self.log = logs.start_log('tests/ralph/data/output/logs/',
                                   self.log_level,
                                   event_name=f'test_{self.log_level:s}'
                                   )
@@ -89,6 +92,14 @@ def test_run():
     run_info_test()
     run_debug_test()
     run_error_test()
+
+    analyst_path = 'tests/ralph/data/output/logs/'
+    log_level = ['info', 'debug', 'error']
+
+    for level in log_level:
+        output = Path(analyst_path + f'test_{level:s}.log')
+        if output.exists():
+            os.remove(output)
 
 
 
