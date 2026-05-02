@@ -1,6 +1,8 @@
 import pytest
+import numpy as np
 
 from pathlib import Path
+import os
 import json
 
 from ralph.analyst.event_analyst import EventAnalyst
@@ -39,10 +41,10 @@ scenario_file_cat = {
         'analyst_log': 'GaiaDR3_ULENS_025_analyst.log',
         'model_plots': [
             'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
+            'PSPL_blend_no_piE.html',
+            'PSPL_blend_piE.html',
         ],
-        'cmd_plots:': [
+        'cmd_plots': [
             'GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html',
             'GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html',
             'GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html',
@@ -98,8 +100,8 @@ scenario_gsa = {
         'analyst_log': 'Gaia24amo_analyst.log',
         'model_plots': [
             'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
+            'PSPL_blend_no_piE.html',
+            'PSPL_blend_piE.html',
         ],
     },
 }
@@ -156,8 +158,8 @@ scenario_kwu = {
         'analyst_log': 'AT2024kwu_analyst.log',
         'model_plots': [
             'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
-            'PSPL_no_blend_no_piE.html',
+            'PSPL_blend_no_piE.html',
+            'PSPL_blend_piE.html',
         ],
     },
 }
@@ -196,29 +198,60 @@ class EventAnalystTest:
 
         event_name = self.scenario.get('event_name')
         analyst_path = self.scenario.get('analyst_path')
-        event_analyst = EventAnalyst(event_name, analyst_path, 'debug', config_path=analyst_path+'config.yaml',
-                                     stream=True)
+        event_analyst = EventAnalyst(event_name, analyst_path, 'debug',
+                                     config_path=analyst_path+'config.yaml',
+                                     stream=False)
         event_analyst.run_single_analyst()
 
         # Check if expected files exist
-        #
-        # if my_file.exists():
-        # # path exists
-        #
-        # my_file = Path("/path/to/file")
-        # if my_file.is_file():
-        #
-        #     if my_file.is_dir():
-        # # directory exists
+        output = Path(analyst_path + 'fit_results.json')
+        assert output.exists() is True
+        assert output.is_file() is True
 
+        output = Path(analyst_path + 'fit_stats.txt')
+        assert output.exists() is True
+        assert output.is_file() is True
+
+        final_files = self.scenario.get('final_files')
+        for element in final_files:
+            if element == 'event_folder':
+                output = Path(analyst_path)
+                assert output.exists() is True
+                assert output.is_dir() is True
+
+            if element == 'analyst_log':
+                output = Path(analyst_path+final_files[element])
+                assert output.exists() is True
+                assert output.is_file() is True
+
+            if element == 'model_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path+file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
+
+            if element == 'cmd_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
 
         with open(self.scenario.get('fit_result'), 'r') as file:
             expected_fit_result = json.load(file)
 
+        with open(analyst_path + 'fit_results.json', 'r') as file:
+            received_fit_result = json.load(file)
+
         for model in expected_fit_result:
-            model_result = result[model]
-            expected_result = expected_fit_result[model]
-            assert pytest.approx(model_result['t0'], 2) == pytest.approx(expected_result['t0'], 2)
+            if model != 'PSPL_no_blend_no_piE':
+                model_result = received_fit_result[model]
+                expected_result = expected_fit_result[model]
+                for key in expected_result:
+                    expected = float(expected_result[key])
+                    received = float(model_result[key])
+                    print(model, key, expected, received)
+                    if not np.isnan(expected):
+                        assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
     def test_run_analyst_dict(self):
         """
@@ -231,6 +264,55 @@ class EventAnalystTest:
                                      stream=False)
         event_analyst.run_single_analyst()
 
+        # Check if expected files exist
+        output = Path(analyst_path + 'fit_results.json')
+        assert output.exists() is True
+        assert output.is_file() is True
+
+        output = Path(analyst_path + 'fit_stats.txt')
+        assert output.exists() is True
+        assert output.is_file() is True
+
+        final_files = self.scenario.get('final_files')
+        for element in final_files:
+            if element == 'event_folder':
+                output = Path(analyst_path)
+                assert output.exists() is True
+                assert output.is_dir() is True
+
+            if element == 'analyst_log':
+                output = Path(analyst_path + final_files[element])
+                assert output.exists() is True
+                assert output.is_file() is True
+
+            if element == 'model_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
+
+            if element == 'cmd_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
+
+        with open(self.scenario.get('fit_result'), 'r') as file:
+            expected_fit_result = json.load(file)
+
+        with open(analyst_path + 'fit_results.json', 'r') as file:
+            received_fit_result = json.load(file)
+
+        for model in expected_fit_result:
+            if model != 'PSPL_no_blend_no_piE':
+                model_result = received_fit_result[model]
+                expected_result = expected_fit_result[model]
+                for key in expected_result:
+                    expected = float(expected_result[key])
+                    received = float(model_result[key])
+                    print(model, key, expected, received)
+                    if not np.isnan(expected):
+                        assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
 def test_run():
     """
@@ -239,13 +321,41 @@ def test_run():
 
     case = scenario_file_cat
     test = EventAnalystTest(case)
-    # test.test_parse_config()
+    test.test_parse_config()
     test.test_run_analyst_file()
 
-    # case = scenario_gsa
-    # test = EventAnalystTest(case)
-    # test.test_run_analyst_dict()
+    for case in [scenario_kwu, scenario_gsa]:
+        test = EventAnalystTest(case)
+        test.test_run_analyst_dict()
 
-    # case = scenario_kwu
-    # test = EventAnalystTest(case)
-    # test.test_run_analyst_dict()
+    # Remove created files
+
+    for case in [scenario_file_cat, scenario_gsa, scenario_kwu]:
+        analyst_path = case.get('analyst_path')
+
+        output = Path(analyst_path + 'fit_results.json')
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + 'fit_stats.txt')
+        if output.exists():
+            os.remove(output)
+
+        final_files = case.get('final_files')
+        for element in final_files:
+            if element == 'analyst_log':
+                output = Path(analyst_path + final_files[element])
+                if output.exists():
+                    os.remove(output)
+
+            if element == 'model_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    if output.exists():
+                        os.remove(output)
+
+            if element == 'cmd_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    if output.exists():
+                        os.remove(output)

@@ -43,14 +43,14 @@ class CmdAnalyst(Analyst):
         Analyst.__init__(self, event_name, analyst_path, config_dict=config_dict, config_path=config_path)
         self.log = log
 
-        if(light_curve_data != None):
+        if light_curve_data != None:
             self.light_curve_data = light_curve_data
         else:
             self.log.error('CMD Analyst: Error! CMD Analyst needs source and blend magnitudes.')
 
-        if (config_dict != None):
+        if config_dict != None:
             self.add_cmd_config(catalogue, config_dict)
-        elif ('cmd_analyst' in self.config):
+        elif 'cmd_analyst' in self.config:
             self.add_cmd_config(catalogue, self.config)
         else:
             self.log.error('CMD Analyst: Error! CMD Analyst needs information.')

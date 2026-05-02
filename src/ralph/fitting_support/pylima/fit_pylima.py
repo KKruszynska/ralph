@@ -203,41 +203,49 @@ class fitPylima(Fitter):
         :return: dictionary with all the parameters coming from the model.
         """
 
-        param_keys = list(model_fit.fit_parameters.keys())
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                param_keys = list(model_fit.priors_parameters.keys())
+        else:
+            param_keys = list(model_fit.fit_parameters.keys())
 
-        model_params = {}
+        model_params = {
+            't0_par': model_fit.model.parallax_model[1],
+        }
 
-        model_params['t0_par'] = model_fit.model.parallax_model[1]
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                samples = model_fit.fit_results['DE_population']
+                percentiles = np.percentile(samples, [16, 50, 84], axis=0)
 
         for i, key in enumerate(param_keys):
             if key in ['t0', 'tE']:
                 ndp = 3
             else:
                 ndp = 5
-            if fitting_method is not None:
-                if fitting_method == 'DE':
-                    print(model_fit.fit_results)
-                # model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
-                # model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
-                #
-                # # Save fluxes transformed to magnitudes
-                # if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
-                #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                #         model_fit.fit_results['best_model'][i]
-                #     ), 3
-                #     )
-                #     model_params[key + '_mag_error'] = np.around(
-                #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
-                #             model_fit.fit_results['best_model'][i],
-                #         ),
-                #         3
-                #     )
+
+            if fitting_method == 'DE':
+                median = percentiles[1][i]
+                err_pl = percentiles[2][i] - percentiles[1][i]
+                err_mn = percentiles[1][i] - percentiles[0][i]
+                model_params[key] = np.around(median, ndp)
+                model_params[key + '_error'] = np.around(np.sqrt(err_pl**2 + err_mn**2), ndp)
+
+                # Save fluxes transformed to magnitudes
+                if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
+                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                        median), 3)
+                    model_params[key + '_mag_error'] = np.around(
+                        toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                            np.sqrt(np.sqrt(err_pl**2 + err_mn**2)),
+                            median,
+                            ),
+                        3)
             else:
                 model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
                 model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
 
-            # Save fluxes transformed to magnitudes
+                # Save fluxes transformed to magnitudes
                 if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
                     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
                         model_fit.fit_results['best_model'][i]), 3)
@@ -248,95 +256,87 @@ class fitPylima(Fitter):
                             ),
                         3)
 
-            # if 'fblend' in key:
-            #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-            #         model_fit.fit_results['best_model'][i]), 3)
-            #     model_params[key + '_mag_error'] = np.around(
-            #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
-            #             model_fit.fit_results['best_model'][i],
-            #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i])),
-            #         3)
-            # if 'ftotal' in key:
-            #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-            #         model_fit.fit_results['best_model'][i]), 3)
-            #     model_params[key + '_mag_error'] = np.around(
-            #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
-            #             model_fit.fit_results['best_model'][i],
-            #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i])),
-            #         3)
-
-        # model_params['chi2'] = np.around(model_fit.fit_results['best_model'][-1], 3)
         # Reporting actual chi2 instead value of the loss function
         (chi2, pyLIMA_parameters) = model_fit.model_chi2(model_fit.fit_results['best_model'])
         model_params['chi2'] = np.around(chi2, 3)
 
-        # Calculate the reduced chi2
+
         ndata = 0
         tel_0 = ''
         for i, tel in enumerate(event.telescopes):
-            if(i == 0):
-                tel_0 = tel.name
             ndata += len(tel.lightcurve['mag'])
+
+            if i == 0:
+                tel_0 = tel.name
+
+            if f'fblend_{tel.name}' in model_params:
+                model_params['ftotal_' + tel.name] = (
+                        model_params['fsource_' + tel.name]
+                        + model_params['fblend_' + tel.name]
+                )
+                model_params['ftotal_' + tel.name + '_error'] = np.sqrt(
+                        model_params['fsource_' + tel.name + '_error']**2
+                        + model_params['fblend_' + tel.name + '_error']**2
+                )
+
+                model_params['ftotal_' + tel.name + '_mag'] = np.around(
+                    toolbox.brightness_transformation.flux_to_magnitude(
+                        model_params['ftotal_' + tel.name]),
+                    3
+                )
+
+                model_params['ftotal_' + tel.name + '_mag_error'] = np.around(
+                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                        model_params['ftotal_' + tel.name+'_error'], model_params['ftotal_' +  tel.name]),
+                    3
+                )
+
+            elif f'ftotal_{tel.name}' in model_params:
+                model_params['fblend_' + tel.name] = (
+                        model_params['ftotal_' + tel.name]
+                        - model_params['fsource_' + tel.name]
+                )
+
+                model_params['fblend_' + tel.name + '_error'] = np.sqrt(
+                    model_params['fsource_' + tel.name + '_error'] ** 2
+                    + model_params['ftotal_' + tel.name + '_error'] ** 2
+                )
+
+                model_params['fblend_' + tel.name + '_mag'] = np.around(
+                    toolbox.brightness_transformation.flux_to_magnitude(
+                        model_params['fblend_' + tel.name]
+                    ),
+                    3
+                )
+
+                model_params['fblend_' + tel.name + '_mag_error'] = np.around(
+                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                        model_params['fblend_' + tel.name + '_error'], model_params['fblend_' + tel.name]
+                    ),
+                    3
+                )
+
+            # Source magnitude for base telescope, for MOP
+            model_params['source_magnitude'] = model_params['fsource_' + tel_0 + '_mag']
+            model_params['source_mag_error'] = model_params['fsource_' + tel_0 + '_mag_error']
+            if f'fblend_{tel_0}_mag' in model_params:
+                model_params['blend_magnitude'] = model_params['fblend_' + tel_0 + '_mag']
+                model_params['blend_mag_error'] = model_params['fblend_' + tel_0 + '_mag_error']
+            if f'ftotal_{tel_0}_mag' in model_params:
+                model_params['baseline_magnitude'] = model_params['ftotal_' + tel_0 + '_mag']
+                model_params['baseline_mag_error'] = model_params['ftotal_' + tel_0 + '_mag_error']
+            else:
+                model_params['baseline_magnitude'] = model_params['source_magnitude']
+                model_params['baseline_mag_error'] = model_params['source_mag_error']
+
+        # Calculate the reduced chi2
         model_params['red_chi2'] = np.around(model_params['chi2'] / float(ndata - len(param_keys)), 3)
 
-        key_map = {
-            'fsource_'+tel_0: 'source_magnitude',
-            'fblend_'+tel_0: 'blend_magnitude'
-        }
-
-        flux_index = []
-        for pylima_key, mop_key in key_map.items():
-            try:
-                idx = param_keys.index(pylima_key)
-                model_params[mop_key] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                    model_fit.fit_results['best_model'][idx]), 3)
-                flux_index.append(idx)
-            except ValueError:
-                model_params[mop_key] = np.nan
-
-        # Retrieve the flux uncertainties and convert to magnitudes
-        model_params['source_mag_error'] = np.around(
-            toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                model_params['fsource_'+tel_0+'_error'], model_params['fsource_'+tel_0]),3)
-
-        if 'fblend_'+tel_0 in model_params:
-            model_params['blend_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                 model_params['fblend_'+tel_0+'_error'], model_params['fblend_'+tel_0]),3)
-        else:
-            model_params['blend_mag_error'] = np.nan
-
-        # If the model fitted contains valid entries for both source and blend flux,
-        # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
-        if 'ftotal_'+tel_0 in model_params:
-            unlensed_flux = model_params['ftotal_'+tel_0]
-            unlensed_flux_error = model_params['ftotal_'+tel_0+'_error']
-            model_params['baseline_magnitude'] = np.around(
-                toolbox.brightness_transformation.flux_to_magnitude(unlensed_flux), 3
-                )
-            model_params['baseline_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(unlensed_flux_error, unlensed_flux),
-                3
-            )
-        elif not np.isnan(model_params['source_magnitude']) \
-                and not np.isnan(model_params['blend_magnitude']):
-            unlensed_flux = model_fit.fit_results['best_model'][flux_index[0]] \
-                            + model_fit.fit_results['best_model'][flux_index[1]]
-            unlensed_flux_error = np.sqrt(
-                (model_params['fsource_'+tel_0+'_error'] ** 2 + model_params['fblend_'+tel_0+'_error'] ** 2)
-                + (model_params['fsource_'+tel_0+'_error'] * model_params['fblend_'+tel_0+'_error'])
-            )
-            model_params['baseline_magnitude'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(unlensed_flux), 3)
-            model_params['baseline_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(unlensed_flux_error, unlensed_flux),
-                3)
-        else:
-            model_params['baseline_magnitude'] = model_params['source_magnitude']
-            model_params['baseline_mag_error'] = model_params['source_mag_error']
-
-        model_params['fit_covariance'] = model_fit.fit_results['covariance_matrix'].tolist()
-
-        model_params['fit_parameters'] = model_fit.fit_parameters
+        # if 'fit_covariance' in model_fit.fit_results:
+        #     model_params['fit_covariance'] = model_fit.fit_results['covariance_matrix'].tolist()
+        #
+        #
+        # model_params['fit_parameters'] = model_fit.fit_parameters
 
         # Calculate fit statistics
         try:

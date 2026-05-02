@@ -348,16 +348,20 @@ class FitAnalyst(Analyst):
         """
         Check if model doesn't have negative or low blend flux.
         Lifted from mop.toolbox.fittols.test_quality_of_model_fit
+        :param model_params: dict, model parameters after fitting
 
         :return: boolean flag if the event is okay
         """
         fit_ok = True
 
-        cov_fit = np.asarray(model_params['fit_covariance'])
+        blend_check = False
+        if 'blend_magnitude' in model_params:
+            blend_check = (np.abs(model_params['blend_magnitude']) < 3.0 * model_params['blend_mag_error'] ** 0.5)
 
-        if (np.abs(model_params['blend_magnitude']) < 3.0 * cov_fit[4, 4] ** 0.5) or \
-                (np.abs(model_params['source_magnitude']) < 3.0 * cov_fit[3, 3] ** 0.5) or \
-                (np.abs(model_params['tE']) < 3. * cov_fit[2, 2] ** 0.5):
+        source_check = (np.abs(model_params['source_magnitude']) < 3.0 * model_params['source_mag_error']  ** 0.5)
+
+        tE_check =  (np.abs(model_params['tE']) < 3. *  model_params['tE_error'] ** 0.5)
+        if blend_check or source_check or tE_check:
             fit_ok = False
 
         return fit_ok
