@@ -1,4 +1,6 @@
 import numpy as np
+import os
+from pathlib import Path
 
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs
@@ -17,19 +19,19 @@ scenario_gaia = {
                     'survey': 'Gaia',
                     'band': 'G',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat',
                 },
                 {
                     'survey': 'Gaia',
                     'band': 'BP',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_BP.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat',
                 },
                 {
                     'survey': 'Gaia',
                     'band': 'RP',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_RP.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat',
                 },
                 {
                     'survey': 'OGLE',
@@ -241,3 +243,11 @@ def test_run():
 
     test = BadLightCurvesTest()
     test.test_bad_lc()
+
+    for case in [scenario_gaia, scenario_gsa]:
+        analyst_path = case.get('path_outputs')
+        event_name = case.get('event_name')
+
+        output = Path(analyst_path + event_name + '_analyst.log')
+        if output.exists():
+            os.remove(output)
