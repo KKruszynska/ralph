@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+from pathlib import Path
 
 from ralph.analyst.cmd_analyst import CmdAnalyst
 from ralph.toolbox import logs
@@ -126,6 +128,15 @@ class CmdAnalystTest:
         # assert if plot exists at expected location
         assert plot_status
 
+        event_name = config['event_name']
+        catalogue_name =  config['cmd_analyst']['catalogues'][0]['name']
+        cmd_labels = self.scenario.get('catalogue_bands')
+
+        for band in cmd_labels:
+            output = Path(f'./{path_outputs}/{event_name}_CMD_{catalogue_name}_{band}.html')
+            assert output.exists() is True
+            assert output.is_file() is True
+
     def test_load_gaia(self):
         """
         Check if data is loaded correctly.
@@ -176,9 +187,18 @@ def test_run():
     test.test_load_gaia()
     test.test_plot_gaia()
 
-    # for case in [scenario_file, scenario_gaia]:
-    #     test = testCmdAnalyst(case)
-    #     test.test_load_source_gaia()
-    #     test.test_load_gaia()
-    #     test.test_plot_gaia()
+    # for case in [scenario_gaia, scenario_gsa]:
+    analyst_path = case.get('path_outputs')
+    event_name = case.get('event_name')
+    print(analyst_path, event_name)
+    output = Path(analyst_path + event_name + '_analyst.log')
+    if output.exists():
+        os.remove(output)
+
+    catalogue_name = case.get('catalogue_name')
+
+    for band in case.get('catalogue_bands'):
+        output = Path(f'./{analyst_path}/{event_name}_CMD_{catalogue_name}_{band}.html')
+        if output.exists():
+            os.remove(output)
 

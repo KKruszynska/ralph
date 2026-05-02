@@ -135,11 +135,13 @@ class CmdAnalyst(Analyst):
     #     """
     #     Loads data within a specified radius and of specified parallax quality from Gaia catalogues.
     #
-    #     :param catalogue_name: str, specified earlier, should contain words 'Gaia' and 'DRx', where x is the number of data release (currently supported 1, 2 and 3), for example `GaiaDR2` or `Gaia_DR3`,
+    #     :param catalogue_name: str, specified earlier, should contain words 'Gaia' and 'DRx',
+    #     where x is the number of data release (currently supported 1, 2 and 3), for example `GaiaDR2` or `Gaia_DR3`,
     #     :param radius: float, specified earlier, radius of the search for sources around the event,
     #     :param parallax_quality: float, optional, parallax over error lower limit.
     #
-    #     :return: pandas data frame with magnitudes and labels of the bands used; the bands are `Gaia_G`, `Gaia_BP`, and `Gaia_RP` corresponding to `phot_g_mean_mag`, `phot_bp_mean_mag` and `phot_rp_mean_mag`.
+    #     :return: pandas data frame with magnitudes and labels of the bands used; the bands are `Gaia_G`, `Gaia_BP`,
+    #     and `Gaia_RP` corresponding to `phot_g_mean_mag`, `phot_bp_mean_mag` and `phot_rp_mean_mag`.
     #     """
     #     table_name = ''
     #     if 'DR3' in self.catalogue_name:
