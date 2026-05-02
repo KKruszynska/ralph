@@ -283,6 +283,55 @@ class ControllerPathsOngoingTest:
         controller = Controller(event_list, config_dict=config)
         controller.launch_analysts()
 
+        # Check if expected files exist
+        output = Path(analyst_path + 'fit_results.json')
+        assert output.exists() is True
+        assert output.is_file() is True
+
+        output = Path(analyst_path + 'fit_stats.txt')
+        assert output.exists() is True
+        assert output.is_file() is True
+
+        final_files = self.scenario.get('final_files')
+        for element in final_files:
+            if element == 'event_folder':
+                output = Path(analyst_path)
+                assert output.exists() is True
+                assert output.is_dir() is True
+
+            if element == 'analyst_log':
+                output = Path(analyst_path + final_files[element])
+                assert output.exists() is True
+                assert output.is_file() is True
+
+            if element == 'model_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
+
+            if element == 'cmd_plots':
+                for file_path in final_files[element]:
+                    output = Path(analyst_path + file_path)
+                    assert output.exists() is True
+                    assert output.is_file() is True
+
+        with open(self.scenario.get('fit_result'), 'r') as file:
+            expected_fit_result = json.load(file)
+
+        with open(analyst_path + 'fit_results.json', 'r') as file:
+            received_fit_result = json.load(file)
+
+        for model in expected_fit_result:
+            model_result = received_fit_result[model]
+            expected_result = expected_fit_result[model]
+            for key in expected_result:
+                expected = float(expected_result[key])
+                received = float(model_result[key])
+                print(model, key, expected, received)
+                if not np.isnan(expected):
+                    assert pytest.approx(received, 2) == pytest.approx(expected, 2)
+
 def test_run():
     """
     Run all tests.

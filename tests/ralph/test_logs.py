@@ -97,7 +97,7 @@ def test_run():
     log_level = ['info', 'debug', 'error']
 
     for level in log_level:
-        output = Path(analyst_path + f'test_{level:s}.log')
+        output = Path(analyst_path + f'test_{level:s}_analyst.log')
         if output.exists():
             os.remove(output)
 
