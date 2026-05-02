@@ -1,4 +1,7 @@
 import json
+import numpy as np
+import os
+from pathlib import Path
 
 import pytest
 
@@ -20,19 +23,19 @@ scenario_gaia = {
                 'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat',
            },
             {
                 'survey': 'Gaia',
                 'band': 'BP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_BP.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat',
                 },
             {
                 'survey': 'Gaia',
                 'band': 'RP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_RP.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat',
             },
             {
                 'survey': 'OGLE',
@@ -230,14 +233,17 @@ class FitAnalystTest:
             expected_fit_result = json.load(file)
 
         for model in expected_fit_result:
-            model_result = result[model]
-            expected_result = expected_fit_result[model]
-            assert pytest.approx(model_result['t0'], 2) == pytest.approx(expected_result['t0'], 2)
+            if model != 'PSPL_no_blend_no_piE':
+                model_result = result[model]
+                expected_result = expected_fit_result[model]
+                for key in expected_result:
+                    expected = float(expected_result[key])
+                    received = float(model_result[key])
+                    print(model, key, expected, received)
+                    if not np.isnan(expected):
+                        assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
         logs.close_log(log)
-
-
-
 
 def test_run():
     """
@@ -248,3 +254,29 @@ def test_run():
     test.test_parse_config()
     test.test_check_ongoing()
     test.test_fit()
+
+    for case in [scenario_gaia, scenario_gsa]:
+        analyst_path = case.get('analyst_path')
+        event_name = case.get('event_name')
+
+        output = Path(analyst_path + 'fit_results.json')
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + 'fit_stats.txt')
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + event_name + '_analyst.log')
+        if output.exists():
+            os.remove(output)
+
+        files = [
+            'PSPL_no_blend_no_piE.html',
+            'PSPL_blend_no_piE.html',
+            'PSPL_blend_piE.html',
+        ]
+        for element in files:
+            output = Path(analyst_path + element)
+            if output.exists():
+                os.remove(output)

@@ -125,9 +125,9 @@ class FitAnalyst(Analyst):
                                                                 fit_params_PSPL_nopar, t_last
                                                                 )
 
-        print('==================')
-        print(f'Ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}')
-        print('==================')
+
+        self.log.debug(f'Fit Analyst: ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}')
+
         ongoing = False
         if ongoing_ampl or ongoing_time or ongoing_mag:
             ongoing = True
