@@ -1,10 +1,12 @@
 import pytest
+import os
+from pathlib import Path
 
 from ralph.fitting_support.pylima.fit_pylima import fitPylima
 from ralph.toolbox import input_tools, logs
 
 scenario = {
-    'event_name': 'GaiaDR3-ULENS-025',
+    'event_name': 'GaiaDR3_ULENS_025',
     'ra': 260.8781,
     'dec': -27.3788,
     'light_curves' : [
@@ -12,19 +14,19 @@ scenario = {
                 'survey': 'Gaia',
                 'band': 'G',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
+                'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat',
             },
             {
                 'survey': 'Gaia',
                 'band': 'BP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path': 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_BP.dat',
+                'path': 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat',
             },
             {
                 'survey': 'Gaia',
                 'band': 'RP',
                 'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                'path': 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_RP.dat',
+                'path': 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat',
             },
             {
                 'survey': 'OGLE',
@@ -50,7 +52,7 @@ class TestPylima:
             lc_dict['survey'] = lc['survey']
             lc_dict['band'] = lc['band']
 
-            if 'Gaia' in lc_dict['survey']:
+            if 'ephemeris' in lc:
                 lc_dict['ephemeris'] = input_tools.load_ephemeris_from_path(
                     lc['ephemeris'],
                     # skip_header = 94,
@@ -58,13 +60,12 @@ class TestPylima:
                     usecols = (0,1,2,3),
                 )
 
-                data  = input_tools.load_light_curve_from_path(lc['path'])
-                data[:, 0] = data[:, 0] + 2450000.0
-                lc_dict['light_curve'] = data
-            else:
-                lc_dict['light_curve'] = input_tools.load_light_curve_from_path(lc['path'])
+            data  = input_tools.load_light_curve_from_path(lc['path'])
+
+            lc_dict['light_curve'] = data
 
             light_curves.append(lc_dict)
+
         self.light_curves = light_curves
         self.event_name = scenario['event_name']
 
@@ -72,7 +73,7 @@ class TestPylima:
         """
         Test setting up event instance with pyLIMA.
         """
-        log = logs.start_log('tests/ralph/data/output/',
+        log = logs.start_log('tests/ralph/data/output/pyLIMA/',
                              'debug',
                              event_name='test_pylima_fits_event')
 
@@ -98,7 +99,7 @@ class TestPylima:
         """
         Test fitting with pyLIMA for PSPL without secondary effects.
         """
-        log = logs.start_log('tests/ralph/data/output/',
+        log = logs.start_log('tests/ralph/data/output/pyLIMA/',
                              'debug',
                              event_name='test_pylima_fits_pspl')
 
@@ -119,13 +120,13 @@ class TestPylima:
                                    True)
 
         log.info('Fitting finished.')
-        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, "\
-                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, " \
-                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}"
+        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f},  \n"\
+                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f},  \n" \
+                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}\n"
                   )
 
-        assert pytest.approx(params['t0'], abs=0.01) == 2457499.76
-        assert pytest.approx(params['u0'], abs=0.01) == -0.28
+        assert pytest.approx(params['t0'], abs=0.01) == 2457499.77
+        assert pytest.approx(params['u0'], abs=0.01) == 0.283
         assert pytest.approx(params['tE'], abs=0.01) == 115.73
         logs.close_log(log)
 
@@ -133,7 +134,7 @@ class TestPylima:
         """
         Testing pylima parallax model fit implementation.
         """
-        log = logs.start_log('tests/ralph/data/output/',
+        log = logs.start_log('tests/ralph/data/output/pyLIMA/',
                              'debug',
                              event_name='test_pyLIMA_fits_pie')
 
@@ -157,18 +158,18 @@ class TestPylima:
                                    )
 
         log.info('Fitting finished.')
-        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, "\
-                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, " \
-                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}, " \
-                  f"piEN = {params['piEN']:.3f} +- {params['piEN_error']:.3f}, " \
-                  f"piEE = {params['piEE']:.3f} +- {params['piEE_error']:.3f}"
+        log.debug(f"Fitted parameters: t_0 = {params['t0']:.2f} +- {params['t0_error']:.2f}, \n"\
+                  f"u_0 = {params['u0']:.3f} +- {params['u0_error']:.3f}, \n" \
+                  f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}, \n" \
+                  f"piEN = {params['piEN']:.3f} +- {params['piEN_error']:.3f}, \n" \
+                  f"piEE = {params['piEE']:.3f} +- {params['piEE_error']:.3f}\n"
                   )
 
         assert pytest.approx(params['t0'], abs=0.01) == 2457487.76
-        assert pytest.approx(params['u0'], abs=0.01) == 0.11
-        assert pytest.approx(params['tE'], abs=0.01) == 176.19
-        assert pytest.approx(params['piEN'], abs=0.01) == 0.58
-        assert pytest.approx(params['piEE'], abs=0.01) == 0.30
+        assert pytest.approx(params['u0'], abs=0.01) == 0.119
+        assert pytest.approx(params['tE'], abs=0.01) == 176.20
+        assert pytest.approx(params['piEN'], abs=0.01) == 0.582
+        assert pytest.approx(params['piEE'], abs=0.01) == 0.305
 
         logs.close_log(log)
 
@@ -181,3 +182,11 @@ def test_run():
     test.test_create_event()
     test.test_fit_pspl()
     test.test_fit_parallax()
+
+    analyst_path ='tests/ralph/data/output/pyLIMA/'
+    event_names = ['test_pyLIMA_fits_pie', 'test_pylima_fits_event', 'test_pylima_fits_pspl']
+
+    for event in event_names:
+        output = Path(analyst_path + event + '_analyst.log')
+        if output.exists():
+            os.remove(output)

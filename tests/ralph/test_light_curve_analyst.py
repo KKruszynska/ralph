@@ -1,4 +1,6 @@
 import numpy as np
+import os
+from pathlib import Path
 
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs
@@ -17,19 +19,19 @@ scenario_gaia = {
                     'survey': 'Gaia',
                     'band': 'G',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_G.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat',
                 },
                 {
                     'survey': 'Gaia',
                     'band': 'BP',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_BP.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat',
                 },
                 {
                     'survey': 'Gaia',
                     'band': 'RP',
                     'ephemeris': 'tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt',
-                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_mod_RP.dat',
+                    'path' : 'tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat',
                 },
                 {
                     'survey': 'OGLE',
@@ -39,35 +41,40 @@ scenario_gaia = {
         ]
 }
 
-# scenario_gsa = {
-#         'path_outputs': 'tests/ralph/data/output/lc_analyst/',
-#         'event_name': 'Gaia24amo',
-#         'ra': 249.14892083,
-#         'dec': -53.74991944,
-#         'fit_analyst': {
-#             'fitting_package': 'pylima'
-#         },
-#         'lc_analyst': {
-#             'n_max': 5
-#         },
-#         'light_curves' : [
-#             {
-#             'survey': 'GSA',
-#             'band': 'G',
-#             'lc' : needs to be fixed
-#             },
-#             {
-#                 'survey': 'LCO',
-#                 'band': 'i',
-#                 'lc': needs to be fixed
-#                 },
-#             {
-#             'survey': 'LCO',
-#             'band': 'g',
-#             'lc': needs to be fixed
-#             },
-#         ],
-#         }
+scenario_gsa = {
+        'path_outputs': 'tests/ralph/data/output/lc_analyst/',
+        'event_name': 'Gaia24amo',
+        'ra': 249.14892083,
+        'dec': -53.74991944,
+        'fit_analyst': {
+            'fitting_package': 'pylima'
+        },
+        'lc_analyst': {
+            'n_max': 5
+        },
+        'light_curves' : [
+            {
+                'survey': 'Gaia',
+                'band': 'G',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat',
+            },
+            {
+                'survey': 'LCO',
+                'band': 'g',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_g.dat',
+            },
+            {
+                'survey': 'LCO',
+                'band': 'r',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_r.dat',
+                },
+            {
+                'survey': 'LCO',
+                'band': 'i',
+                'path' : 'tests/ralph/data/input/light_curves/Gaia24amo_LCO_i.dat',
+            },
+        ],
+        }
 
 class LightCurveAnalystTest:
     """
@@ -103,7 +110,7 @@ class LightCurveAnalystTest:
 
             light_curves.append({
                 'event_name': config['event_name'],
-                'lc': light_curve,
+                'light_curve': light_curve,
                 'survey': survey,
                 'band': band,
             })
@@ -144,7 +151,7 @@ class LightCurveAnalystTest:
             if ('path' in entry):
                 light_curve = input_tools.load_light_curve_from_path(entry['path'])
                 light_curves.append({
-                    'lc': light_curve,
+                    'light_curve': light_curve,
                     'survey': survey,
                     'band': band
                 })
@@ -155,7 +162,7 @@ class LightCurveAnalystTest:
         logs.close_log(log)
 
         for entry in analyst.light_curves:
-            light_curve = entry['lc']
+            light_curve = entry['light_curve']
             negative_errs = np.where(light_curve[:, 2] < 0)
             assert len(negative_errs[0]) == len([])
 
@@ -178,9 +185,9 @@ class BadLightCurvesTest:
         config['lc_analyst']['n_max'] = 10.
 
         dict = {
-                'survey': 'GSA',
+                'survey': 'Gaia',
                 'band': 'G',
-                'lc': [[2457000., 17.00, -0.02], [2457001., 17.01, np.nan], [2457002., 17.02, 0.02],
+                'light_curve': [[2457000., 17.00, -0.02], [2457001., 17.01, np.nan], [2457002., 17.02, 0.02],
                        [2457003., np.inf, 0.02], [2457004., 17.04, -0.02], [2457005., 17.05, 0.02],
                        [2457006., np.nan, 0.02], [2457007., 17.09, 0.02], [2457008., 17.2, 0.02],
                        [2457006., 17.0, np.inf], [2457007., 17.09, 0.02], [2457008., 17.2, 0.02], ],
@@ -189,12 +196,16 @@ class BadLightCurvesTest:
         light_curves = [dict]
         config['light_curves'] = light_curves
 
-        log = logs.start_log(path_outputs, 'debug', event_name=config['event_name'], stream=True)
-        analyst = LightCurveAnalyst(config['event_name'], path_outputs, light_curves, log, config_dict=config)
+        log = logs.start_log(path_outputs, 'debug',
+                             event_name=config['event_name'], stream=True
+                             )
+        analyst = LightCurveAnalyst(config['event_name'], path_outputs,
+                                    light_curves, log, config_dict=config
+                                    )
         analyst.perform_quality_check()
 
         for entry in analyst.light_curves:
-            lc = entry['lc']
+            lc = entry['light_curve']
 
             negative_errs = np.where(lc[:, 2] < 0)
             assert len(negative_errs[0]) == len([])
@@ -226,9 +237,17 @@ def test_run():
     test.test_parse_config()
     test.test_run_analyst()
 
-    # case = scenario_gsa
-    # test = TestLCAnalyst(case)
-    # test.test_run_analyst()
+    case = scenario_gsa
+    test = LightCurveAnalystTest(case)
+    test.test_run_analyst()
 
     test = BadLightCurvesTest()
     test.test_bad_lc()
+
+    for case in [scenario_gaia, scenario_gsa]:
+        analyst_path = case.get('path_outputs')
+        event_name = case.get('event_name')
+
+        output = Path(analyst_path + event_name + '_analyst.log')
+        if output.exists():
+            os.remove(output)

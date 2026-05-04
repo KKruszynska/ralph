@@ -1,0 +1,41 @@
+event_name: AT2024kwu
+ra: 102.93358333
+dec: 44.352166666
+
+lc_analyst:
+    n_max : 10
+    ongoing_magnification_thershold: 1.10
+    ongoing_amplitude_thershold: 1.0
+
+fit_analyst:
+    fitting_package: pylima
+
+cmd_analyst:
+    catalogues:
+        - name: Gaia_DR3
+          band:
+              - Gaia_G
+              - Gaia_BP
+              - Gaia_RP
+
+light_curves:
+    - survey: Gaia
+      band: G
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/AT2024kwu_Gaia_G.dat
+
+    - survey: LCO
+      band: g
+      path: tests/ralph/data/input/light_curves/AT2024kwu_LCO_g.dat
+
+    - survey: LCO
+      band: r
+      path: tests/ralph/data/input/light_curves/AT2024kwu_LCO_r.dat
+
+    - survey: ZTF
+      band: g
+      path: tests/ralph/data/input/light_curves/AT2024kwu_ZTF_g.dat
+
+    - survey: ZTF
+      band: r
+      path: tests/ralph/data/input/light_curves/AT2024kwu_ZTF_r.dat

@@ -1,12 +1,10 @@
 
 import numpy as np
-
 from pyLIMA import event, telescopes, toolbox
-from pyLIMA.fits import TRF_fit, stats
+from pyLIMA.fits import TRF_fit, DE_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
-from pyLIMA.parallax import JPL_ephemerides
 
 from ralph.fitting_support.fitter import Fitter
 from ralph.fitting_support.pylima import plots_pylima
@@ -43,6 +41,7 @@ class fitPylima(Fitter):
         survey_to_align = ''
         max_n_points = 0
         for entry in light_curves:
+
             lc = np.array(entry['light_curve'])
             survey = entry['survey']
             band = entry['band']
@@ -54,14 +53,15 @@ class fitPylima(Fitter):
                 max_n_points = len(lc[:,0])
                 t_min, t_max = np.min(lc[:,0]), np.max(lc[:,0])
 
-            if 'Gaia' in survey:
-                # get spacecraft positions
-                if entry['ephemeris'] is not None:
-                    ephemeris = entry['ephemeris']
-                else:
-                    ephemeris = JPL_ephemerides.horizons_API('Gaia',
-                                                             lc[:,0],
-                                                             observatory='Geocentric')[1]
+
+            if 'ephemeris' in entry and entry['ephemeris'] is not None:
+                self.log.debug('Loading provided ephemeris.')
+                ephemeris = entry['ephemeris']
+            # elif any(s in entry['survey'] for s in ['Gaia', 'GSA']):
+            #     self.log.debug('Downloading ephemeris from JPL for Gaia.')
+            #     ephemeris = JPL_ephemerides.horizons_API('Gaia',
+            #                                              lc[:,0],
+            #                                              observatory='Geocentric')[1]
 
                 spacecraft_positions = {
                     'photometry': ephemeris
@@ -74,9 +74,10 @@ class fitPylima(Fitter):
                     lightcurve_names = ['time', 'mag', 'err_mag'],
                     lightcurve_units = ['JD', 'mag', 'mag'],
                     location = 'Space',
-                    spacecraft_name = 'Gaia',
+                    spacecraft_name = survey,
                     spacecraft_positions = spacecraft_positions
                 )
+
             else:
                 telescope = telescopes.Telescope(
                     name = survey+'_'+band,
@@ -90,7 +91,7 @@ class fitPylima(Fitter):
             event_to_fit.telescopes.append(telescope)
 
         # print(survey_to_align)
-        self.log.debug('Survey to align data to: %s', survey_to_align)
+        self.log.debug(f'Survey to align data to: {survey_to_align:s}')
         event_to_fit.find_survey(survey_to_align)
         event_to_fit.check_event()
 
@@ -101,6 +102,7 @@ class fitPylima(Fitter):
                  parallax, blend,
                  return_norm_lc=False,
                  use_boundaries=None,
+                 fitting_method=None,
                  ):
         """
         Perform a PSPL fit using the selected fit method.
@@ -112,6 +114,7 @@ class fitPylima(Fitter):
         :param blend: boolean, fit with blending?
         :param return_norm_lc: boolean, optional, return light curve data aligned to the model?
         :param use_boundaries: dict, dictionary containing boundaries defined by the User
+        :param fitting_method: str, label of the type of fitter used in pyLIMA
 
         :return: list with results
         """
@@ -135,7 +138,11 @@ class fitPylima(Fitter):
             self.log.info('Fitting without microlensing parallax.')
             pspl = PSPL_model.PSPLmodel(event, parallax=['None', 0.], blend_flux_parameter=blend_param)
 
-        fit_event = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                fit_event = DE_fit.DEfit(pspl,loss_function='soft_l1')
+        else:
+            fit_event = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
         # fit_event = DE_fit.DEfit(pspl)
 
         # Use boundries like in mop.toolbox.fittools
@@ -145,24 +152,25 @@ class fitPylima(Fitter):
             default_t0_lower = fit_event.fit_parameters['t0'][1][0]
             default_t0_upper = fit_event.fit_parameters['t0'][1][1]
             fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            fit_event.fit_parameters['tE'][1] = [0., 3000.]
-            fit_event.fit_parameters['u0'][1] = [-2.0, 2.0]
+            fit_event.fit_parameters['tE'][1] = [0., 1000.]
+            fit_event.fit_parameters['u0'][1] = [0.0, 2.0]
             if parallax:
                 fit_event.fit_parameters['piEN'][1] = [-2.0, 2.0]
                 fit_event.fit_parameters['piEE'][1] = [-2.0, 2.0]
         else:
             self.log.info('Using boundaries passed by the User.')
-            # t_0 stays the same
-            delta_t0 = 10.
-            default_t0_lower = fit_event.fit_parameters['t0'][1][0]
-            default_t0_upper = fit_event.fit_parameters['t0'][1][1]
-            fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            # t_E, u_0 and pi_E params passed by user
-            fit_event.fit_parameters['tE'][1] = [use_boundaries['tE_lower'], use_boundaries['tE_upper']]
-            fit_event.fit_parameters['u0'][1] = [use_boundaries['u0_lower'], use_boundaries['u0_upper']]
-            if parallax:
-                fit_event.fit_parameters['piEN'][1] = [use_boundaries['piEN_lower'], use_boundaries['piEN_upper']]
-                fit_event.fit_parameters['piEE'][1] = [use_boundaries['piEE_lower'], use_boundaries['piEE_upper']]
+            for key in use_boundaries:
+                fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
+
+            # default_t0_lower = fit_event.fit_parameters['t0'][1][0]
+            # default_t0_upper = fit_event.fit_parameters['t0'][1][1]
+            # fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
+            # # t_E, u_0 and pi_E params passed by user
+            # fit_event.fit_parameters['tE'][1] = [use_boundaries['tE_lower'], use_boundaries['tE_upper']]
+            # fit_event.fit_parameters['u0'][1] = [use_boundaries['u0_lower'], use_boundaries['u0_upper']]
+            # if parallax:
+            #     fit_event.fit_parameters['piEN'][1] = [use_boundaries['piEN_lower'], use_boundaries['piEN_upper']]
+            #     fit_event.fit_parameters['piEE'][1] = [use_boundaries['piEE_lower'], use_boundaries['piEE_upper']]
 
         self.log.info('Staring fit.')
         fit_event.fit()
@@ -170,7 +178,7 @@ class fitPylima(Fitter):
 
         # This will have to be modified to be compatible with MOP
         self.log.debug('Convert model parameters to dictionary.')
-        model_parameters = self.gather_parameters(event, fit_event)
+        model_parameters = self.gather_parameters(event, fit_event, fitting_method=fitting_method)
 
         # Produce fit outputs here
         plots_pylima.plot_pylima(event, fit_event, self.log)
@@ -182,7 +190,7 @@ class fitPylima(Fitter):
 
         return model_parameters
 
-    def gather_parameters(self, event, model_fit):
+    def gather_parameters(self, event, model_fit, fitting_method=None):
         """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
@@ -190,123 +198,145 @@ class fitPylima(Fitter):
 
         :param event: pyLIMA event instance
         :param model_fit: pyLIMA model
+        :param fitting_method: str, label of the type of fitter used in pyLIMA
 
         :return: dictionary with all the parameters coming from the model.
         """
 
-        param_keys = list(model_fit.fit_parameters.keys())
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                param_keys = list(model_fit.priors_parameters.keys())
+        else:
+            param_keys = list(model_fit.fit_parameters.keys())
 
-        model_params = {}
+        model_params = {
+            't0_par': model_fit.model.parallax_model[1],
+        }
 
-        model_params['t0_par'] = model_fit.model.parallax_model[1]
+        if fitting_method is not None:
+            if fitting_method == 'DE':
+                samples = model_fit.fit_results['DE_population']
+                percentiles = np.percentile(samples, [16, 50, 84], axis=0)
 
         for i, key in enumerate(param_keys):
             if key in ['t0', 'tE']:
                 ndp = 3
             else:
                 ndp = 5
-            model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
-            model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
 
-            # Save fluxes transformed to magnitudes
-            if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
-                model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                    model_fit.fit_results['best_model'][i]), 3)
-                model_params[key + '_mag_error'] = np.around(
-                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                        np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
-                        model_fit.fit_results['best_model'][i],
-                        ),
-                    3)
-            # if 'fblend' in key:
-            #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-            #         model_fit.fit_results['best_model'][i]), 3)
-            #     model_params[key + '_mag_error'] = np.around(
-            #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
-            #             model_fit.fit_results['best_model'][i],
-            #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i])),
-            #         3)
-            # if 'ftotal' in key:
-            #     model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-            #         model_fit.fit_results['best_model'][i]), 3)
-            #     model_params[key + '_mag_error'] = np.around(
-            #         toolbox.brightness_transformation.error_flux_to_error_magnitude(
-            #             model_fit.fit_results['best_model'][i],
-            #             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i])),
-            #         3)
+            if fitting_method == 'DE':
+                median = percentiles[1][i]
+                err_pl = percentiles[2][i] - percentiles[1][i]
+                err_mn = percentiles[1][i] - percentiles[0][i]
+                model_params[key] = np.around(median, ndp)
+                model_params[key + '_error'] = np.around(np.sqrt(err_pl**2 + err_mn**2), ndp)
 
-        # model_params['chi2'] = np.around(model_fit.fit_results['best_model'][-1], 3)
+                # Save fluxes transformed to magnitudes
+                if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
+                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                        median), 3)
+                    model_params[key + '_mag_error'] = np.around(
+                        toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                            np.sqrt(np.sqrt(err_pl**2 + err_mn**2)),
+                            median,
+                            ),
+                        3)
+            else:
+                model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
+                model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
+
+                # Save fluxes transformed to magnitudes
+                if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
+                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                        model_fit.fit_results['best_model'][i]), 3)
+                    model_params[key + '_mag_error'] = np.around(
+                        toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                            np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
+                            model_fit.fit_results['best_model'][i],
+                            ),
+                        3)
+
         # Reporting actual chi2 instead value of the loss function
         (chi2, pyLIMA_parameters) = model_fit.model_chi2(model_fit.fit_results['best_model'])
         model_params['chi2'] = np.around(chi2, 3)
 
-        # Calculate the reduced chi2
+
         ndata = 0
         tel_0 = ''
         for i, tel in enumerate(event.telescopes):
-            if(i == 0):
-                tel_0 = tel.name
             ndata += len(tel.lightcurve['mag'])
+
+            if i == 0:
+                tel_0 = tel.name
+
+            if f'fblend_{tel.name}' in model_params:
+                model_params['ftotal_' + tel.name] = (
+                        model_params['fsource_' + tel.name]
+                        + model_params['fblend_' + tel.name]
+                )
+                model_params['ftotal_' + tel.name + '_error'] = np.sqrt(
+                        model_params['fsource_' + tel.name + '_error']**2
+                        + model_params['fblend_' + tel.name + '_error']**2
+                )
+
+                model_params['ftotal_' + tel.name + '_mag'] = np.around(
+                    toolbox.brightness_transformation.flux_to_magnitude(
+                        model_params['ftotal_' + tel.name]),
+                    3
+                )
+
+                model_params['ftotal_' + tel.name + '_mag_error'] = np.around(
+                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                        model_params['ftotal_' + tel.name+'_error'], model_params['ftotal_' +  tel.name]),
+                    3
+                )
+
+            elif f'ftotal_{tel.name}' in model_params:
+                model_params['fblend_' + tel.name] = (
+                        model_params['ftotal_' + tel.name]
+                        - model_params['fsource_' + tel.name]
+                )
+
+                model_params['fblend_' + tel.name + '_error'] = np.sqrt(
+                    model_params['fsource_' + tel.name + '_error'] ** 2
+                    + model_params['ftotal_' + tel.name + '_error'] ** 2
+                )
+
+                model_params['fblend_' + tel.name + '_mag'] = np.around(
+                    toolbox.brightness_transformation.flux_to_magnitude(
+                        model_params['fblend_' + tel.name]
+                    ),
+                    3
+                )
+
+                model_params['fblend_' + tel.name + '_mag_error'] = np.around(
+                    toolbox.brightness_transformation.error_flux_to_error_magnitude(
+                        model_params['fblend_' + tel.name + '_error'], model_params['fblend_' + tel.name]
+                    ),
+                    3
+                )
+
+            # Source magnitude for base telescope, for MOP
+            model_params['source_magnitude'] = model_params['fsource_' + tel_0 + '_mag']
+            model_params['source_mag_error'] = model_params['fsource_' + tel_0 + '_mag_error']
+            if f'fblend_{tel_0}_mag' in model_params:
+                model_params['blend_magnitude'] = model_params['fblend_' + tel_0 + '_mag']
+                model_params['blend_mag_error'] = model_params['fblend_' + tel_0 + '_mag_error']
+            if f'ftotal_{tel_0}_mag' in model_params:
+                model_params['baseline_magnitude'] = model_params['ftotal_' + tel_0 + '_mag']
+                model_params['baseline_mag_error'] = model_params['ftotal_' + tel_0 + '_mag_error']
+            else:
+                model_params['baseline_magnitude'] = model_params['source_magnitude']
+                model_params['baseline_mag_error'] = model_params['source_mag_error']
+
+        # Calculate the reduced chi2
         model_params['red_chi2'] = np.around(model_params['chi2'] / float(ndata - len(param_keys)), 3)
 
-        key_map = {
-            'fsource_'+tel_0: 'source_magnitude',
-            'fblend_'+tel_0: 'blend_magnitude'
-        }
-
-        flux_index = []
-        for pylima_key, mop_key in key_map.items():
-            try:
-                idx = param_keys.index(pylima_key)
-                model_params[mop_key] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                    model_fit.fit_results['best_model'][idx]), 3)
-                flux_index.append(idx)
-            except ValueError:
-                model_params[mop_key] = np.nan
-
-        # Retrieve the flux uncertainties and convert to magnitudes
-        model_params['source_mag_error'] = np.around(
-            toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                model_params['fsource_'+tel_0+'_error'], model_params['fsource_'+tel_0]),3)
-
-        if 'fblend_'+tel_0 in model_params:
-            model_params['blend_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(
-                 model_params['fblend_'+tel_0+'_error'], model_params['fblend_'+tel_0]),3)
-        else:
-            model_params['blend_mag_error'] = np.nan
-
-        # If the model fitted contains valid entries for both source and blend flux,
-        # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
-        if 'ftotal_'+tel_0 in model_params:
-            unlensed_flux = model_params['ftotal_'+tel_0]
-            unlensed_flux_error = model_params['ftotal_'+tel_0+'_error']
-            model_params['baseline_magnitude'] = np.around(
-                toolbox.brightness_transformation.flux_to_magnitude(unlensed_flux), 3
-                )
-            model_params['baseline_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(unlensed_flux_error, unlensed_flux),
-                3
-            )
-        elif not np.isnan(model_params['source_magnitude']) \
-                and not np.isnan(model_params['blend_magnitude']):
-            unlensed_flux = model_fit.fit_results['best_model'][flux_index[0]] \
-                            + model_fit.fit_results['best_model'][flux_index[1]]
-            unlensed_flux_error = np.sqrt(
-                (model_params['fsource_'+tel_0+'_error'] ** 2 + model_params['fblend_'+tel_0+'_error'] ** 2)
-                + (model_params['fsource_'+tel_0+'_error'] * model_params['fblend_'+tel_0+'_error'])
-            )
-            model_params['baseline_magnitude'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(unlensed_flux), 3)
-            model_params['baseline_mag_error'] = np.around(
-                toolbox.brightness_transformation.error_flux_to_error_magnitude(unlensed_flux_error, unlensed_flux),
-                3)
-        else:
-            model_params['baseline_magnitude'] = model_params['source_magnitude']
-            model_params['baseline_mag_error'] = model_params['source_mag_error']
-
-        model_params['fit_covariance'] = model_fit.fit_results['covariance_matrix'].tolist()
-
-        model_params['fit_parameters'] = model_fit.fit_parameters
+        # if 'fit_covariance' in model_fit.fit_results:
+        #     model_params['fit_covariance'] = model_fit.fit_results['covariance_matrix'].tolist()
+        #
+        #
+        # model_params['fit_parameters'] = model_fit.fit_parameters
 
         # Calculate fit statistics
         try:

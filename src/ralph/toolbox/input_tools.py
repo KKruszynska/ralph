@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def load_light_curve_from_path(path):
     """
     Utility function to load light curve data from file on disk.
