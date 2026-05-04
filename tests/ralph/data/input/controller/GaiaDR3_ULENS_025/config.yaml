@@ -25,17 +25,17 @@ light_curves:
     - survey: Gaia
       band: G
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_G.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat
 
     - survey: Gaia
       band: BP
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_BP.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat
 
     - survey: Gaia
       band: RP
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
-      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_RP.dat
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat
 
     - survey: OGLE
       band: I
