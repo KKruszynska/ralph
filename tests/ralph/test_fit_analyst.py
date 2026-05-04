@@ -239,7 +239,6 @@ class FitAnalystTest:
                 for key in expected_result:
                     expected = float(expected_result[key])
                     received = float(model_result[key])
-                    print(model, key, expected, received)
                     if not np.isnan(expected):
                         assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 

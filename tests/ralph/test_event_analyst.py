@@ -310,7 +310,6 @@ class EventAnalystTest:
                 for key in expected_result:
                     expected = float(expected_result[key])
                     received = float(model_result[key])
-                    print(model, key, expected, received)
                     if not np.isnan(expected):
                         assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
@@ -330,32 +329,3 @@ def test_run():
 
     # Remove created files
 
-    for case in [scenario_file_cat, scenario_gsa, scenario_kwu]:
-        analyst_path = case.get('analyst_path')
-
-        output = Path(analyst_path + 'fit_results.json')
-        if output.exists():
-            os.remove(output)
-
-        output = Path(analyst_path + 'fit_stats.txt')
-        if output.exists():
-            os.remove(output)
-
-        final_files = case.get('final_files')
-        for element in final_files:
-            if element == 'analyst_log':
-                output = Path(analyst_path + final_files[element])
-                if output.exists():
-                    os.remove(output)
-
-            if element == 'model_plots':
-                for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
-                    if output.exists():
-                        os.remove(output)
-
-            if element == 'cmd_plots':
-                for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
-                    if output.exists():
-                        os.remove(output)
