@@ -1,0 +1,25 @@
+event_name: Gaia18cbf
+ra: 241.16190
+dec: -41.10483
+
+lc_analyst:
+    n_max : 10
+    ongoing_magnification_thershold: 1.10
+    ongoing_amplitude_thershold: 1.0
+
+fit_analyst:
+    fitting_package: pylima
+
+cmd_analyst:
+    catalogues:
+        - name: Gaia_DR3
+          band:
+              - Gaia_G
+              - Gaia_BP
+              - Gaia_RP
+
+light_curves:
+    - survey: Gaia
+      band: G
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/Gaia18cbf_Gaia_G.dat
