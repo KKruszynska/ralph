@@ -22,11 +22,11 @@ def define_plotting_dictionaries(telescope_names):
     hexcolor = ['#' + format(int(i[0] * 255), 'x').zfill(2) + format(int(i[1] * 255), 'x').zfill(2) +
                 format(int(i[2] * 255), 'x').zfill(2) for i in color]
     # markers
-    MARKER_SYMBOLS = np.array(
+    marker_symbols = np.array(
         [['o', '.', '*', 'v', '^', '<', '>', 's', 'p', 'd', 'x'] * 10]
     )
 
-    marker_cycle = MARKER_SYMBOLS[0][:n_telescopes]
+    marker_cycle = marker_symbols[0][:n_telescopes]
     # color_cycle = cycler.cycler(color=hexcolor)
     # matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
     color_dict = dict(zip(telescope_names, hexcolor, strict=False))

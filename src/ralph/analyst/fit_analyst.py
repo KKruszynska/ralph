@@ -166,7 +166,7 @@ class FitAnalyst(Analyst):
                                                 fitting_method=fitting_method,
                                                 )
             else:
-                self.log.debug(f'Fit Analyst: Using default fitting method')
+                self.log.debug('Fit Analyst: Using default fitting method')
                 fit_pspl = pylima.fit_pylima.fitPylima(self.log)
                 results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params,
                                             parallax, blend,

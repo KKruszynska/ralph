@@ -1,6 +1,7 @@
-import pytest
 import os
 from pathlib import Path
+
+import pytest
 
 from ralph.fitting_support.pylima.fit_pylima import fitPylima
 from ralph.toolbox import input_tools, logs

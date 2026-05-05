@@ -1,9 +1,8 @@
-import pytest
-import numpy as np
-
-from pathlib import Path
-import os
 import json
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 from ralph.analyst.event_analyst import EventAnalyst
 

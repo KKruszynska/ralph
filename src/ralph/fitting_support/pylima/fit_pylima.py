@@ -1,7 +1,7 @@
 
 import numpy as np
 from pyLIMA import event, telescopes, toolbox
-from pyLIMA.fits import TRF_fit, DE_fit, stats
+from pyLIMA.fits import DE_fit, TRF_fit, stats
 from pyLIMA.fits.objective_functions import photometric_residuals_in_magnitude
 from pyLIMA.models import PSPL_model
 from pyLIMA.outputs.pyLIMA_plots import create_telescopes_to_plot_model
@@ -190,7 +190,7 @@ class fitPylima(Fitter):
 
         return model_parameters
 
-    def gather_parameters(self, event, model_fit, fitting_method=None):
+    def gather_parameters(self, event, model_fit, log, fitting_method=None):
         """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
@@ -365,7 +365,10 @@ class fitPylima(Fitter):
                                                             ndata, n_parameters)
             model_params['bic_test'] = np.around(bic_test, 3)
 
-        except:
+
+        except Exception as err:
+            log.error(f'Fit Analyst: {err}, {type(err)}')
+
             model_params['sw_test'] = np.nan
             model_params['ad_test'] = np.nan
             model_params['ks_test'] = np.nan
@@ -384,13 +387,11 @@ class fitPylima(Fitter):
         :return: list with arrays containing aligned data
         """
 
-        pyLIMA_parameters = model.compute_pyLIMA_parameters(parameters)
+        pylima_parameters = model.compute_pyLIMA_parameters(parameters)
 
         # plot aligned data
-        index = 0
-
         list_of_telescopes = create_telescopes_to_plot_model(model,
-                                                             pyLIMA_parameters
+                                                             pylima_parameters
                                                              )
 
         ref_names = []
@@ -399,12 +400,12 @@ class fitPylima(Fitter):
         ref_fluxes = []
 
         for ref_tel in list_of_telescopes:
-            model_magnification = model.model_magnification(ref_tel, pyLIMA_parameters)
+            model_magnification = model.model_magnification(ref_tel, pylima_parameters)
 
-            model.derive_telescope_flux(ref_tel, pyLIMA_parameters, model_magnification)
+            model.derive_telescope_flux(ref_tel, pylima_parameters, model_magnification)
 
-            f_source = pyLIMA_parameters['fsource_' + ref_tel.name]
-            f_blend = pyLIMA_parameters['fblend_' + ref_tel.name]
+            f_source = pylima_parameters['fsource_' + ref_tel.name]
+            f_blend = pylima_parameters['fblend_' + ref_tel.name]
 
             ref_names.append(ref_tel.name)
             ref_locations.append(ref_tel.location)
@@ -422,7 +423,7 @@ class fitPylima(Fitter):
                 else:
                     ref_index = np.where(np.array(ref_names) == tel.name)[0][0]
 
-                residues_in_mag = photometric_residuals_in_magnitude(tel, model, pyLIMA_parameters)
+                residues_in_mag = photometric_residuals_in_magnitude(tel, model, pylima_parameters)
                 if ind == 0:
                     reference_source = ref_fluxes[ind][0]
                     reference_blend = ref_fluxes[ind][1]
@@ -430,7 +431,9 @@ class fitPylima(Fitter):
                 # time_mask = [False for i in range(len(ref_magnification[ref_index]))]
                 time_mask = []
                 for time in tel.lightcurve['time'].value:
-                    time_index = np.where(list_of_telescopes[ref_index].lightcurve['time'].value == time)[0][0]
+                    time_index = np.where(
+                        list_of_telescopes[ref_index].lightcurve['time'].value == time
+                    )[0][0]
                     time_mask.append(time_index)
 
                 model_flux = reference_source * ref_magnification[ref_index][
@@ -481,7 +484,7 @@ def return_baseline_mag(mag_source, err_mag_source,
         base_mag = toolbox.brightness_transformation.flux_to_magnitude(base_flux)
         err_base_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_base, base_flux)
     except Exception as err:
-        log.error('CMD Analyst: %s, %s' % (err, type(err)))
+        log.error(f'CMD Analyst: {err}, {type(err)}')
 
     return base_mag, err_base_mag
 
@@ -512,9 +515,11 @@ def return_blend_mag(mag_source, err_mag_source,
 
     try:
         blend_mag = toolbox.brightness_transformation.flux_to_magnitude(blend_flux)
-        err_blend_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_blend, blend_flux)
+        err_blend_mag = (
+            toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_blend, blend_flux)
+        )
     except Exception as err:
-        log.error('CMD Analyst: %s, %s' % (err, type(err)))
+        log.error(f'CMD Analyst: {err}, {type(err)}')
 
     return blend_mag, err_blend_mag
 

@@ -1,6 +1,7 @@
-import numpy as np
 import os
 from pathlib import Path
+
+import numpy as np
 
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs

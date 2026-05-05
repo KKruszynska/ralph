@@ -1,9 +1,9 @@
-import pytest
 import json
-import numpy as np
+import os
 from pathlib import Path
 
-import os
+import numpy as np
+import pytest
 
 from ralph.controller.controller import Controller
 

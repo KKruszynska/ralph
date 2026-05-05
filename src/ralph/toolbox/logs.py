@@ -17,14 +17,11 @@ def start_log(log_location, log_type,
     :return: python logger
     """
 
-    if (event_name != None):
-        log = logging.getLogger('analyst_log')
-    else:
-        log = logging.getLogger('controller_log')
+    log = logging.getLogger('analyst_log') if event_name is not None else logging.getLogger('controller_log')
 
-    if (log_type == 'debug'):
+    if log_type == 'debug':
         log_level = logging.DEBUG
-    elif (log_type == 'info'):
+    elif log_type == 'info':
         log_level = logging.INFO
     else:
         log_level = logging.ERROR
@@ -34,18 +31,18 @@ def start_log(log_location, log_type,
 
     log.setLevel(log_level)
 
-    if (stream):
+    if stream:
         ch = logging.StreamHandler(stream=sys.stdout)
         ch.setLevel(log_level)
         ch.setFormatter(formatter)
         log.addHandler(ch)
     else:
-        if (event_name != None):
+        if event_name is not None:
             filename = log_location + f'{event_name}_analyst.log'
         else:
             filename = log_location + 'controller.log'
 
-        if os.path.isdir(log_location) == False:
+        if not os.path.isdir(log_location):
             os.makedirs(log_location)
         fh = logging.FileHandler(filename, encoding='utf-8')
         fh.setLevel(log_level)
