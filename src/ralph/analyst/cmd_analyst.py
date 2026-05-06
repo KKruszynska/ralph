@@ -48,14 +48,14 @@ class CmdAnalyst(Analyst):
         if light_curve_data is not None:
             self.light_curve_data = light_curve_data
         else:
-            self.log.error("CMD Analyst: Error! CMD Analyst needs source and blend magnitudes.")
+            self.log.error("CMD Analyst: Error! CMD Analyst needs at least source and baseline magnitudes.")
 
         if config_dict is not None:
             self.add_cmd_config(catalogue, config_dict)
         elif "cmd_analyst" in self.config:
             self.add_cmd_config(catalogue, self.config)
         else:
-            self.log.error("CMD Analyst: Error! CMD Analyst needs information.")
+            self.log.error("CMD Analyst: Error! CMD Analyst needs configuration parameters.")
             quit()
 
     def add_cmd_config(self, catalogue, config_dict):
