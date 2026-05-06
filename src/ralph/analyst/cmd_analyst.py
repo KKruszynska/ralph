@@ -180,8 +180,7 @@ class CmdAnalyst(Analyst):
 
         return data, labels
 
-    def plot_cmd(self, source_data,
-                 cmd_data, cmd_labels):
+    def plot_cmd(self, source_data, cmd_data, cmd_labels):
         """
         Create a color-magnitude diagram based on catalog data and the source, baseline, and,
         if available, blend of a selected model and its best-fitting solution. The resulting
