@@ -11,27 +11,43 @@ class CmdAnalyst(Analyst):
     """
     This is a class that creates a color-magnitude diagram for one event, one catalogue
     and one solution.
-    It is a subclass of the :superclass:`ralph.analyst.analyst.Analyst`
+    It is a subclass of the :class:`ralph.analyst.analyst.Analyst`
 
     A CMD Analyst doesn't need config dict, but it needs a self.config already initialized by
     another process.
 
-    :param event_name: str, name of the event
-    :param analyst_path: str, path to the folder where the outputs are saved
-    :param catalogue: str, name of the catalogue
-    :param light_curve_data: dict, dictionary with magnitudes in selected bands for source,
-                             blend and baseline; this is a result from fitting.
-    :param log: logger instance, log started by Event Analyst
-    :param config_dict: dictionary, optional, dictionary with CMD Analyst configuration
-    :param config_path: str, optional, path to the YAML configuration file of the CMD Analyst
+    :param event_name: The name of the event.
+    :type event_name: string
+
+    :param analyst_path: The path to the folder where the outputs are saved.
+    :type analyst_path: string
+
+    :param catalogue:  The name of the catalogue used for building the color-magnitude diagram.
+    :type catalogue: string
+
+    :param light_curve_data:  A dictionary with magnitudes in selected bands for source, baseline,
+     and, if available, blend. This is a result from running the Fit Analyst.
+    :type light_curve_data: dict
+
+    :param log: A logger instance started by Event Analyst.
+    :type log: logging.Logger
+
+    :param config_dict: A dictionary with CMD Analyst configuration.
+    :type config_dict: dict, optional
+
+    :param config_path: A path to the configuration file of the CMD Analyst.
+    :type config_path: string, optional
 
     Notes on configuration:
-
+    ------------------------------
     The configuration dictionary can contain the following keywords:
 
-    * `name` str, name of the catalogue
-    * `cmd_path` str, path to the catalogue
-    * `separator` str, separator used in the file with the catalogue
+    * `name`: string
+        The name of the catalogue.
+    * `cmd_path`: string
+        The path to the catalogue.
+    * `separator`: string
+        A separator used in the file with the catalogue.
     """
 
     def __init__(
@@ -60,10 +76,13 @@ class CmdAnalyst(Analyst):
 
     def add_cmd_config(self, catalogue, config_dict):
         """
-        Add CMD configuration fields to analyst config.
+        Adds configuration fields to the internal CMD Analyst configuration dictionary.
 
-        :param catalogue: str, catalogue name
-        :param config_dict: dict, dictionary with analyst config
+        :param catalogue: The name of the catalogue.
+        :type catalogue: string
+
+        :param config_dict: A dictionary with the Event Analyst configuration.
+        :type config_dict: dict
         """
 
         self.log.debug("CMD Analyst: Adding config.")
@@ -79,12 +98,13 @@ class CmdAnalyst(Analyst):
 
     def transform_source_data(self):
         """
-        This function transforms a dictionary (`light_curve_data`) with source, blend and
-        baseline information into two data structures, a pandas data frame with magnitudes
-        assigned in different filters to source, blend and baseline.
+        Transforms a dictionary (`light_curve_data`) with source, blend and
+        baseline information into a Pandas DataFrame with magnitudes assigned in different
+        filters to source, blend and baseline.
 
-        :return: a pandas data frame with magnitudes assigned in different filters to source,
+        :return: A DataFrame with magnitudes assigned in different filters to source,
                  blend and baseline.
+        :rtype: pandas.DataFrame
         """
         try:
             self.log.debug("CMD Analyst: Creating source and blend mags dataframe and labels.")
@@ -116,7 +136,8 @@ class CmdAnalyst(Analyst):
         Loads catalogue data based on the catalogue names.
         It loads the catalogue from a file.
 
-        :return: a pandas data frame with data to create a cmd, and a list with band labels
+        :return: A data frame with data to create a color-magnitude diagram, and a list with band labels.
+        :rtype: pandas.DataFrame, list
         """
 
         self.log.debug("CMD Analyst: Preparing to load the catalogue.")
@@ -140,6 +161,9 @@ class CmdAnalyst(Analyst):
         """
         Loads a file with catalogue data from path specified by the user in the configuration.
 
+        :param separator: A separator used in the file with the data.
+        :type separator: string, optional
+
         :return: pandas data frame and labels of the bands
         """
 
@@ -159,15 +183,22 @@ class CmdAnalyst(Analyst):
     def plot_cmd(self, source_data,
                  cmd_data, cmd_labels):
         """
-        Create a colour magnitude diagram with magnitudes obtained from fitting plotted on it.
+        Create a color-magnitude diagram based on catalog data and the source, baseline, and,
+        if available, blend of a selected model and its best-fitting solution. The resulting
+        plot is saved as an HTML file.
 
-        :param source_data: pandas dataframe with magnitudes obtained from fitting microlensing model
+        :param source_data: A dataframe with source, baseline, (and blend) magnitudes obtained
+            for a selected model and its best-fitting solution.
+        :type source_data: pandas.DataFrame
 
-        :param cmd_data: pandas data frame with magnitudes of the sources around
-                         the event coming from a survey
-        :param cmd_labels: labels of filters in the `cmd_data`
+        :param cmd_data: A dataframe with catalog data of the nearby sources, coming from the survey.
+        :type cmd_data: pandas.DataFrame
 
-        :return: status of creating a cmd plot
+        :param cmd_labels: A list with labels of filters used by the `cmd_data` and `source_data`.
+        :type cmd_labels: list
+
+        :return: status of the plot creation, `True` if created sucessfully, `False` otherwise.
+        :rtype: bool
         """
 
         self.log.debug("CMD Analyst: Plotting CMD started.")
