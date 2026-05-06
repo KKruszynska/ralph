@@ -8,7 +8,7 @@ from ralph.toolbox import input_tools, logs
 
 scenario_gaia = {
         'path_outputs': 'tests/ralph/data/output/lc_analyst/',
-        'event_name': 'GDR3-ULENS-025',
+        'event_name': 'GDR3_ULENS_025',
         'ra': 260.8781,
         'dec': -27.3788,
         'lc_analyst': {
@@ -149,7 +149,7 @@ class LightCurveAnalystTest:
         for entry in config['light_curves']:
             survey = entry['survey']
             band = entry['band']
-            if ('path' in entry):
+            if 'path' in entry:
                 light_curve = input_tools.load_light_curve_from_path(entry['path'])
                 light_curves.append({
                     'light_curve': light_curve,
