@@ -29,13 +29,13 @@ class CmdAnalyst(Analyst):
      and, if available, blend. This is a result from running the Fit Analyst.
     :type light_curve_data: dict
 
-    :param log: A logger instance started by Event Analyst.
+    :param log: A logger instance started by the Event Analyst.
     :type log: logging.Logger
 
-    :param config_dict: A dictionary with CMD Analyst configuration.
+    :param config_dict: A dictionary with the Event Analyst configuration.
     :type config_dict: dict, optional
 
-    :param config_path: A path to the configuration file of the CMD Analyst.
+    :param config_path: A path to the configuration file of the Event Analyst.
     :type config_path: string, optional
 
     Notes on configuration:
