@@ -11,7 +11,7 @@ class CmdAnalyst(Analyst):
     """
     This is a class that creates a color-magnitude diagram for one event, one catalogue
     and one solution.
-    It is a child of the :superclass:`ralph.analyst.analyst.Analyst`
+    It is a subclass of the :superclass:`ralph.analyst.analyst.Analyst`
 
     A CMD Analyst doesn't need config dict, but it needs a self.config already initialized by
     another process.
