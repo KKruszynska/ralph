@@ -62,8 +62,9 @@ class LightCurveAnalyst(Analyst):
 
     def perform_quality_check(self):
         """
-        Performs a quality check of the light curve and applies masks to invalid entries.
-        A cleaned light curve replaces the old entry in the internal analyst dictionary.
+        Performs a quality checks of light curves stored in the internal dictionary,
+        and applies masks to invalid entries. A cleaned light curve replaces
+        the old entry in the internal analyst dictionary.
         """
 
         self.log.info("LC Analyst: Start quality check.")
