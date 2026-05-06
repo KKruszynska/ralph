@@ -97,7 +97,7 @@ class EventAnalyst(Analyst):
             self.log.info('Event Analyst: Light curves received.')
 
         except Exception as err:
-            self.log.error('Event Analyst: %s, %s' % (err, type(err)))
+            self.log.error(f'Event Analyst: {err}, {type(err)}')
 
     def add_config_dict(self, conifg_dict):
         """
@@ -129,7 +129,7 @@ class EventAnalyst(Analyst):
                 self.log.info('Event Analyst: No CMD Analyst config, it will not be launched.')
 
         except Exception as err:
-            self.log.error('Event Analyst: %s, %s' % (err, type(err)))
+            self.log.error(f'Event Analyst: {err}, {type(err)}')
 
     def parse_light_curves(self, lc_config):
         """
@@ -166,7 +166,9 @@ class EventAnalyst(Analyst):
                         'band': band,
 
                     })
-                    self.log.debug(f'Event Analyst: Loaded light curve without ephemeris for {survey}, {band}.')
+                    self.log.debug(
+                        f'Event Analyst: Loaded light curve without ephemeris for {survey}, {band}.'
+                    )
             else:
                 self.log.error('Event Analyst: Problem! No light curve data specified')
 
@@ -174,9 +176,10 @@ class EventAnalyst(Analyst):
 
     def run_single_analyst(self):
         """
-        Perform tasks assigned to a single Event Analyst. First the event is handled by a Fit Analyst, searching
-        for fitting microlensing models. After fitting is done, output information is passed to a CMD Analyst, that
-        creates a CMD plot for specified catalogs and plots the source and blend for each found solution.
+        Perform tasks assigned to a single Event Analyst. First the event is handled by a Fit Analyst,
+        searching for fitting microlensing models. After fitting is done, output information is passed
+        to a CMD Analyst, that creates a CMD plot for specified catalogs and plots the source and blend
+        for each found solution.
 
         :return: status?
         """
@@ -241,7 +244,6 @@ class EventAnalyst(Analyst):
 
         :return: a list of boolean values corresponding to status of the created cmd plots.
         """
-        cmd_plot_status = []
 
         for dictionary in self.config['cmd_analyst']['catalogues']:
             catalogue = dictionary['name']
@@ -253,7 +255,7 @@ class EventAnalyst(Analyst):
                 base, source, blend = {}, {}, {}
                 for b in bands:
                     no_total, no_blend = True, True
-                    for i, key in enumerate(results):
+                    for key in results:
                         if b in key:
                             if 'total' in key:
                                 no_total = False
@@ -295,13 +297,16 @@ class EventAnalyst(Analyst):
                         blend[b] = [blend_mag, blend_err]
 
 
-                self.log.info('Event Analyst: Starting CMD analyst for %s' % catalogue)
+                self.log.info(f'Event Analyst: Starting CMD analyst for {catalogue}')
                 light_curve_data = {'baseline': base,
                                     'source': source,
                                     'blend': blend}
                 self.log.debug('Event Analyst: Got light curve data.')
 
-                cmd_analyst = CmdAnalyst(self.config['event_name']+'_'+solution, self.analyst_path, catalogue, light_curve_data,
+                cmd_analyst = CmdAnalyst(self.config['event_name']+'_'+solution,
+                                         self.analyst_path,
+                                         catalogue,
+                                         light_curve_data,
                                          self.log,
                                          config_dict=self.config
                                          )
@@ -353,10 +358,7 @@ if __name__ == '__main__':
 
     if '--stream' in sys.argv:
         idx = sys.argv.index('--stream')
-        if sys.argv[idx + 1] == 'True':
-            stream = True,
-        else:
-            stream = False
+        stream = (True,) if sys.argv[idx + 1] == 'True' else False
 
     if '--config_path' in sys.argv:
         idx = sys.argv.index('--config_path')

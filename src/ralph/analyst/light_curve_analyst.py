@@ -34,9 +34,9 @@ class LightCurveAnalyst(Analyst):
         self.light_curves = light_curves
         self.log = log
 
-        if (config_dict != None):
+        if config_dict is not None:
             self.add_lc_config(config_dict)
-        elif('lc_analyst' in self.config):
+        elif 'lc_analyst' in self.config:
             self.add_lc_config(self.config)
         else:
             self.log.error('LC Analyst: Error! Light Curve Analyst needs information.')

@@ -23,15 +23,15 @@ class Analyst:
         self.analyst_path = self.update_names_paths(analyst_path)
 
         self.config = {}
-        if (config_dict != None):
+        if config_dict is not None:
             # READ config_dict
             self.config = config_dict
-        elif (config_path != None):
+        elif config_path is not None:
             # read config path
             self.parse_config(config_path)
         else:
             # todo: raise custom exception here?
-            print("Error! Analyst needs information!!!")
+            print('Error! Analyst needs information!!!')
             quit()
 
     def parse_config(self, config_path):
@@ -41,17 +41,16 @@ class Analyst:
         :param config_path: str, path with YAML file containing Analyst configuration.
         """
 
-        config = {}
         try:
             with open(config_path, 'r') as file:
                 event_config = yaml.safe_load(file)
 
-            self.config["event_name"] = event_config.get("event_name")
-            self.config["ra"] = float(event_config.get("ra"))
-            self.config["dec"] = float(event_config.get("dec"))
+            self.config['event_name'] = event_config.get('event_name')
+            self.config['ra'] = float(event_config.get('ra'))
+            self.config['dec'] = float(event_config.get('dec'))
 
         except Exception as err:
-            print("Unexpected %s, %s" % (err, type(err)))
+            print(f'Unexpected {err}, {type(err)}')
 
     def update_names_paths(self, name):
         """
@@ -61,7 +60,7 @@ class Analyst:
         :return: str, updated name without minuses
         """
 
-        updated_name = name.replace(" ", "_").replace("-", "_")
+        updated_name = name.replace(' ', '_').replace('-', '_')
 
         return updated_name
 

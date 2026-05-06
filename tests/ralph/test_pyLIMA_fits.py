@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ralph.fitting_support.pylima.fit_pylima import fitPylima
+from ralph.fitting_support.pylima.fit_pylima import FitPylima
 from ralph.toolbox import input_tools, logs
 
 scenario = {
@@ -80,8 +80,8 @@ class TestPylima:
 
         event_name = self.event_name
 
-        log.info('Creating fitPylima instance.')
-        fit_pspl = fitPylima(log)
+        log.info('Creating FitPylima instance.')
+        fit_pspl = FitPylima(log)
         log.info('Setting up event.')
 
         event = fit_pspl.setup_event(event_name,
@@ -104,7 +104,7 @@ class TestPylima:
                              'debug',
                              event_name='test_pylima_fits_pspl')
 
-        fit_pspl = fitPylima(log)
+        fit_pspl = FitPylima(log)
         log.info('Fitting event.')
         starting_params = {
            'ra': self.ra,
@@ -139,7 +139,7 @@ class TestPylima:
                              'debug',
                              event_name='test_pyLIMA_fits_pie')
 
-        fit_pspl = fitPylima(log)
+        fit_pspl = FitPylima(log)
         log.info('Fitting event.')
         starting_params = {
            'ra': self.ra,

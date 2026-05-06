@@ -10,7 +10,7 @@ from ralph.fitting_support.fitter import Fitter
 from ralph.fitting_support.pylima import plots_pylima
 
 
-class fitPylima(Fitter):
+class FitPylima(Fitter):
     """
     Class with pylima fitter.
 
@@ -124,11 +124,7 @@ class fitPylima(Fitter):
         ra, dec = float(starting_params['ra']), float(starting_params['dec'])
         event = self.setup_event(event_name, ra, dec, light_curves)
 
-        blend_param = ''
-        if blend:
-            blend_param = 'ftotal'
-        else:
-            blend_param = 'noblend'
+        blend_param = 'ftotal' if blend else 'noblend'
 
         if parallax:
             self.log.info('Fitting with microlensing parallax.')
@@ -143,7 +139,6 @@ class fitPylima(Fitter):
                 fit_event = DE_fit.DEfit(pspl,loss_function='soft_l1')
         else:
             fit_event = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
-        # fit_event = DE_fit.DEfit(pspl)
 
         # Use boundries like in mop.toolbox.fittools
         if use_boundaries is None:
@@ -160,17 +155,8 @@ class fitPylima(Fitter):
         else:
             self.log.info('Using boundaries passed by the User.')
             for key in use_boundaries:
-                fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
 
-            # default_t0_lower = fit_event.fit_parameters['t0'][1][0]
-            # default_t0_upper = fit_event.fit_parameters['t0'][1][1]
-            # fit_event.fit_parameters['t0'][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            # # t_E, u_0 and pi_E params passed by user
-            # fit_event.fit_parameters['tE'][1] = [use_boundaries['tE_lower'], use_boundaries['tE_upper']]
-            # fit_event.fit_parameters['u0'][1] = [use_boundaries['u0_lower'], use_boundaries['u0_upper']]
-            # if parallax:
-            #     fit_event.fit_parameters['piEN'][1] = [use_boundaries['piEN_lower'], use_boundaries['piEN_upper']]
-            #     fit_event.fit_parameters['piEE'][1] = [use_boundaries['piEE_lower'], use_boundaries['piEE_upper']]
+                fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
 
         self.log.info('Staring fit.')
         fit_event.fit()
@@ -178,7 +164,8 @@ class fitPylima(Fitter):
 
         # This will have to be modified to be compatible with MOP
         self.log.debug('Convert model parameters to dictionary.')
-        model_parameters = self.gather_parameters(event, fit_event, fitting_method=fitting_method)
+        model_parameters = self.gather_parameters(event, fit_event,
+                                                  fitting_method=fitting_method)
 
         # Produce fit outputs here
         plots_pylima.plot_pylima(event, fit_event, self.log)
@@ -190,7 +177,9 @@ class fitPylima(Fitter):
 
         return model_parameters
 
-    def gather_parameters(self, event, model_fit, log, fitting_method=None):
+    def gather_parameters(self, event,
+                          model_fit,
+                          fitting_method=None):
         """
         Gathers parameters into a dictionary, for easier handling.
         Like in mop.toolbox.fittools, but edited to accommodate wider usage
@@ -213,16 +202,12 @@ class fitPylima(Fitter):
             't0_par': model_fit.model.parallax_model[1],
         }
 
-        if fitting_method is not None:
-            if fitting_method == 'DE':
-                samples = model_fit.fit_results['DE_population']
-                percentiles = np.percentile(samples, [16, 50, 84], axis=0)
+        if fitting_method is not None and fitting_method == 'DE':
+            samples = model_fit.fit_results['DE_population']
+            percentiles = np.percentile(samples, [16, 50, 84], axis=0)
 
         for i, key in enumerate(param_keys):
-            if key in ['t0', 'tE']:
-                ndp = 3
-            else:
-                ndp = 5
+            ndp = 3 if key in ['t0', 'tE'] else 5
 
             if fitting_method == 'DE':
                 median = percentiles[1][i]
@@ -233,8 +218,10 @@ class fitPylima(Fitter):
 
                 # Save fluxes transformed to magnitudes
                 if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
-                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                        median), 3)
+                    model_params[key + '_mag'] = np.around(
+                        toolbox.brightness_transformation.flux_to_magnitude(
+                        median), 3
+                    )
                     model_params[key + '_mag_error'] = np.around(
                         toolbox.brightness_transformation.error_flux_to_error_magnitude(
                             np.sqrt(np.sqrt(err_pl**2 + err_mn**2)),
@@ -243,12 +230,17 @@ class fitPylima(Fitter):
                         3)
             else:
                 model_params[key] = np.around(model_fit.fit_results['best_model'][i], ndp)
-                model_params[key + '_error'] = np.around(np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp)
+                model_params[key + '_error'] = np.around(
+                    np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]), ndp
+                )
 
                 # Save fluxes transformed to magnitudes
                 if any(x in key for x in ['fsource', 'fblend', 'ftotal']):
-                    model_params[key + '_mag'] = np.around(toolbox.brightness_transformation.flux_to_magnitude(
-                        model_fit.fit_results['best_model'][i]), 3)
+                    model_params[key + '_mag'] = (
+                        np.around(toolbox.brightness_transformation.flux_to_magnitude(
+                        model_fit.fit_results['best_model'][i]), 3
+                        )
+                    )
                     model_params[key + '_mag_error'] = np.around(
                         toolbox.brightness_transformation.error_flux_to_error_magnitude(
                             np.sqrt(model_fit.fit_results['covariance_matrix'][i, i]),
@@ -257,7 +249,7 @@ class fitPylima(Fitter):
                         3)
 
         # Reporting actual chi2 instead value of the loss function
-        (chi2, pyLIMA_parameters) = model_fit.model_chi2(model_fit.fit_results['best_model'])
+        (chi2, pylima_parameters) = model_fit.model_chi2(model_fit.fit_results['best_model'])
         model_params['chi2'] = np.around(chi2, 3)
 
 
@@ -367,7 +359,7 @@ class fitPylima(Fitter):
 
 
         except Exception as err:
-            log.error(f'Fit Analyst: {err}, {type(err)}')
+            self.log.error(f'Fit Analyst: {err}, {type(err)}')
 
             model_params['sw_test'] = np.nan
             model_params['ad_test'] = np.nan

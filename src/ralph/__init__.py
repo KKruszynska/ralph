@@ -16,6 +16,6 @@ __all__ = [
     "fit_pylima",
     "plots_pylima",
     "logs",
-    "input_tools"
+    "input_tools",
     "__version__"
 ]

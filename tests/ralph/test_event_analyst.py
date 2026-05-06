@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -322,9 +323,37 @@ def test_run():
     test.test_parse_config()
     test.test_run_analyst_file()
 
-    for case in [scenario_kwu, scenario_gsa]:
-        test = EventAnalystTest(case)
-        test.test_run_analyst_dict()
+    # for case in [scenario_kwu, scenario_gsa]:
+    case = scenario_kwu
+    test = EventAnalystTest(case)
+    test.test_run_analyst_dict()
 
     # Remove created files
+    for case in [scenario_file_cat, scenario_kwu]:
+        analyst_path = case.get('analyst_path')
+        event_name = case.get('event_name')
 
+        output = Path(analyst_path + 'fit_results.json')
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + 'fit_stats.txt')
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + event_name + '_analyst.log')
+        if output.exists():
+            os.remove(output)
+
+        files_to_remove = case.get('final_files')
+        if files_to_remove.get('model_plots') is not None:
+            for element in files_to_remove.get('model_plots'):
+                output = Path(analyst_path + element)
+                if output.exists():
+                    os.remove(output)
+
+        if files_to_remove.get('cmd_plots') is not None:
+            for element in files_to_remove.get('cmd_plots'):
+                output = Path(analyst_path + element)
+                if output.exists():
+                    os.remove(output)

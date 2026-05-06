@@ -12,6 +12,11 @@ formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(messa
                                   datefmt='%Y-%m-%d %H:%M:%S')
 
 def run_parallel_analyst(command):
+    """
+    Run a single analyst as a subprocess.
+
+    :param command: string, a command to be executed
+    """
     logger.info('About to start subprocess for event: ')
     logger.info(f'Command: {command[:-2]}')
     subprocess.run(command, shell=False)
@@ -19,10 +24,12 @@ def run_parallel_analyst(command):
 class Controller:
     """
     Class that controls other analysts and their corresponding tasks.
-    A controller has to be initialized with either config_path or config_dict specified. Otherwise, it will not work.
+    A controller has to be initialized with either config_path or config_dict specified.
+    Otherwise, it will not work.
 
     :param event_list: list, a list with names of events that need to be analyzed by the pipeline
-    :param config_path: string, optional, a path to a json file that has the configuration parameters for the controller
+    :param config_path: string, optional, a path to a json file that has the configuration
+                        parameters for the controller
     :param config_dict: dictionary, optional, a dictionary containing configuration of the controller
     :param analyst_dicts: dictionary, optional, dictionary containing jsons with information for analysts
     :param stream: optional, boolean, should the log be accessible through Kubernetes?
@@ -105,7 +112,7 @@ class Controller:
                 config['log_stream'] = controller_config.get('log_stream')
 
         except Exception as err:
-            logger.exception('Controller: %s, %s' % (err, type(err)))
+            logger.exception(f'Controller: {err}, {type(err)}')
             config = None
 
         return config
@@ -143,8 +150,9 @@ class Controller:
                     will look for information in their config files.'
                 )
                 command.append('--config_path')
-                command.append(f"{self.config['events_path']}{str(event)}/config.{self.config['config_type']}"
-                               )
+                command.append(
+                    f"{self.config['events_path']}{str(event)}/config.{self.config['config_type']}"
+                )
 
             commands.append(command)
 

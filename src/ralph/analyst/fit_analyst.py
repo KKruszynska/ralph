@@ -59,10 +59,12 @@ class FitAnalyst(Analyst):
         self.log.debug('Fit Analyst: Reading fit config.')
 
         self.config['fitting_package'] = config['fit_analyst']['fitting_package']
-        self.config['ongoing_magnification_thershold'] = config['fit_analyst'].get('ongoing_magnification_thershold',
-                                                                                   1.05)
-        self.config['ongoing_amplitude_thershold'] = config['fit_analyst'].get('ongoing_amplitude_thershold',
-                                                                               1.0)
+        self.config['ongoing_magnification_thershold'] = (
+            config['fit_analyst'].get('ongoing_magnification_thershold', 1.05)
+        )
+        self.config['ongoing_amplitude_thershold'] = (
+            config['fit_analyst'].get('ongoing_amplitude_thershold', 1.0)
+        )
 
         self.log.debug('Fit Analyst: Finished reading fit config.')
 
@@ -73,7 +75,9 @@ class FitAnalyst(Analyst):
         :return: status of the fitting procedures.
         """
 
-        self.log.debug(f'Fit Analyst: Time elapsed for setting up the analyst: {time.time() - self.start_time:.2f} s')
+        self.log.debug(
+            f'Fit Analyst: Time elapsed for setting up the analyst: {time.time() - self.start_time:.2f} s'
+        )
         self.log.info('Fit Analyst: Starting ongoing check fit.')
         self.log.info('Find PSPL starting parameters.')
         time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
@@ -87,7 +91,7 @@ class FitAnalyst(Analyst):
         self.log.info('Perform PSPL fit without blend and parallax.')
 
         if self.config['fitting_package'].lower() == 'pylima':
-            results = self.fit_PSPL(self.analyst_path + 'PSPL_no_blend_no_piE',
+            results = self.fit_pspl(self.analyst_path + 'PSPL_no_blend_no_piE',
                                     starting_params,
                                     False,
                                     False,
@@ -95,38 +99,44 @@ class FitAnalyst(Analyst):
                                     fitting_method='DE'
                                     )
         else:
-            results = self.fit_PSPL(self.analyst_path+'PSPL_no_blend_no_piE',
+            results = self.fit_pspl(self.analyst_path+'PSPL_no_blend_no_piE',
                                     starting_params,
                                     False,
                                     False,
                                     return_norm_lc=True,
                                     )
 
-        fit_params_PSPL_nopar = results[0]
-        t_0 = fit_params_PSPL_nopar['t0']
+        fit_params_pspl_nopar = results[0]
+        t_0 = fit_params_pspl_nopar['t0']
         aligned_data, residuals = results[1], results[2]
         self.log.info('Fit Analyst:  Finished fitting.')
 
         # Saving the result not to perform this fit again
-        self.best_results['PSPL_no_blend_no_piE'] = fit_params_PSPL_nopar
+        self.best_results['PSPL_no_blend_no_piE'] = fit_params_pspl_nopar
 
         self.log.info('Identify ongoing event.')
-        baseline_mag = fit_params_PSPL_nopar['baseline_magnitude']
+        baseline_mag = fit_params_pspl_nopar['baseline_magnitude']
         self.start_time = time.time()
 
         # todo: this currently supports only PSPL, but it should support more models, if we have them from the
         # todo: past. This should be consulted with the system flowchart though.
 
-        ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(self.config['ongoing_amplitude_thershold'],
+        ongoing_ampl, t_last = (
+            analyst_tools.check_ongoing_amplitude(self.config['ongoing_amplitude_thershold'],
                                                                      aligned_data, residuals, baseline_mag
                                                                      )
-        ongoing_time = analyst_tools.check_ongoing_time(fit_params_PSPL_nopar, t_last)
-        ongoing_mag = analyst_tools.check_ongoing_magnification(self.config['ongoing_magnification_thershold'],
-                                                                fit_params_PSPL_nopar, t_last
+        )
+        ongoing_time = analyst_tools.check_ongoing_time(fit_params_pspl_nopar, t_last)
+        ongoing_mag = (
+            analyst_tools.check_ongoing_magnification(self.config['ongoing_magnification_thershold'],
+                                                                fit_params_pspl_nopar, t_last
                                                                 )
+        )
 
 
-        self.log.debug(f'Fit Analyst: ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}')
+        self.log.debug(
+            f'Fit Analyst: ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}'
+        )
 
         ongoing = False
         if ongoing_ampl or ongoing_time or ongoing_mag:
@@ -137,7 +147,7 @@ class FitAnalyst(Analyst):
         return ongoing, t_0
 
 
-    def fit_PSPL(self, fit_name, starting_params, parallax, blend,
+    def fit_pspl(self, fit_name, starting_params, parallax, blend,
                  return_norm_lc=False, use_boundaries=None, fitting_method=None):
         """
         Perform a Point Source Point Lens fit.
@@ -158,7 +168,7 @@ class FitAnalyst(Analyst):
             if fitting_method is not None:
                 self.log.debug(f'Fit Analyst: Using fitting method: {fitting_method}')
                 if fitting_method == 'DE':
-                    fit_pspl = pylima.fit_pylima.fitPylima(self.log)
+                    fit_pspl = pylima.fit_pylima.FitPylima(self.log)
                     results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params,
                                                 parallax, blend,
                                                 return_norm_lc=return_norm_lc,
@@ -167,7 +177,7 @@ class FitAnalyst(Analyst):
                                                 )
             else:
                 self.log.debug('Fit Analyst: Using default fitting method')
-                fit_pspl = pylima.fit_pylima.fitPylima(self.log)
+                fit_pspl = pylima.fit_pylima.FitPylima(self.log)
                 results = fit_pspl.fit_pspl(fit_name, self.light_curves, starting_params,
                                             parallax, blend,
                                             return_norm_lc=return_norm_lc,
@@ -210,7 +220,7 @@ class FitAnalyst(Analyst):
         starting_params['t_0'] = t_0
         starting_params['pi_EN'] = 0.0
         starting_params['pi_EE'] = 0.0
-        results = self.fit_PSPL(self.analyst_path+'PSPL_blend_piE',
+        results = self.fit_pspl(self.analyst_path+'PSPL_blend_piE',
                                 starting_params,
                                 True,
                                 True,
@@ -218,10 +228,10 @@ class FitAnalyst(Analyst):
         self.best_results['PSPL_blend_piE'] = results
 
         self.log.info('Evaluate PSPL+piE fit.')
-        model_ok = self.evaluate_PSPL(results)
+        model_ok = self.evaluate_pspl(results)
         if not model_ok:
             self.log.info('Perform PSPL with parallax without blend fit.')
-            results = self.fit_PSPL(self.analyst_path+'PSPL_noblend_par',
+            results = self.fit_pspl(self.analyst_path+'PSPL_noblend_par',
                                     starting_params,
                                     True,
                                     False,
@@ -231,7 +241,7 @@ class FitAnalyst(Analyst):
         self.log.info('Fit Analyst:  Finished fitting.')
         self.log.debug('Best models:', self.best_results)
 
-    def perform_finished_fit_PSPL(self, t_0):
+    def perform_finished_fit_pspl(self, t_0):
         """
         Perform fitting procedure for a finished event.
         According to the Software Requirements, the analyst
@@ -250,7 +260,7 @@ class FitAnalyst(Analyst):
                            't_E': 40., }
 
         self.log.info('Perform PSPL with blend fit.')
-        results = self.fit_PSPL(self.analyst_path+'PSPL_blend_no_piE',
+        results = self.fit_pspl(self.analyst_path+'PSPL_blend_no_piE',
                                 starting_params,
                                 False,
                                 True,
@@ -299,7 +309,7 @@ class FitAnalyst(Analyst):
                         boundaries['piEE'] = [-2.0, 0.05]
 
                     self.log.info('Fit Analyst:  Starting fitting model PSPL_blend_piE_{signs}')
-                    results = self.fit_PSPL(self.analyst_path+'PSPL_blend_piE_' + signs,
+                    results = self.fit_pspl(self.analyst_path+'PSPL_blend_piE_' + signs,
                                             starting_params,
                                             True,
                                             True,
@@ -309,18 +319,6 @@ class FitAnalyst(Analyst):
                     starting_params['t_0'] = results['t0']
 
                     self.log.info(f'Fit Analyst:  Finished fitting model PSPL_blend_piE_{signs}')
-
-        # self.log.debug('Fit Analyst: Best models:')
-        # for model in self.best_results:
-        #     params = self.best_results[model]
-        #     if 'piEN' in params:
-        #         self.log.debug('Fit Analyst: {:s} : t0={:.2f}, u0={:.2f}, tE={:.2f}, piEN={:.2f}, piEE={:.2f}'.format(
-        #           model, params['t0'], params['u0'], params['tE'], params['piEN'], params['piEE']
-        #         ))
-        #     else:
-        #         self.log.debug('Fit Analyst: {:s} : t0={:.2f}, u0={:.2f}, tE={:.2f}'.format(
-        #             model, params['t0'], params['u0'], params['tE']
-        #         ))
 
 
     def perform_anomaly_finder(self):
@@ -344,7 +342,7 @@ class FitAnalyst(Analyst):
 
         return best_model_name
 
-    def evaluate_PSPL(self, model_params):
+    def evaluate_pspl(self, model_params):
         """
         Check if model doesn't have negative or low blend flux.
         Lifted from mop.toolbox.fittols.test_quality_of_model_fit
@@ -356,12 +354,14 @@ class FitAnalyst(Analyst):
 
         blend_check = False
         if 'blend_magnitude' in model_params:
-            blend_check = (np.abs(model_params['blend_magnitude']) < 3.0 * model_params['blend_mag_error'] ** 0.5)
+            blend_check = \
+                (np.abs(model_params['blend_magnitude']) < 3.0 * model_params['blend_mag_error'] ** 0.5)
 
-        source_check = (np.abs(model_params['source_magnitude']) < 3.0 * model_params['source_mag_error']  ** 0.5)
+        source_check = \
+            (np.abs(model_params['source_magnitude']) < 3.0 * model_params['source_mag_error']  ** 0.5)
 
-        tE_check =  (np.abs(model_params['tE']) < 3. *  model_params['tE_error'] ** 0.5)
-        if blend_check or source_check or tE_check:
+        te_check =  (np.abs(model_params['tE']) < 3. *  model_params['tE_error'] ** 0.5)
+        if blend_check or source_check or te_check:
             fit_ok = False
 
         return fit_ok
@@ -385,7 +385,7 @@ class FitAnalyst(Analyst):
 
         else:
             self.log.info('Fit Analyst: Performing a finished event fit.')
-            self.perform_finished_fit_PSPL(t_0)
+            self.perform_finished_fit_pspl(t_0)
             # perform model evaluation here
             # perform anomaly finder on best model
             # if anomaly: perform_finished_fit_multiple()
