@@ -1,0 +1,44 @@
+event_name: GaiaDR3_ULENS_025
+ra: 260.8781
+dec: -27.3788
+analyst_path: tests/ralph/data/output/event_analyst/GDR3_ULENS_025/
+
+lc_analyst:
+    n_max : 10
+    ongoing_magnification_thershold: 1.05
+    ongoing_amplitude_thershold: 1.0
+
+fit_analyst:
+    fitting_package: pylima
+
+cmd_analyst:
+    catalogues:
+        -
+            name: Gaia_DR3
+            band:
+                - Gaia_G
+                - Gaia_BP
+                - Gaia_RP
+            cmd_path: tests/ralph/data/input/cmd/gdr3_ulens_025_result.csv
+            cmd_separator: ","
+
+light_curves:
+    - survey: Gaia
+      band: G
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat
+
+    - survey: Gaia
+      band: BP
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat
+
+
+    - survey: Gaia
+      band: RP
+      ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat
+
+    - survey: OGLE
+      band: I
+      path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_OGLE.dat
