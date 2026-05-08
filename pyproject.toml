@@ -18,6 +18,17 @@ classifiers = [
 dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = [
+    "cycler>=0.12.1",
+    "ipython>=9.12.0",
+    "json5>=0.14.0",
+    "jupyterlab>=4.5.6",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.4",
+    "pandas>=3.0.2",
+    "plotly>=6.7.0",
+    "pyLIMA==1.9.8",
+    "pytest>=9.0.3",
+    "PyYAML>=6.0.3",
 ]
 
 [project.urls]
@@ -41,6 +52,7 @@ dev = [
 requires = [
     "setuptools>=62", # Used to build and package the Python project
     "setuptools_scm>=6.2", # Gets release version from git. Makes it available programmatically
+    "pip>=24.0", # Ensure building the package taking into account pyproject.toml setup
 ]
 build-backend = "setuptools.build_meta"
 
