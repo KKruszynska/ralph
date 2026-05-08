@@ -101,9 +101,9 @@ class TestPylima:
         starting_params = {
             "ra": self.ra,
             "dec": self.dec,
-            "t_0": 2457492.0,
-            "u_0": 0.1,
-            "t_E": 40.0,
+            "t0": 2457492.0,
+            "u0": 0.1,
+            "tE": 40.0,
         }
 
         params = fit_pspl.fit_pspl("PSPL_no_piE", self.light_curves, starting_params, False, True)
@@ -131,11 +131,11 @@ class TestPylima:
         starting_params = {
             "ra": self.ra,
             "dec": self.dec,
-            "t_0": 2457492.0,
-            "u_0": 0.1,
-            "t_E": 40.0,
-            "pi_EN": 0.0,
-            "pi_EE": 0.0,
+            "t0": 2457492.0,
+            "u0": 0.1,
+            "tE": 40.0,
+            "piEN": 0.0,
+            "piEE": 0.0,
         }
 
         params = fit_pspl.fit_pspl("PSPL_piE", self.light_curves, starting_params, True, True)
