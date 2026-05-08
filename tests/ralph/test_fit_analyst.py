@@ -10,38 +10,41 @@ from ralph.toolbox import input_tools, logs
 
 scenario_gaia = {
     "analyst_path": "tests/ralph/data/output/fit_analyst/",
-    "event_name": "GDR3_ULENS_025",
+    "event_name": "GaiaDR3_ULENS_025",
     "ra": 260.8781,
     "dec": -27.3788,
     "fit_analyst": {
-        "fitting_package": "pyLIMA",
         "ongoing_magnification_thershold": 1.10,
         "ongoing_amplitude_thershold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
-                "fitting_routine": "DE",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
                 "boundaries": {
                     "u0": [0.0, 2.0],
                 }
             },
             "PSPL_blend_no_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                 }
             },
             "PSPL_blend_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
             },
             "PSPL_no_blend_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
@@ -85,34 +88,37 @@ scenario_gsa = {
         "n_max": 10,
     },
     "fit_analyst": {
-        "fitting_package": "pyLIMA",
         "ongoing_magnification_thershold": 1.10,
         "ongoing_amplitude_thershold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
-                "fitting_routine": "DE",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
                 "boundaries": {
                     "u0": [0.0, 2.0],
                 }
             },
             "PSPL_blend_no_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                 }
             },
             "PSPL_blend_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
             },
             "PSPL_no_blend_piE": {
-                "fitting_routine": "TRF",
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [-2.0, 2.0],
+                    "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
@@ -167,7 +173,6 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "fitting_package": fit_params.get("fitting_package"),
             "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
             "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
         }
@@ -208,14 +213,12 @@ class FitAnalystTest:
 
         log = logs.start_log(path_outputs, "debug", event_name=config["event_name"], stream=True)
         analyst = FitAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
-        f_pack_config = analyst.config["fit_analyst"]["fitting_package"]
         on_mag_t_config = analyst.config["fit_analyst"]["ongoing_magnification_thershold"]
         on_ampl_t_config = analyst.config["fit_analyst"]["ongoing_amplitude_thershold"]
         model_fit_config = analyst.config["fit_analyst"]["model_fit_configuration"]
 
         logs.close_log(log)
 
-        assert f_pack_config == fit_params.get("fitting_package")
         assert on_mag_t_config == fit_params.get("ongoing_magnification_thershold")
         assert on_ampl_t_config == fit_params.get("ongoing_amplitude_thershold")
 
@@ -239,7 +242,6 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "fitting_package": fit_params.get("fitting_package"),
             "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
             "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
         }
@@ -298,7 +300,6 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "fitting_package": fit_params.get("fitting_package"),
             "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
             "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
         }
@@ -351,7 +352,7 @@ class FitAnalystTest:
                     expected = float(expected_result[key])
                     received = float(model_result[key])
                     if not np.isnan(expected):
-                        assert pytest.approx(received, 2) == pytest.approx(expected, 2)
+                        assert pytest.approx(expected, 2) == pytest.approx(received, 2)
 
         logs.close_log(log)
 
@@ -366,28 +367,29 @@ def test_run():
     test.test_check_ongoing()
     test.test_fit()
 
-    # for case in [scenario_gaia, scenario_gsa]:
-    #     analyst_path = case.get("analyst_path")
-    #     event_name = case.get("event_name")
-    #
-    #     output = Path(analyst_path + "fit_results.json")
-    #     if output.exists():
-    #         os.remove(output)
-    #
-    #     output = Path(analyst_path + "fit_stats.txt")
-    #     if output.exists():
-    #         os.remove(output)
-    #
-    #     output = Path(analyst_path + event_name + "_analyst.log")
-    #     if output.exists():
-    #         os.remove(output)
-    #
-    #     files = [
-    #         "PSPL_no_blend_no_piE.html",
-    #         "PSPL_blend_no_piE.html",
-    #         "PSPL_blend_piE.html",
-    #     ]
-    #     for element in files:
-    #         output = Path(analyst_path + element)
-    #         if output.exists():
-    #             os.remove(output)
+    for case in [scenario_gaia, scenario_gsa]:
+        analyst_path = case.get("analyst_path")
+        event_name = case.get("event_name")
+
+        output = Path(analyst_path + "fit_results.json")
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + "fit_stats.txt")
+        if output.exists():
+            os.remove(output)
+
+        output = Path(analyst_path + event_name + "_analyst.log")
+        print(output)
+        if output.exists():
+            os.remove(output)
+
+        files = [
+            "PSPL_no_blend_no_piE.html",
+            "PSPL_blend_no_piE.html",
+            "PSPL_blend_piE.html",
+        ]
+        for element in files:
+            output = Path(analyst_path + element)
+            if output.exists():
+                os.remove(output)

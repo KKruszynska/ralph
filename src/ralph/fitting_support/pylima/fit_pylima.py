@@ -11,9 +11,12 @@ from ralph.fitting_support.pylima import plots_pylima
 
 class FitPylima(Fitter):
     """
-    Class with pylima fitter.
+    A class containing functions necessary to perform microlensing model fitting
+    with the pyLIMA package, found here: https://github.com/ebachelet/pyLIMA
+    It is a subclass of the :class ralph.src.fitting_support.fit.Fitter:.
 
-    :param log: logger instance to which the logs will be written
+    :param log: A logger instance initialized by the Event Analyst, to which the logs will be written.
+    :type log: logging.Logger
     """
 
     def __init__(self, log):
@@ -21,14 +24,24 @@ class FitPylima(Fitter):
 
     def setup_event(self, event_name, ra, dec, light_curves):
         """
-        Set up pylima event instance.
+        Set up pyLIMA Event instance.
 
-        :param event_name: name of the event
-        :param ra: Right Ascention of the event
-        :param dec: declination of the event
-        :param light_curves: list, list of lists with event name, light curve, survey name and filter name.
+        :param event_name: Technically a label of the event, but in fact a path to which the plot
+            with best-fitting model will be saved.
+        :type event_name: str
 
-        :return: pylima event instance
+        :param ra: Right Ascension of the event
+        :type ra: float, in degrees
+
+        :param dec: Declination of the event
+        :type dec: float, in degrees
+
+        :param light_curves: A list of dictionaries with event name, light curve, survey name, filter name,
+            and, if available, an ephemeris of the space observatory which was used to obtain the observations.
+        :type light_curves: list
+
+        :return: pyLIMA Event instance.
+        :rtype: pyLIMA.event.Event
         """
 
         event_to_fit = event.Event(ra=ra, dec=dec)
@@ -48,13 +61,8 @@ class FitPylima(Fitter):
                 t_min, t_max = np.min(lc[:, 0]), np.max(lc[:, 0])
 
             if "ephemeris" in entry and entry["ephemeris"] is not None:
-                self.log.debug("Loading provided ephemeris.")
+                self.log.debug("Fit Analyst -- pyLIMA: Loading provided ephemeris.")
                 ephemeris = entry["ephemeris"]
-                # elif any(s in entry['survey'] for s in ['Gaia', 'GSA']):
-                #     self.log.debug('Downloading ephemeris from JPL for Gaia.')
-                #     ephemeris = JPL_ephemerides.horizons_API('Gaia',
-                #                                              lc[:,0],
-                #                                              observatory='Geocentric')[1]
 
                 spacecraft_positions = {"photometry": ephemeris}
 
@@ -81,8 +89,7 @@ class FitPylima(Fitter):
 
             event_to_fit.telescopes.append(telescope)
 
-        # print(survey_to_align)
-        self.log.debug(f"Survey to align data to: {survey_to_align:s}")
+        self.log.debug(f"Fit Analyst -- pyLIMA: Survey to align data to: {survey_to_align:s}")
         event_to_fit.find_survey(survey_to_align)
         event_to_fit.check_event()
 
@@ -100,18 +107,41 @@ class FitPylima(Fitter):
         fitting_method=None,
     ):
         """
-        Perform a PSPL fit using the selected fit method.
+        Perform a point source-point lens model fit.
 
-        :param fit_name: str, label of the fit, used to save plots
-        :param light_curves: list, list of lists with event name, light curve, survey name and filter name.
-        :param starting_params: dict, dictionary containing starting parameters
-        :param parallax: boolean, fit with parallax?
-        :param blend: boolean, fit with blending?
-        :param return_norm_lc: boolean, optional, return light curve data aligned to the model?
-        :param use_boundaries: dict, dictionary containing boundaries defined by the User
-        :param fitting_method: str, label of the type of fitter used in pyLIMA
+        :param fit_name: A label, but in fact a path to which the plot with
+            the best-fitting model will be saved.
+        :type fit_name: str
 
-        :return: list with results
+        :param light_curves: A list of dictionaries with event name, light curve, survey name, filter name,
+            and, if available, an ephemeris of the space observatory which was used to obtain the observations.
+        :type light_curves: list
+
+        :param starting_params: A dictionary containing starting parameters.
+        :type starting_params: dict
+
+        :param parallax: If `True` microlensing parallax effect will be included in the model,
+            if `False` it will not.
+        :type parallax: bool
+
+        :param blend: If `True` blending will be fitted for this event, if `False`, the model will assume
+            that all light is coming from the source.
+        :type blend: bool
+
+        :param return_norm_lc: If `True`, this method will return a light curve and residuals aligned to
+            the best-fitting model it found.
+        :type return_norm_lc: bool, optional
+
+        :param use_boundaries: A dictionary containing upper and lower limits for specific
+            model parameters, defined by the User.
+        :type use_boundaries: dict, optional
+
+        :param fitting_method: A label of the type of fitting method used in pyLIMA.
+        :type fitting_method: str, optional
+
+        :return: A dictionary with the parameters of the best-fitting model, and, if available, a list with
+            a light curve aligned to it and its residuals.
+        :rtype: list
         """
 
         # Setup event
@@ -122,25 +152,27 @@ class FitPylima(Fitter):
         blend_param = "ftotal" if blend else "noblend"
 
         if parallax:
-            self.log.info("Fitting with microlensing parallax.")
+            self.log.info("Fit Analyst -- pyLIMA: Fitting with microlensing parallax.")
             pspl = PSPL_model.PSPLmodel(
-                event, parallax=["Full", int(starting_params["t_0"])], blend_flux_parameter=blend_param
+                event, parallax=["Full", int(starting_params["t0"])], blend_flux_parameter=blend_param
             )
         else:
-            self.log.info("Fitting without microlensing parallax.")
+            self.log.info("Fit Analyst -- pyLIMA: Fitting without microlensing parallax.")
             pspl = PSPL_model.PSPLmodel(event, parallax=["None", 0.0], blend_flux_parameter=blend_param)
 
         if fitting_method is not None:
+            self.log.info(f"Fit Analyst -- pyLIMA: Fitting method: {fitting_method}.")
             if fitting_method == "DE":
                 fit_event = DE_fit.DEfit(pspl, loss_function="soft_l1")
             elif fitting_method == "TRF":
                 fit_event = TRF_fit.TRFfit(pspl, loss_function="soft_l1")
         else:
+            self.log.info("Fit Analyst -- pyLIMA: Using default fitting method (TRF).")
             fit_event = TRF_fit.TRFfit(pspl, loss_function="soft_l1")
 
         # Use boundries like in mop.toolbox.fittools
         if use_boundaries is None:
-            self.log.info("Using boundaries default for ralph.")
+            self.log.info("Fit Analyst -- pyLIMA: Using boundaries default for ralph.")
             delta_t0 = 50.0
             default_t0_lower = fit_event.fit_parameters["t0"][1][0]
             default_t0_upper = fit_event.fit_parameters["t0"][1][1]
@@ -151,22 +183,21 @@ class FitPylima(Fitter):
                 fit_event.fit_parameters["piEN"][1] = [-2.0, 2.0]
                 fit_event.fit_parameters["piEE"][1] = [-2.0, 2.0]
         else:
-            self.log.info("Using boundaries passed by the User.")
+            self.log.info("Fit Analyst -- pyLIMA: Using boundaries passed by the User.")
             for key in use_boundaries:
 
                 fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
 
-        self.log.info("Staring fit.")
+        self.log.info("Fit Analyst -- pyLIMA: Staring fit.")
         fit_event.fit()
-        self.log.info("Fitting finished")
+        self.log.info("Fit Analyst -- pyLIMA: Fitting finished")
 
         # This will have to be modified to be compatible with MOP
-        self.log.debug("Convert model parameters to dictionary.")
+        self.log.debug("Fit Analyst -- pyLIMA: Convert model parameters to dictionary.")
         model_parameters = self.gather_parameters(event, fit_event, fitting_method=fitting_method)
 
         # Produce fit outputs here
         plots_pylima.plot_pylima(event, fit_event, self.log)
-        # fit_event.fit_outputs(bokeh_plot=True)
 
         if return_norm_lc:
             norm_lc, residuals = self.get_aligned_data(pspl, fit_event.fit_results["best_model"])
@@ -177,14 +208,20 @@ class FitPylima(Fitter):
     def gather_parameters(self, event, model_fit, fitting_method=None):
         """
         Gathers parameters into a dictionary, for easier handling.
-        Like in mop.toolbox.fittools, but edited to accommodate wider usage
-        in ralph.
+        Like in mop.toolbox.fittools, but edited to accommodate wider usage in `ralph`.
 
-        :param event: pyLIMA event instance
-        :param model_fit: pyLIMA model
-        :param fitting_method: str, label of the type of fitter used in pyLIMA
+        :param event: A pyLIMA event instance.
+        :type event: pyLIMA.event.Event
 
-        :return: dictionary with all the parameters coming from the model.
+        :param model_fit: A pyLIMA model instance.
+        :type model_fit: pyLIMA.model
+
+        :param fitting_method: A label of the type of fitting method used by pyLIMA.
+        :type fitting_method: str, optional
+
+        :return: A dictionary with best-fitting parameters of the model, their uncertianities,
+            and several statistical parameters to measure the quality of the model.
+        :rtype: dict
         """
 
         if fitting_method is not None:
@@ -260,6 +297,7 @@ class FitPylima(Fitter):
                 tel_0 = tel.name
 
             if f"fblend_{tel.name}" in model_params:
+                return_baseline_mag
                 model_params["ftotal_" + tel.name] = (
                     model_params["fsource_" + tel.name] + model_params["fblend_" + tel.name]
                 )
@@ -316,12 +354,6 @@ class FitPylima(Fitter):
         # Calculate the reduced chi2
         model_params["red_chi2"] = np.around(model_params["chi2"] / float(ndata - len(param_keys)), 3)
 
-        # if 'fit_covariance' in model_fit.fit_results:
-        #     model_params['fit_covariance'] = model_fit.fit_results['covariance_matrix'].tolist()
-        #
-        #
-        # model_params['fit_parameters'] = model_fit.fit_parameters
-
         # Calculate fit statistics
         try:
             n_parameters = len(param_keys)
@@ -361,12 +393,17 @@ class FitPylima(Fitter):
 
     def get_aligned_data(self, model, parameters):
         """
-        Taken from pylima.outputs.pyLIMA_plots
+        Returns light curve aligned to the best fitting model, and its residuals.
+        Taken from pyLIMA.outputs.pyLIMA_plots
 
-        :param model: pyLIMA model instance
-        :param parameters: pyLIMA model parameters
+        :param model: A pyLIMA model instance.
+        :type model: pyLIMA.model
 
-        :return: list with arrays containing aligned data
+        :param parameters: A dictionary with parameters of a pyLIMA model.
+        :type parameters: dict
+
+        :return: A list with numpy arrays containing light curve data aligned to a model and its residuals.
+        :rtype: list
         """
 
         pylima_parameters = model.compute_pyLIMA_parameters(parameters)
@@ -438,15 +475,25 @@ class FitPylima(Fitter):
 
 def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, log):
     """
-    This function returns baseline magnitude based on source and blend magnitude.
+    Returns baseline magnitude based on source and blend magnitude.
 
-    :param mag_source: source brightness in magnitudes
-    :param err_mag_source: source uncertainty in magnitudes
-    :param mag_blend: blend brightness in magnitudes
-    :param err_mag_blend: source uncertainty in magnitudes
-    :param log: log instance to write logs to
+    :param mag_source: The source brightness in magnitudes.
+    :type mag_source: float
 
-    :return: baseline brightness and its uncertainty in magnitudes
+    :param err_mag_source: The source uncertainty in magnitudes.
+    :type err_mag_source: float
+
+    :param mag_blend: The blend brightness in magnitudes.
+    :type mag_blend: float
+
+    :param err_mag_blend: The blend uncertainty in magnitudes.
+    :type err_mag_blend: float
+
+    :param log: A log instance started by the Event Analyst.
+    :type log: logging.Logger
+
+    :return: Baseline brightness and its uncertainty in magnitudes.
+    :rtype: tuple, (float, float)
     """
     base_mag, err_base_mag = None, None
 
@@ -462,22 +509,32 @@ def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, lo
         base_mag = toolbox.brightness_transformation.flux_to_magnitude(base_flux)
         err_base_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_base, base_flux)
     except Exception as err:
-        log.error(f"CMD Analyst: {err}, {type(err)}")
+        log.error(f"Fit Analyst -- pyLIMA: {err}, {type(err)}")
 
     return base_mag, err_base_mag
 
 
 def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
     """
-    This function returns blend magnitude based on source and baseline magnitude.
+    Returns blend magnitude based on source and baseline magnitude.
 
-    :param mag_source: source brightness in magnitudes
-    :param err_mag_source: source uncertainty in magnitudes
-    :param mag_base: baseline brightness in magnitudes
-    :param err_mag_base: baseline uncertainty in magnitudes
-    :param log: log instance to write logs to
+    :param mag_source: The source brightness in magnitudes.
+    :type mag_source: float
 
-    :return: blend brightness and its uncertainty in magnitudes
+    :param err_mag_source: The source uncertainty in magnitudes.
+    :type err_mag_source: float
+
+    :param mag_base: The baseline brightness in magnitudes.
+    :type mag_base: float
+
+    :param err_mag_base: The baseline uncertainty in magnitudes.
+    :type err_mag_base: float
+
+    :param log: A log instance started by the Event Analyst.
+    :type log: logging.Logger
+
+    :return: Blend brightness and its uncertainty in magnitudes
+    :rtype: tuple, (float, float)
     """
     blend_mag, err_blend_mag = None, None
 
@@ -495,6 +552,6 @@ def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
             err_f_blend, blend_flux
         )
     except Exception as err:
-        log.error(f"CMD Analyst: {err}, {type(err)}")
+        log.error(f"Fit Analyst -- pyLIMA: {err}, {type(err)}")
 
     return blend_mag, err_blend_mag

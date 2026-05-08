@@ -33,6 +33,42 @@ class FitAnalyst(Analyst):
 
     :param config_path: A path to the configuration file of the Event Analyst.
     :type config_path: str, optional
+
+     Notes on configuration:
+    ------------------------------
+    The configuration dictionary can contain the following keywords:
+
+    * `ongoing_magnification_thershold`: float
+        Threshold for magnification. If current magnification of the source is larger
+        than the threshold, the event is considered as ongoing.
+    * `ongoing_amplitude_thershold`: float
+        Threshold for amplitude. If current amplitude of the event is above the threshold,
+        the event is considered as ongoing.
+    * `model_fit_configuration`: dictionary
+        A dictionary with configuration for specific types of models.
+        Allowed models keywords are:
+            - `PSPL_no_blend_no_piE` - point source-point lens model without blending and
+                microlensing parallax effect;
+            - `PSPL_blend_no_piE` - point source-point lens model with blending and without
+                microlensing parallax effect;
+            - `PSPL_no_blend_piE` - point source-point lens model without blending and with
+                microlensing parallax effect;
+            - `PSPL_blend_piE` - point source-point lens model with blending and
+                microlensing parallax effect;
+        For each model the User can specify following keywords:
+            - `fitting_package` - str, name of the fitting package supported by `ralph`;
+            - `fitting_method` - str, type of fitting method supported by the `fitting_package` and `ralph`;
+            - `boundaries` - dict, a dictionary containing a list of keywords, and a list with two
+                elements, a lower and upper limit for the given parameter:
+                `key: [lower_limit, upper_limit]`
+                Supported keys include:
+                    - `t0` - time when the source and the lens at lowest projected separation;
+                    - `u0` - impact parameter scaled by the angular Einstein radius, when the source and lens are t0;
+                    - `tE` - Einstein timescale of the event;
+                    - `piEN` - Northern component of the microlensing parallax vector;
+                    - `piEE` - Eastern component of the microlensing parallax vector.
+
+
     """
 
     def __init__(self, event_name, analyst_path, light_curves, log,
@@ -68,7 +104,6 @@ class FitAnalyst(Analyst):
 
         self.log.debug("Fit Analyst: Reading fit config.")
 
-        self.config["fitting_package"] = config["fit_analyst"]["fitting_package"]
         self.config["ongoing_magnification_thershold"] = config["fit_analyst"].get(
             "ongoing_magnification_thershold", 1.05
         )
@@ -85,6 +120,101 @@ class FitAnalyst(Analyst):
 
         self.log.debug("Fit Analyst: Finished reading fit config.")
 
+    def fit_pspl(
+        self,
+        fit_label,
+        fit_name,
+        starting_params,
+        parallax,
+        blend,
+        return_norm_lc=False,
+        use_boundaries=None,
+    ):
+        """
+        Perform a point source-point lens (PSPL) fit.
+
+        :param fit_label: The label of the model to be fitted.
+        :type fit_label: str
+
+        :param fit_name: The path of the output file.
+        :type fit_name: str
+
+        :param starting_params: Starting parameters for the fit.
+        :type starting_params: list
+
+        :param parallax: If `True`, microlensing parallax second order effect is included in the model.
+        :type parallax: bool
+
+        :param blend: If `True`, blending effect is included in the model.
+        :type blend: bool
+
+        :param return_norm_lc: If `True` all light curves aligned to a single model are returned.
+        :type return_norm_lc: bool, optional
+
+        :param use_boundaries: Boundaries for selected parameters to be used for fitting.
+        :type use_boundaries: dict, optional
+
+        :return: A list with fitted parameters and, if requested, aligned data and residuals.
+        :rtype: list
+        """
+
+        self.start_time = time.time()
+        results = {}
+
+        fit_config = self.config["model_fit_configuration"].get(fit_label, None)
+        if fit_config is not None:
+            self.log.info("Fit Analyst: Using fitting setup specified by the User.")
+            fitting_package = fit_config.get("fitting_package")
+            fitting_method = fit_config.get("fitting_method", None)
+            self.log.debug(f"Fit Analyst: Set up: fitting package: {fitting_package}, "
+                           f"fitting method: {fitting_method}."
+                           )
+
+            boundaries = fit_config.get("boundaries", None)
+            if use_boundaries is not None:
+                for key in use_boundaries:
+                    boundaries[key] = use_boundaries.get(key, boundaries[key])
+
+            self.log.debug(f"Fit Analyst: Set up: boundaries:")
+            for key in boundaries:
+                self.log.debug(f"{key}: {boundaries[key]}\n")
+
+            if fitting_package.lower() == "pylima":
+                fit_pspl = pylima.fit_pylima.FitPylima(self.log)
+                results = fit_pspl.fit_pspl(
+                    fit_name,
+                    self.light_curves,
+                    starting_params,
+                    parallax,
+                    blend,
+                    return_norm_lc=return_norm_lc,
+                    fitting_method=fitting_method,
+                    use_boundaries=boundaries,
+                )
+        else:
+            self.log.info("Fit Analyst: Using default fitting setup.")
+            self.log.debug(f"Fit Analyst: Set up: fitting package: pyLIMA, "
+                           f"fitting method: TRF."
+                           )
+            self.log.debug(f"Fit Analyst: Set up: boundaries:")
+            for key in use_boundaries:
+                self.log.debug(f"{key}: {use_boundaries[key]}\n")
+
+            fit_pspl = pylima.fit_pylima.FitPylima(self.log)
+            results = fit_pspl.fit_pspl(
+                fit_name,
+                self.light_curves,
+                starting_params,
+                parallax,
+                blend,
+                return_norm_lc=return_norm_lc,
+                use_boundaries=use_boundaries,
+            )
+
+        self.log.debug(f"Fit Analyst: Time elapsed for fitting: {time.time() - self.start_time:.2f} s")
+
+        return results
+
     def perform_ongoing_check(self):
         """
         Performs initial fit and checks if the event is ongoing.
@@ -98,7 +228,7 @@ class FitAnalyst(Analyst):
             f"Fit Analyst: Time elapsed for setting up the analyst: {time.time() - self.start_time:.2f} s"
         )
         self.log.info("Fit Analyst: Starting ongoing check fit.")
-        self.log.info("Find PSPL starting parameters.")
+        self.log.info("Fit Analyst:  Find PSPL starting parameters.")
         time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
         starting_params = {
             "ra": self.config["ra"],
@@ -108,31 +238,15 @@ class FitAnalyst(Analyst):
             "t_E": 40.0,
         }
 
-        self.log.info("Perform PSPL fit without blend and parallax.")
-        if self.config["fitting_package"].lower() == "pylima":
-            fitting_routine = (
-                self.config["model_fit_configuration"]["PSPL_no_blend_no_piE"].get("fitting_routine")
-            )
-            use_boundaries = (
-                self.config["model_fit_configuration"]["PSPL_no_blend_no_piE"].get("boundaries", None)
-            )
-            results = self.fit_pspl(
-                self.analyst_path + "PSPL_no_blend_no_piE",
-                starting_params,
-                False,
-                False,
-                return_norm_lc=True,
-                use_boundaries=use_boundaries,
-                fitting_method=fitting_routine,
-            )
-        else:
-            results = self.fit_pspl(
-                self.analyst_path + "PSPL_no_blend_no_piE",
-                starting_params,
-                False,
-                False,
-                return_norm_lc=True,
-            )
+        self.log.info("Fit Analyst: Performing PSPL fit without blend and parallax.")
+        results = self.fit_pspl(
+            "PSPL_no_blend_no_piE",
+            self.analyst_path + "PSPL_no_blend_no_piE",
+            starting_params,
+            False,
+            False,
+            return_norm_lc=True,
+        )
 
         fit_params_pspl_nopar = results[0]
         t_0 = fit_params_pspl_nopar["t0"]
@@ -142,7 +256,7 @@ class FitAnalyst(Analyst):
         # Saving the result not to perform this fit again
         self.best_results["PSPL_no_blend_no_piE"] = fit_params_pspl_nopar
 
-        self.log.info("Identify ongoing event.")
+        self.log.info("Fit Analyst: Identify ongoing event.")
         baseline_mag = fit_params_pspl_nopar["baseline_magnitude"]
         self.start_time = time.time()
 
@@ -169,185 +283,104 @@ class FitAnalyst(Analyst):
 
         return ongoing, t_0
 
-    def fit_pspl(
-        self,
-        fit_name,
-        starting_params,
-        parallax,
-        blend,
-        return_norm_lc=False,
-        use_boundaries=None,
-        fitting_method=None,
-    ):
-        """
-        Perform a Point Source Point Lens fit.
-
-        :param fit_name: str, label of the fit
-        :param starting_params: list, starting parameters for the fit
-        :param parallax: boolean, use parallax?
-        :param blend: boolean, should blending be fitted?
-        :param return_norm_lc: boolean, optional, should the fit returned the aligned light curves?
-        :param use_boundaries: dictionary, optional, contains boundaries to be used for fitting
-        :param fitting_method: str, optional, fitting method to use
-
-        :return: list with fitted parameters and if requested, aligned data
-        """
-
-        self.start_time = time.time()
-        results = {}
-        if self.config["fitting_package"].lower() == "pylima":
-            if fitting_method is not None:
-                self.log.debug(f"Fit Analyst: Using fitting method: {fitting_method}")
-                fit_pspl = pylima.fit_pylima.FitPylima(self.log)
-                results = fit_pspl.fit_pspl(
-                    fit_name,
-                    self.light_curves,
-                    starting_params,
-                    parallax,
-                    blend,
-                    return_norm_lc=return_norm_lc,
-                    use_boundaries=use_boundaries,
-                    fitting_method=fitting_method,
-                )
-            else:
-                self.log.debug("Fit Analyst: Using default fitting method")
-                fit_pspl = pylima.fit_pylima.FitPylima(self.log)
-                results = fit_pspl.fit_pspl(
-                    fit_name,
-                    self.light_curves,
-                    starting_params,
-                    parallax,
-                    blend,
-                    return_norm_lc=return_norm_lc,
-                    use_boundaries=use_boundaries,
-                )
-
-        self.log.debug(f"Fit Analyst: Time elapsed for fitting: {time.time() - self.start_time:.2f} s")
-
-        return results
-
     def perform_ongoing_fit(self, t_0):
         """
-        Perform fitting procedure for an ongoing event.
-        According to the Software Requirements, the analyst
-        has to perform PSPL fit with blending and with/without parallax.
-        Then they are evaluated. If the blend fit is not okay, fit without
-        blend is performed. The results are appended to a dictionary and
+        Performs fitting procedure for an ongoing event.
+        For an ongoing event, it performs a point source-point lens model fit
+        with blending and with/without parallax. Resulting models are then evaluated.
+        If the best-fitting model with parallax and blending is not okay, a model without
+        blending and with parallax is fitted. The results are appended to a dictionary and
         gathered for evaluation.
+
+        :param t_0: Time of peak established by the initial fit.
+        :type t_0: float
         """
 
         self.log.info("Fit Analyst: Starting ongoing event fit.")
-        self.log.info("Find PSPL starting parameters.")
+        self.log.info("Fit Analyst: Finding PSPL starting parameters.")
         starting_params = {
             "ra": self.config["ra"],
             "dec": self.config["dec"],
-            "t_0": t_0,
-            "u_0": 0.1,
-            "t_E": 40.0,
+            "t0": t_0,
+            "u0": 0.1,
+            "tE": 40.0,
         }
 
-        self.log.info("Perform PSPL fit.")
-        fitting_routine = (
-            self.config["model_fit_configuration"]["PSPL_blend_no_piE"].get("fitting_routine")
-        )
-        use_boundaries = (
-            self.config["model_fit_configuration"]["PSPL_blend_no_piE"].get("boundaries", None)
-        )
+        self.log.info("Fit Analyst: Performing PSPL fit.")
         results = self.fit_pspl(
+            "PSPL_blend_no_piE",
             self.analyst_path + "PSPL_blend_no_piE",
             starting_params,
             False,
             True,
-            fitting_method=fitting_routine,
-            use_boundaries=use_boundaries,
         )
         self.best_results["PSPL_blend_no_piE"] = results
 
-        self.log.info("Evaluate PSPL fit.")
+        self.log.info("Fit Analyst: Performing PSPL+piE fit.")
+        starting_params["t0"] = t_0
+        starting_params["piEN"] = 0.0
+        starting_params["piEE"] = 0.0
 
-        self.log.info("Perform PSPL+piE fit.")
-        starting_params["t_0"] = t_0
-        starting_params["pi_EN"] = 0.0
-        starting_params["pi_EE"] = 0.0
-        fitting_method = (
-            self.config["model_fit_configuration"]["PSPL_blend_piE"].get("fitting_method")
-        )
-        use_boundaries = (
-            self.config["model_fit_configuration"]["PSPL_blend_piE"].get("boundaries", None)
-        )
+        self.log.info("Fit Analyst: Using default fitting setup.")
         results = self.fit_pspl(
+            "PSPL_blend_piE",
             self.analyst_path + "PSPL_blend_piE",
             starting_params,
             True,
             True,
-            fitting_method=fitting_method,
-            use_boundaries=use_boundaries,
         )
         self.best_results["PSPL_blend_piE"] = results
 
-        self.log.info("Evaluate PSPL+piE fit.")
+        self.log.info("Fit Analyst: Evaluate PSPL+piE fit.")
         model_ok = self.evaluate_pspl(results)
+
         if not model_ok:
-            self.log.info("Perform PSPL with parallax without blend fit.")
-            fitting_method = (
-                self.config["model_fit_configuration"]["PSPL_no_blend_piE"].get("fitting_method")
-            )
-            use_boundaries = (
-                self.config["model_fit_configuration"]["PSPL_no_blend_piE"].get("boundaries", None)
-            )
+            self.log.info("Fit Analyst: Bad model with blending, performing PSPL+piE fit without blending.")
             results = self.fit_pspl(
+                "PSPL_no_blend_piE",
                 self.analyst_path + "PSPL_no_blend_piE",
                 starting_params,
                 True,
                 False,
-                fitting_method=fitting_method,
-                use_boundaries=use_boundaries,
             )
             self.best_results["PSPL_noblend_par"] = results
 
-        self.log.info("Fit Analyst:  Finished fitting.")
+        self.log.info("Fit Analyst: Finished fitting.")
         self.log.debug("Best models:", self.best_results)
 
     def perform_finished_fit_pspl(self, t_0):
         """
-        Perform fitting procedure for a finished event.
-        According to the Software Requirements, the analyst
-        has to perform PSPL fit with blending and with/without parallax.
-        The results are appended to a dictionary and
-        gathered for evaluation.
+        Performs fitting procedure for a finished event.
+        For a finished event, it performs a point source-point lens model fit
+        with blending and with/without parallax. The results are appended to
+        a dictionary and gathered for evaluation.
+
+        :param t_0: Time of peak established by the initial fit.
+        :type t_0: float
         """
 
         self.log.info("Fit Analyst: Starting finished event fit.")
-        self.log.info("Find PSPL starting parameters.")
-        # time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
+        self.log.info("Fit Analyst: Finding PSPL starting parameters.")
         starting_params = {
             "ra": self.config["ra"],
             "dec": self.config["dec"],
-            "t_0": t_0,
-            "u_0": 0.1,
-            "t_E": 40.0,
+            "t0": t_0,
+            "u0": 0.1,
+            "tE": 40.0,
         }
 
-        self.log.info("Perform PSPL with blend fit.")
-        self.log.info("Perform PSPL with parallax without blend fit.")
-        fitting_method = (
-            self.config["model_fit_configuration"]["PSPL_blend_no_piE"].get("fitting_method")
-        )
-        use_boundaries = (
-            self.config["model_fit_configuration"]["PSPL_blend_no_piE"].get("boundaries", None)
-        )
+        self.log.info("Fit Analyst:Performing PSPL with blend fit.")
         results = self.fit_pspl(
+            "PSPL_blend_no_piE",
             self.analyst_path + "PSPL_blend_no_piE",
             starting_params,
             False,
             True,
-            fitting_method=fitting_method,
-            use_boundaries=use_boundaries,
         )
         self.best_results["PSPL_blend_no_piE"] = results
-        self.log.info("Finished fitting PSPL with blend fit.")
+        self.log.info("Fit Analyst: Finished fitting PSPL with blend fit.")
 
-        self.log.info("Perform PSPL+piE fit.")
+        self.log.info("Fit Analyst: Performing PSPL+piE fit.")
 
         # starting_params['t_0'] = self.best_results['PSPL_blend_no_piE']['t0']
 
@@ -358,9 +391,9 @@ class FitAnalyst(Analyst):
         for u_0 in starting_u_0s:
             for pi_en in starting_pi_ens:
                 for pi_ee in starting_pi_ees:
-                    starting_params["u_0"] = u_0
-                    starting_params["pi_EN"] = pi_en
-                    starting_params["pi_EE"] = pi_ee
+                    starting_params["u0"] = u_0
+                    starting_params["piEN"] = pi_en
+                    starting_params["piEE"] = pi_ee
                     boundaries = {"tE": [0.0, 1000.0]}
 
                     signs = ""
@@ -385,19 +418,13 @@ class FitAnalyst(Analyst):
                     else:
                         boundaries["piEE"] = [-2.0, 0.05]
 
-                    self.log.info(f"Fit Analyst:  Starting fitting model PSPL_blend_piE_{signs}")
-                    fitting_method = (
-                        self.config["model_fit_configuration"]["PSPL_blend_piE"].get("fitting_method")
-                    )
-                    # use_boundaries = (
-                    #     self.config["model_fit_configuration"]["PSPL_blend_no_piE"].get("boundaries", None)
-                    # )
+                    self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{signs}")
                     results = self.fit_pspl(
-                        self.analyst_path + "PSPL_blend_piE_" + signs,
+                        "PSPL_blend_piE",
+                        self.analyst_path + "PSPL_blend_piE_"+ signs,
                         starting_params,
                         True,
                         True,
-                        fitting_method=fitting_method,
                         use_boundaries=boundaries,
                     )
                     self.best_results["PSPL_blend_piE_" + signs] = results
@@ -405,48 +432,33 @@ class FitAnalyst(Analyst):
 
                     self.log.info(f"Fit Analyst:  Finished fitting model PSPL_blend_piE_{signs}")
 
-    def perform_anomaly_finder(self):
-        """
-        Perform an anomaly finder.
-
-        :return: boolean flag, if an anomaly was detected
-        """
-
-        anomaly_found = False
-
-        return anomaly_found
-
-    def evaluate_model(self):
-        """
-        Evaluate all found models.
-
-        :return: return the key for the best model
-        """
-        best_model_name = ""
-
-        return best_model_name
 
     def evaluate_pspl(self, model_params):
         """
-        Check if model doesn't have negative or low blend flux.
+        Checks if best-fitting solution for a particular model has Einstein timescale, source magnitude,
+        and, if available, blend magnitude within three-sigma.
         Lifted from mop.toolbox.fittols.test_quality_of_model_fit
-        :param model_params: dict, model parameters after fitting
 
-        :return: boolean flag if the event is okay
+        :param model_params: Best-fitting model parameters.
+        :type: dict
+
+        :return: `True` if Einstein timescale tE, source magnitude, and, if available, blending magnitude
+            are within three-sigma , `False` otherwise.
+        :rtype: bool
         """
         fit_ok = True
 
         blend_check = False
         if "blend_magnitude" in model_params:
             blend_check = (
-                np.abs(model_params["blend_magnitude"]) < 3.0 * model_params["blend_mag_error"] ** 0.5
+                np.abs(model_params["blend_magnitude"]) < 3.0 * model_params["blend_mag_error"]
             )
 
         source_check = (
-            np.abs(model_params["source_magnitude"]) < 3.0 * model_params["source_mag_error"] ** 0.5
+            np.abs(model_params["source_magnitude"]) < 3.0 * model_params["source_mag_error"]
         )
 
-        te_check = np.abs(model_params["tE"]) < 3.0 * model_params["tE_error"] ** 0.5
+        te_check = np.abs(model_params["tE"]) < 3.0 * model_params["tE_error"]
         if blend_check or source_check or te_check:
             fit_ok = False
 
@@ -454,9 +466,10 @@ class FitAnalyst(Analyst):
 
     def perform_fit(self):
         """
-        Perform fitting flow.
+        Perform fitting procedures according to the flowchart found in here [link link link].
 
-        :return: dictionary with all found models
+        :return: A dictionary with all found best-fitting solutions for all tested models.
+        :rtype: dict
         """
 
         self.log.debug("Fit Analyst: Performing a fit.")
