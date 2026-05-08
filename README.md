@@ -1,5 +1,5 @@
 
-# ralph
+# Ralph
 
 Ralph is a package that will help you model batches of microlensing events.
 
@@ -17,6 +17,26 @@ This project was automatically generated using the LINCC-Frameworks
 For more information about the project template see the 
 [documentation](https://lincc-ppt.readthedocs.io/en/latest/).
 
-## This package is under construction right now...
+## Installation guide
 
-Come back later!
+1. Ensure that you have `python3.12` installed on your machine.
+   - Make sure to install both `python3.12` and `python3.12-dev`
+2. Create a virtual environment with `python3.12` for Ralph:
+
+    `python3.12 -m venv path_to_your_venv`
+
+3. Activate your newly created virtual environment:
+    - in bash
+    `source path_to_your_venv\bin\activate`
+    - in tcshell
+   `other command`
+4. Update `pip` to at least 24.0
+5. Clone Ralph's repository.
+6. Go to the folder where you cloned the repository, and run:
+    `python -m pip install .`
+7. To make sure that the installation process went well, check if unit test run correctly:
+    `pytest test/.`
+
+If all went well, you should see an information that all unit tests passed!
+
+Enjoy!
