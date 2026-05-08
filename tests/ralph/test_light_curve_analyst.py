@@ -45,7 +45,7 @@ scenario_gsa = {
     "ra": 249.14892083,
     "dec": -53.74991944,
     "fit_analyst": {"fitting_package": "pylima"},
-    "lc_analyst": {"n_max": 5},
+    "lc_analyst": {"upper_limit": -10, "lower_limit": 30},
     "light_curves": [
         {
             "survey": "Gaia",
