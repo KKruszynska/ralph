@@ -19,12 +19,48 @@ scenario_file_cat = {
         "dec": -27.3788,
         "analyst_path": "tests/ralph/data/output/event_analyst/GDR3_ULENS_025/",
         "lc_analyst": {
-            "n_max": 10,
-            "ongoing_magnification_thershold": 1.05,
-            "ongoing_amplitude_thershold": 1.0,
+             "acceptable_mag_range": {
+                 "upper_limit": -10,
+                 "lower_limit": 30
+             },
         },
         "fit_analyst": {
-            "fitting_package": "pylima",
+            "ongoing_magnification_thershold": 1.10,
+            "ongoing_amplitude_thershold": 1.0,
+            "model_fit_configuration": {
+                "PSPL_no_blend_no_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "DE",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                    }
+                },
+                "PSPL_blend_no_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                    }
+                },
+                "PSPL_blend_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                        "piEN": [-1.0, 1.0],
+                        "piEE": [-1.0, 1.0],
+                    }
+                },
+                "PSPL_no_blend_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                        "piEN": [-1.0, 1.0],
+                        "piEE": [-1.0, 1.0],
+                    }
+                },
+            }
         },
         "cmd_analyst": {
             "catalogues": [
@@ -66,12 +102,48 @@ scenario_gsa = {
     "analyst_path": "tests/ralph/data/output/event_analyst/Gaia24amo/",
     "fit_result": "tests/ralph/data/input/test_results/gaia24amo_fit_results.json",
     "lc_analyst": {
-        "n_max": 10,
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "acceptable_mag_range": {
+            "upper_limit": -10,
+            "lower_limit": 30
+        },
     },
     "fit_analyst": {
-        "fitting_package": "pylima",
+        "ongoing_magnification_thershold": 1.10,
+        "ongoing_amplitude_thershold": 1.0,
+        "model_fit_configuration": {
+            "PSPL_no_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+            "PSPL_no_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+        }
     },
     "light_curves": [
         {
@@ -114,12 +186,48 @@ scenario_kwu = {
     "analyst_path": "tests/ralph/data/output/event_analyst/AT2024kwu/",
     "fit_result": "tests/ralph/data/input/test_results/at2024kwu_fit_results.json",
     "lc_analyst": {
-        "n_max": 10,
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "acceptable_mag_range": {
+            "upper_limit": -10,
+            "lower_limit": 30
+        },
     },
     "fit_analyst": {
-        "fitting_package": "pylima",
+        "ongoing_magnification_thershold": 1.10,
+        "ongoing_amplitude_thershold": 1.0,
+        "model_fit_configuration": {
+            "PSPL_no_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+            "PSPL_no_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+        }
     },
     "light_curves": [
         {
@@ -330,32 +438,32 @@ def test_run():
     test = EventAnalystTest(case)
     test.test_run_analyst_dict()
 
-    # Remove created files
-    for case in [scenario_file_cat, scenario_kwu]:
-        analyst_path = case.get("analyst_path")
-        event_name = case.get("event_name")
-
-        output = Path(analyst_path + "fit_results.json")
-        if output.exists():
-            os.remove(output)
-
-        output = Path(analyst_path + "fit_stats.txt")
-        if output.exists():
-            os.remove(output)
-
-        output = Path(analyst_path + event_name + "_analyst.log")
-        if output.exists():
-            os.remove(output)
-
-        files_to_remove = case.get("final_files")
-        if files_to_remove.get("model_plots") is not None:
-            for element in files_to_remove.get("model_plots"):
-                output = Path(analyst_path + element)
-                if output.exists():
-                    os.remove(output)
-
-        if files_to_remove.get("cmd_plots") is not None:
-            for element in files_to_remove.get("cmd_plots"):
-                output = Path(analyst_path + element)
-                if output.exists():
-                    os.remove(output)
+    # # Remove created files
+    # for case in [scenario_file_cat, scenario_kwu]:
+    #     analyst_path = case.get("analyst_path")
+    #     event_name = case.get("event_name")
+    #
+    #     output = Path(analyst_path + "fit_results.json")
+    #     if output.exists():
+    #         os.remove(output)
+    #
+    #     output = Path(analyst_path + "fit_stats.txt")
+    #     if output.exists():
+    #         os.remove(output)
+    #
+    #     output = Path(analyst_path + event_name + "_analyst.log")
+    #     if output.exists():
+    #         os.remove(output)
+    #
+    #     files_to_remove = case.get("final_files")
+    #     if files_to_remove.get("model_plots") is not None:
+    #         for element in files_to_remove.get("model_plots"):
+    #             output = Path(analyst_path + element)
+    #             if output.exists():
+    #                 os.remove(output)
+    #
+    #     if files_to_remove.get("cmd_plots") is not None:
+    #         for element in files_to_remove.get("cmd_plots"):
+    #             output = Path(analyst_path + element)
+    #             if output.exists():
+    #                 os.remove(output)

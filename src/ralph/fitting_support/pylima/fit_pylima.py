@@ -185,8 +185,24 @@ class FitPylima(Fitter):
         else:
             self.log.info("Fit Analyst -- pyLIMA: Using boundaries passed by the User.")
             for key in use_boundaries:
-
+                self.log.debug(
+                    f"Fit Analyst -- pyLIMA: Boundaries for {key} = {use_boundaries[key]}."
+                )
                 fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
+
+        for key in fit_event.fit_parameters:
+            self.log.debug(
+                f"Fit Analyst -- pyLIMA: Final boundaries for {key} = {fit_event.fit_parameters[key][1]}."
+            )
+        self.log.info(f"Fit Analyst -- pyLIMA: Adding starting parameters:")
+        start_guess = []
+        for key in fit_event.fit_parameters:
+            if key in starting_params:
+                self.log.info(
+                    f"Fit Analyst -- pyLIMA: Adding starting parameters: {key} = {starting_params[key]}"
+                )
+                start_guess.append(starting_params[key])
+        fit_event.model_parameters_guess = start_guess
 
         self.log.info("Fit Analyst -- pyLIMA: Staring fit.")
         fit_event.fit()

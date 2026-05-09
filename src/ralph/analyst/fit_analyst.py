@@ -95,10 +95,10 @@ class FitAnalyst(Analyst):
 
     def add_fit_config(self, config):
         """
-        Adds Fit Analyst configuration fields to analyst's internal configuration
+        Adds Fit Analyst configuration fields to analyst"s internal configuration
         dictionary.
 
-        :param config: A dictionary with analyst's configuration parameters.
+        :param config: A dictionary with analyst"s configuration parameters.
         :type config: dict
         """
 
@@ -173,7 +173,7 @@ class FitAnalyst(Analyst):
             boundaries = fit_config.get("boundaries", None)
             if use_boundaries is not None:
                 for key in use_boundaries:
-                    boundaries[key] = use_boundaries.get(key, boundaries[key])
+                    boundaries[key] = use_boundaries.get(key, boundaries.get(key))
 
             self.log.debug(f"Fit Analyst: Set up: boundaries:")
             for key in boundaries:
@@ -220,7 +220,7 @@ class FitAnalyst(Analyst):
         Performs initial fit and checks if the event is ongoing.
 
         :return: The status of the fitting procedures, `True` if
-            the process didn't encounter any exceptions, `False` otherwise.
+            the process didn"t encounter any exceptions, `False` otherwise.
         :rtype: bool
         """
 
@@ -233,9 +233,9 @@ class FitAnalyst(Analyst):
         starting_params = {
             "ra": self.config["ra"],
             "dec": self.config["dec"],
-            "t_0": time_of_peak,
-            "u_0": 0.1,
-            "t_E": 40.0,
+            "t0": time_of_peak,
+            "u0": 0.1,
+            "tE": 40.0,
         }
 
         self.log.info("Fit Analyst: Performing PSPL fit without blend and parallax.")
@@ -270,7 +270,7 @@ class FitAnalyst(Analyst):
         ongoing_mag = analyst_tools.check_ongoing_magnification(
             self.config["ongoing_magnification_thershold"], fit_params_pspl_nopar, t_last
         )
-
+        self.log.debug(f"Fit Analyst: Time of the last data point: {t_last}")
         self.log.debug(
             f"Fit Analyst: ongoing checks: ampl: {ongoing_ampl}, time: {ongoing_time}, mag: {ongoing_mag}"
         )
@@ -302,8 +302,8 @@ class FitAnalyst(Analyst):
             "ra": self.config["ra"],
             "dec": self.config["dec"],
             "t0": t_0,
-            "u0": 0.1,
-            "tE": 40.0,
+            "u0": self.best_results["PSPL_no_blend_no_piE"].get("u0"),
+            "tE": self.best_results["PSPL_no_blend_no_piE"].get("tE"),
         }
 
         self.log.info("Fit Analyst: Performing PSPL fit.")
@@ -317,7 +317,7 @@ class FitAnalyst(Analyst):
         self.best_results["PSPL_blend_no_piE"] = results
 
         self.log.info("Fit Analyst: Performing PSPL+piE fit.")
-        starting_params["t0"] = t_0
+        starting_params["t0"] = results["t0"]
         starting_params["piEN"] = 0.0
         starting_params["piEE"] = 0.0
 
@@ -343,7 +343,7 @@ class FitAnalyst(Analyst):
                 True,
                 False,
             )
-            self.best_results["PSPL_noblend_par"] = results
+            self.best_results["PSPL_no_blend_piE"] = results
 
         self.log.info("Fit Analyst: Finished fitting.")
         self.log.debug("Best models:", self.best_results)
@@ -365,8 +365,8 @@ class FitAnalyst(Analyst):
             "ra": self.config["ra"],
             "dec": self.config["dec"],
             "t0": t_0,
-            "u0": 0.1,
-            "tE": 40.0,
+            "u0": self.best_results["PSPL_no_blend_no_piE"].get("u0"),
+            "tE": self.best_results["PSPL_no_blend_no_piE"].get("tE"),
         }
 
         self.log.info("Fit Analyst:Performing PSPL with blend fit.")
@@ -382,56 +382,60 @@ class FitAnalyst(Analyst):
 
         self.log.info("Fit Analyst: Performing PSPL+piE fit.")
 
-        # starting_params['t_0'] = self.best_results['PSPL_blend_no_piE']['t0']
+        starting_params = {
+            "ra": self.config["ra"],
+            "dec": self.config["dec"],
+            "t0": self.best_results["PSPL_blend_no_piE"]["t0"],
+            "u0": self.best_results["PSPL_blend_no_piE"]["u0"],
+            "tE": self.best_results["PSPL_blend_no_piE"]["tE"],
+            "piEN": 0.0,
+            "piEE": 0.0,
+        }
+        sign = "p" if np.sign(starting_params["u0"]) > 0 else "m"
+        self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{sign}")
+        boundaries = {
+            "u0": [0.0, 2.0],
+            "tE": [0.0, 1000.0],
+            "piEN": [-2.0, 2.0],
+            "piEE": [-2.0, 2.0],
+        }
+        results = self.fit_pspl(
+            "PSPL_blend_piE",
+            self.analyst_path + "PSPL_blend_piE_" + sign,
+            starting_params,
+            True,
+            True,
+            use_boundaries=boundaries,
+        )
+        self.best_results["PSPL_blend_piE_" + sign] = results
 
-        starting_u_0s = [-0.1, 0.1]
-        starting_pi_ens = [-0.1, 0.1]
-        starting_pi_ees = [-0.1, 0.1]
+        self.log.info(f"Fit Analyst:  Finished fitting model PSPL_blend_piE_{sign}")
 
-        for u_0 in starting_u_0s:
-            for pi_en in starting_pi_ens:
-                for pi_ee in starting_pi_ees:
-                    starting_params["u0"] = u_0
-                    starting_params["piEN"] = pi_en
-                    starting_params["piEE"] = pi_ee
-                    boundaries = {"tE": [0.0, 1000.0]}
+        starting_params = {
+            "ra": self.config["ra"],
+            "dec": self.config["dec"],
+            "t0": self.best_results["PSPL_blend_piE_" + sign]["t0"],
+            "u0": -1 * self.best_results["PSPL_blend_piE_" + sign]["u0"],
+            "tE": self.best_results["PSPL_blend_piE_" + sign]["tE"],
+            "piEN": self.best_results["PSPL_blend_piE_" + sign]["piEN"],
+            "piEE": self.best_results["PSPL_blend_piE_" + sign]["piEE"],
+        }
+        sign = "p" if np.sign(starting_params["u0"]) > 0 else "m"
+        self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{sign}")
 
-                    signs = ""
-                    for element in [u_0, pi_en, pi_ee]:
-                        if element > 0.0:
-                            signs += "p"
-                        else:
-                            signs += "m"
+        boundaries["u0"] =  [-2.0, 0.0]
 
-                    if u_0 > 0.0:
-                        boundaries["u0"] = [-0.05, 2.0]
-                    else:
-                        boundaries["u0"] = [-2.0, 0.05]
+        results = self.fit_pspl(
+            "PSPL_blend_piE",
+            self.analyst_path + "PSPL_blend_piE_" + sign,
+            starting_params,
+            True,
+            True,
+            use_boundaries=boundaries,
+        )
+        self.best_results["PSPL_blend_piE_" + sign] = results
 
-                    if pi_en > 0.0:
-                        boundaries["piEN"] = [-0.05, 2.0]
-                    else:
-                        boundaries["piEN"] = [-2.0, 0.05]
-
-                    if pi_ee > 0.0:
-                        boundaries["piEE"] = [-0.05, 2.0]
-                    else:
-                        boundaries["piEE"] = [-2.0, 0.05]
-
-                    self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{signs}")
-                    results = self.fit_pspl(
-                        "PSPL_blend_piE",
-                        self.analyst_path + "PSPL_blend_piE_"+ signs,
-                        starting_params,
-                        True,
-                        True,
-                        use_boundaries=boundaries,
-                    )
-                    self.best_results["PSPL_blend_piE_" + signs] = results
-                    starting_params["t_0"] = results["t0"]
-
-                    self.log.info(f"Fit Analyst:  Finished fitting model PSPL_blend_piE_{signs}")
-
+        self.log.info(f"Fit Analyst:  Finished fitting model PSPL_blend_piE_{sign}")
 
     def evaluate_pspl(self, model_params):
         """
@@ -498,13 +502,13 @@ class FitAnalyst(Analyst):
             if "piEN" in params:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
-                    f"piEN={params['piEN']:.2f}, piEE={params['piEE']:.2f}\n"
+                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
+                    f"piEN={params["piEN"]:.2f}, piEE={params["piEE"]:.2f}\n"
                 )
             else:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
+                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
                 )
 
         # Save results
@@ -519,16 +523,16 @@ class FitAnalyst(Analyst):
         file_name = self.analyst_path + "fit_stats.txt"
         with open(file_name, "w", encoding="utf-8") as file:
             file.write(
-                f"{'# name':<20s} : {'chi2':<7s} {'red_chi2':<7s}"
-                f"{'SW':<7s} {'AD':<7s} {'KS':<7s} {'AIC':<7s} {'BIC':<7s}\n"
+                f"{"# name":<20s} : {"chi2":<7s} {"red_chi2":<7s}"
+                f"{"SW":<7s} {"AD":<7s} {"KS":<7s} {"AIC":<7s} {"BIC":<7s}\n"
             )
             file.write("#--------------------------------------------------------------------------------\n")
             for model in self.best_results:
                 params = self.best_results[model]
                 file.write(
-                    f"{model:20s} : {params['chi2']:7.2f} {params['red_chi2']:7.2f}"
-                    f"{params['sw_test']:7.2f} {params['ad_test']:7.2f} {params['ks_test']:7.2f}"
-                    f"{params['aic_test']:7.2f} {params['bic_test']:7.2f}\n"
+                    f"{model:20s} : {params["chi2"]:7.2f} {params["red_chi2"]:7.2f}"
+                    f"{params["sw_test"]:7.2f} {params["ad_test"]:7.2f} {params["ks_test"]:7.2f}"
+                    f"{params["aic_test"]:7.2f} {params["bic_test"]:7.2f}\n"
                 )
 
         return self.best_results
