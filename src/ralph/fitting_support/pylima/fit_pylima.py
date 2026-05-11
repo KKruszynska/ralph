@@ -167,7 +167,7 @@ class FitPylima(Fitter):
         DE_population, loss_function = None, None
         for key, value in kwargs.items():
             if key == "DE_population":
-                DE_population = value
+                DE_population = int(value)
             if key == "loss_function":
                 loss_function = value
 
@@ -178,8 +178,11 @@ class FitPylima(Fitter):
             if fitting_method == "DE":
                 if DE_population is None:
                     DE_population = 10
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: DE_pop={DE_population}.")
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
                 fit_event = DE_fit.DEfit(pspl, DE_population_size=DE_population, loss_function=loss_function)
             elif fitting_method == "TRF":
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
                 fit_event = TRF_fit.TRFfit(pspl, loss_function=loss_function)
         else:
             self.log.info("Fit Analyst -- pyLIMA: Using default fitting method (TRF).")
