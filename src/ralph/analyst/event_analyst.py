@@ -344,6 +344,9 @@ if __name__ == "__main__":
     error = False
     error_string = ""
 
+    print("========================")
+    print("Event Analyst: len(argv):", len(sys.argv))
+
     if "--event_name" in sys.argv:
         idx = sys.argv.index("--event_name")
         event += sys.argv[idx + 1]
@@ -367,7 +370,7 @@ if __name__ == "__main__":
 
     if "--stream" in sys.argv:
         idx = sys.argv.index("--stream")
-        stream = (True,) if sys.argv[idx + 1] == "True" else False
+        stream = True if sys.argv[idx + 1] == "True" else False
 
     if "--config_path" in sys.argv:
         idx = sys.argv.index("--config_path")
