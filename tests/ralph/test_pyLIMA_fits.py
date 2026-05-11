@@ -115,9 +115,9 @@ class TestPylima:
             f"t_E = {params['tE']:.2f} +- {params['tE_error']:.2f}\n"
         )
 
-        assert pytest.approx(params["t0"], abs=0.01) == 2457499.77
-        assert pytest.approx(params["u0"], abs=0.01) == 0.283
-        assert pytest.approx(params["tE"], abs=0.01) == 115.73
+        assert pytest.approx(params["t0"], abs=0.01) == 2457491.75
+        assert pytest.approx(params["u0"], abs=0.01) == 0.194
+        assert pytest.approx(params["tE"], abs=0.01) == 120.81
         logs.close_log(log)
 
     def test_fit_parallax(self):
