@@ -344,9 +344,6 @@ if __name__ == "__main__":
     error = False
     error_string = ""
 
-    print("========================")
-    print("Event Analyst: len(argv):", len(sys.argv))
-
     if "--event_name" in sys.argv:
         idx = sys.argv.index("--event_name")
         event += sys.argv[idx + 1]
