@@ -34,6 +34,9 @@ scenario_gaia = {
             "PSPL_blend_piE": {
                 "fitting_package": "pyLIMA",
                 "fitting_method": "TRF",
+                "fitting_method_args": {
+                    "loss_function" : "soft_l1",
+                },
                 "boundaries": {
                     "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
@@ -94,6 +97,10 @@ scenario_gsa = {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
                 "fitting_method": "DE",
+                "fitting_method_args": {
+                    "DE_population" : 10,
+                    "loss_function" : "soft_l1",
+                },
                 "boundaries": {
                     "u0": [0.0, 2.0],
                 }
