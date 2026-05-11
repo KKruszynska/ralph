@@ -87,7 +87,7 @@ class FitAnalyst(Analyst):
             self.parse_config(config_dict)
             self.add_fit_config(config_dict)
         elif "fit_analyst" in self.config:
-            self.parse_config(self.confing)
+            self.parse_config(self.config)
             self.add_fit_config(self.config)
         else:
             self.log.error("Fit Analyst: Error! Fit Analyst needs configuration parameters.")
@@ -179,18 +179,34 @@ class FitAnalyst(Analyst):
             for key in boundaries:
                 self.log.debug(f"{key}: {boundaries[key]}\n")
 
+            fitting_args = fit_config.get("fitting_method_args", None)
+
             if fitting_package.lower() == "pylima":
-                fit_pspl = pylima.fit_pylima.FitPylima(self.log)
-                results = fit_pspl.fit_pspl(
-                    fit_name,
-                    self.light_curves,
-                    starting_params,
-                    parallax,
-                    blend,
-                    return_norm_lc=return_norm_lc,
-                    fitting_method=fitting_method,
-                    use_boundaries=boundaries,
-                )
+                if fitting_args is not None:
+                    fit_pspl = pylima.fit_pylima.FitPylima(self.log)
+                    results = fit_pspl.fit_pspl(
+                        fit_name,
+                        self.light_curves,
+                        starting_params,
+                        parallax,
+                        blend,
+                        return_norm_lc=return_norm_lc,
+                        fitting_method=fitting_method,
+                        use_boundaries=boundaries,
+                        **fitting_args
+                    )
+                else:
+                    fit_pspl = pylima.fit_pylima.FitPylima(self.log)
+                    results = fit_pspl.fit_pspl(
+                        fit_name,
+                        self.light_curves,
+                        starting_params,
+                        parallax,
+                        blend,
+                        return_norm_lc=return_norm_lc,
+                        fitting_method=fitting_method,
+                        use_boundaries=boundaries,
+                    )
         else:
             self.log.info("Fit Analyst: Using default fitting setup.")
             self.log.debug(f"Fit Analyst: Set up: fitting package: pyLIMA, "
