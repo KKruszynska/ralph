@@ -13,20 +13,17 @@ class Analyst:
     :param config_dict: dictionary, optional, dictionary with Analyst configuration
     :param config_path: str, optional, path to the YAML configuration file of the Analyst
     """
-    def __init__(self,
-                 event_name,
-                 analyst_path,
-                 config_dict=None,
-                 config_path=None):
+
+    def __init__(self, event_name, analyst_path, config_dict=None, config_path=None):
 
         self.event_name = self.update_names_paths(event_name)
         self.analyst_path = self.update_names_paths(analyst_path)
 
         self.config = {}
-        if (config_dict != None):
+        if config_dict is not None:
             # READ config_dict
             self.config = config_dict
-        elif (config_path != None):
+        elif config_path is not None:
             # read config path
             self.parse_config(config_path)
         else:
@@ -41,9 +38,8 @@ class Analyst:
         :param config_path: str, path with YAML file containing Analyst configuration.
         """
 
-        config = {}
         try:
-            with open(config_path, 'r') as file:
+            with open(config_path, "r") as file:
                 event_config = yaml.safe_load(file)
 
             self.config["event_name"] = event_config.get("event_name")
@@ -51,7 +47,7 @@ class Analyst:
             self.config["dec"] = float(event_config.get("dec"))
 
         except Exception as err:
-            print("Unexpected %s, %s" % (err, type(err)))
+            print(f"Unexpected {err}, {type(err)}")
 
     def update_names_paths(self, name):
         """
@@ -64,4 +60,3 @@ class Analyst:
         updated_name = name.replace(" ", "_").replace("-", "_")
 
         return updated_name
-

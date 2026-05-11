@@ -6,7 +6,8 @@ from .fitting_support.pylima import fit_pylima, plots_pylima
 from .toolbox import input_tools, logs
 
 __all__ = [
-    "analyst", "analyst_tools",
+    "analyst",
+    "analyst_tools",
     "cmd_analyst",
     "event_analyst",
     "light_curve_analyst",
@@ -16,6 +17,6 @@ __all__ = [
     "fit_pylima",
     "plots_pylima",
     "logs",
-    "input_tools"
-    "__version__"
+    "input_tools",
+    "__version__",
 ]

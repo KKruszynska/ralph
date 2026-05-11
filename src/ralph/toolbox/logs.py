@@ -3,10 +3,7 @@ import os
 import sys
 
 
-def start_log(log_location, log_type,
-              event_name=None,
-              stream=False
-              ):
+def start_log(log_location, log_type, event_name=None, stream=False):
     """
     Function that creates logs for analysts or controller.
     :param log_location: str, location of the log.
@@ -17,37 +14,35 @@ def start_log(log_location, log_type,
     :return: python logger
     """
 
-    if (event_name != None):
-        log = logging.getLogger('analyst_log')
-    else:
-        log = logging.getLogger('controller_log')
+    log = logging.getLogger("analyst_log") if event_name is not None else logging.getLogger("controller_log")
 
-    if (log_type == 'debug'):
+    if log_type == "debug":
         log_level = logging.DEBUG
-    elif (log_type == 'info'):
+    elif log_type == "info":
         log_level = logging.INFO
     else:
         log_level = logging.ERROR
 
-    formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
+    formatter = logging.Formatter(
+        "%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
 
     log.setLevel(log_level)
 
-    if (stream):
+    if stream:
         ch = logging.StreamHandler(stream=sys.stdout)
         ch.setLevel(log_level)
         ch.setFormatter(formatter)
         log.addHandler(ch)
     else:
-        if (event_name != None):
-            filename = log_location + f'{event_name}_analyst.log'
+        if event_name is not None:
+            filename = log_location + f"{event_name}_analyst.log"
         else:
-            filename = log_location + 'controller.log'
+            filename = log_location + "controller.log"
 
-        if os.path.isdir(log_location) == False:
+        if not os.path.isdir(log_location):
             os.makedirs(log_location)
-        fh = logging.FileHandler(filename, encoding='utf-8')
+        fh = logging.FileHandler(filename, encoding="utf-8")
         fh.setLevel(log_level)
         fh.setFormatter(formatter)
         log.addHandler(fh)
@@ -55,6 +50,7 @@ def start_log(log_location, log_type,
     log.info("Processing started. Opened log.")
 
     return log
+
 
 def close_log(log):
     """
@@ -64,7 +60,7 @@ def close_log(log):
     """
 
     for handler in log.handlers:
-        log.info('Processing complete.\n')
+        log.info("Processing complete.\n")
         if isinstance(handler, logging.FileHandler):
             handler.close()
         log.removeFilter(handler)

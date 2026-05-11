@@ -18,6 +18,7 @@ def cmd_catalogues_to_bands(catalogue):
 
     return bands
 
+
 def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, log):
     """
     This function returns baseline magnitude based on source and blend magnitude.
@@ -35,11 +36,14 @@ def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, 
 
     if not np.isnan(mag_source) and not np.isnan(mag_blend):
         if fit_package.lower() == "pylima":
-            baseline_mag, err_baseline_mag = fit_pylima.return_baseline_mag(mag_source, err_source,
-                                                                            mag_blend, err_blend,
-                                                                            log)
+            baseline_mag, err_baseline_mag = fit_pylima.return_baseline_mag(
+                mag_source, err_source, mag_blend, err_blend, log
+            )
+        else:
+            placeholder(10)
 
     return [baseline_mag, err_baseline_mag]
+
 
 def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
     """
@@ -58,26 +62,30 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
 
     if not np.isnan(mag_source) and not np.isnan(mag_base):
         if fit_package.lower() == "pylima":
-            blend_mag, err_blend_mag = fit_pylima.return_blend_mag(mag_source, err_source,
-                                                                   mag_base, err_base,
-                                                                   log)
+            blend_mag, err_blend_mag = fit_pylima.return_blend_mag(
+                mag_source, err_source, mag_base, err_base, log
+            )
+        else:
+            placeholder(10)
 
     return [blend_mag, err_blend_mag]
+
 
 def placeholder(n_max):
     """
     Placeholder function to put in parts of the code that are not complete.
 
-    :param n_max: int, maxium number of the counter
+    :param n_max: int, maximum number of the counter
 
     :return: counted number, should be equal to n_max
     """
 
     count = 0
-    for i in range(n_max):
+    for _i in range(n_max):
         count += 1
 
     return count
+
 
 def find_time_of_peak(light_curves):
     """
@@ -88,18 +96,19 @@ def find_time_of_peak(light_curves):
     :return: time of peak in JD
     """
 
-    time_of_peak = 0.
-    max_amplitude = 0.
+    time_of_peak = 0.0
+    max_amplitude = 0.0
     for entry in light_curves:
-        lc = np.asarray(entry['light_curve'])
+        lc = np.asarray(entry["light_curve"])
         idx_max = np.argmin(lc[:, 1])
-        amplitude = np.max(lc[:,1]) - lc[idx_max, 1]
+        amplitude = np.max(lc[:, 1]) - lc[idx_max, 1]
         time_max = lc[idx_max, 0]
 
         if max_amplitude < amplitude:
             time_of_peak, max_amplitude = time_max, amplitude
 
     return time_of_peak
+
 
 def check_ongoing_time(model_params, time_now):
     """
@@ -113,12 +122,13 @@ def check_ongoing_time(model_params, time_now):
     :return: boolean flag if the event is ongoing
     """
     ongoing = False
-    t_0, t_E = model_params['t0'], model_params['tE']
+    t_0, t_e = model_params["t0"], model_params["tE"]
 
-    if t_0 + t_E < time_now:
+    if t_0 + t_e < time_now:
         ongoing = True
 
     return ongoing
+
 
 def check_ongoing_amplitude(threshold, aligned_data, residuals, baseline_mag):
     """
@@ -141,7 +151,7 @@ def check_ongoing_amplitude(threshold, aligned_data, residuals, baseline_mag):
     for data in residuals:
         sigmas.append(np.std(data[:, 1]))
     sigmas = np.asarray(sigmas)
-    std_mag = np.sqrt(np.sum(sigmas ** 2))
+    std_mag = np.sqrt(np.sum(sigmas**2))
 
     # Find last data point
     t_last = 0
@@ -152,6 +162,7 @@ def check_ongoing_amplitude(threshold, aligned_data, residuals, baseline_mag):
                 ongoing = True
 
     return ongoing, t_last
+
 
 def check_ongoing_magnification(threshold, model_params, time_now):
     """
@@ -165,11 +176,11 @@ def check_ongoing_magnification(threshold, model_params, time_now):
     :return: boolean flag if the event is still ongoing
     """
     ongoing = False
-    t_0, u_0, t_E = model_params['t0'], model_params['u0'], model_params['tE']
+    t_0, u_0, t_e = model_params["t0"], model_params["u0"], model_params["tE"]
 
-    tau = (time_now - t_0) / t_E
+    tau = (time_now - t_0) / t_e
     u = np.sqrt(u_0**2 + tau**2)
-    magnification = (u**2 + 2) / (u * np.sqrt(u**2 +4))
+    magnification = (u**2 + 2) / (u * np.sqrt(u**2 + 4))
 
     if magnification > threshold:
         ongoing = True
