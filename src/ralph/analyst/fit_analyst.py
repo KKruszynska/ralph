@@ -95,10 +95,10 @@ class FitAnalyst(Analyst):
 
     def add_fit_config(self, config):
         """
-        Adds Fit Analyst configuration fields to analyst"s internal configuration
+        Adds Fit Analyst configuration fields to analyst's internal configuration
         dictionary.
 
-        :param config: A dictionary with analyst"s configuration parameters.
+        :param config: A dictionary with analyst's configuration parameters.
         :type config: dict
         """
 
@@ -236,7 +236,7 @@ class FitAnalyst(Analyst):
         Performs initial fit and checks if the event is ongoing.
 
         :return: The status of the fitting procedures, `True` if
-            the process didn"t encounter any exceptions, `False` otherwise.
+            the process didn't encounter any exceptions, `False` otherwise.
         :rtype: bool
         """
 
