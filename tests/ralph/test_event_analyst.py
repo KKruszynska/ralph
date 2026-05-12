@@ -31,6 +31,10 @@ scenario_file_cat = {
                 "PSPL_no_blend_no_piE": {
                     "fitting_package": "pyLIMA",
                     "fitting_method": "DE",
+                    "fitting_method_args": {
+                        "DE_population": 10,
+                        "loss_function": "soft_l1",
+                    },
                     "boundaries": {
                         "u0": [0.0, 2.0],
                     }
@@ -363,7 +367,6 @@ class EventAnalystTest:
                 for key in expected_result:
                     expected = float(expected_result[key])
                     received = float(model_result[key])
-                    print(model, key, expected, received)
                     if not np.isnan(expected):
                         assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
@@ -412,8 +415,22 @@ class EventAnalystTest:
                     assert output.exists() is True
                     assert output.is_file() is True
 
-        # I removed testing fitting results, because ongoing models are
-        # very unstable.
+        # Testing if the PSPL_blend_no_piE model makes sense
+        with open(analyst_path + "fit_results.json", "r") as file:
+            received_fit_result = json.load(file)
+
+        expected_range = {
+            "t0": [2457000.0, 2460600.0],
+            "u0": [-2.0, 2.0],
+            "tE": [1.0, 500.0]
+        }
+        model_result = received_fit_result["PSPL_blend_no_piE"]
+        for key in ["t0", "u0", "tE"]:
+            received = float(model_result[key])
+            lower = expected_range[key][0]
+            upper = expected_range[key][1]
+            if not np.isnan(received):
+                assert (lower <= received <= upper)
 
 
 def test_run():
@@ -447,15 +464,33 @@ def test_run():
         if output.exists():
             os.remove(output)
 
-        files_to_remove = case.get("final_files")
-        if files_to_remove.get("model_plots") is not None:
-            for element in files_to_remove.get("model_plots"):
-                output = Path(analyst_path + element)
-                if output.exists():
-                    os.remove(output)
+        files_to_remove = [
+            "PSPL_no_blend_no_piE.html",
+            "PSPL_blend_no_piE.html",
+            "PSPL_blend_piE.html",
+            "PSPL_no_blend_piE.html",
+        ]
+        for element in files_to_remove:
+            output = Path(analyst_path + element)
+            if output.exists():
+                os.remove(output)
 
-        if files_to_remove.get("cmd_plots") is not None:
-            for element in files_to_remove.get("cmd_plots"):
+        if event_name == "GaiaDR3_ULENS_025_PSPL":
+            files_to_remove = [
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_RP.html",
+            ]
+            for element in files_to_remove:
                 output = Path(analyst_path + element)
                 if output.exists():
                     os.remove(output)
