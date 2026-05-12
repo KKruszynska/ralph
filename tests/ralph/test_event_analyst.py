@@ -468,6 +468,8 @@ def test_run():
             "PSPL_no_blend_no_piE.html",
             "PSPL_blend_no_piE.html",
             "PSPL_blend_piE.html",
+            "PSPL_blend_piE_p.html",
+            "PSPL_blend_piE_m.html",
             "PSPL_no_blend_piE.html",
         ]
         for element in files_to_remove:
@@ -475,7 +477,7 @@ def test_run():
             if output.exists():
                 os.remove(output)
 
-        if event_name == "GaiaDR3_ULENS_025_PSPL":
+        if event_name == "GaiaDR3_ULENS_025":
             files_to_remove = [
                 "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
                 "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
