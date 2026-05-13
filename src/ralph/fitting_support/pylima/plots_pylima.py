@@ -46,6 +46,7 @@ def plot_pylima(event, fit, log):
     :param log: logger instance
 
     """
+    plt.close()
     tel_names = []
     for tel in event.telescopes:
         tel_names.append(tel.name)
@@ -69,6 +70,8 @@ def plot_pylima(event, fit, log):
 
     fit.fit_outputs(bokeh_plot=True)
     log.info("Fit Analyst: Plotting finished.")
+
+    plt.close()
 
     # try:
     #     fit.fit_outputs(bokeh_plot=True)

@@ -34,6 +34,9 @@ scenario_gaia = {
             "PSPL_blend_piE": {
                 "fitting_package": "pyLIMA",
                 "fitting_method": "TRF",
+                "fitting_method_args": {
+                    "loss_function" : "soft_l1",
+                },
                 "boundaries": {
                     "u0": [0.0, 2.0],
                     "piEN": [-1.0, 1.0],
@@ -94,6 +97,10 @@ scenario_gsa = {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
                 "fitting_method": "DE",
+                "fitting_method_args": {
+                    "DE_population" : 10,
+                    "loss_function" : "soft_l1",
+                },
                 "boundaries": {
                     "u0": [0.0, 2.0],
                 }
@@ -102,23 +109,23 @@ scenario_gsa = {
                 "fitting_package": "pyLIMA",
                 "fitting_method": "TRF",
                 "boundaries": {
-                    "u0": [0.0, 2.0],
+                    "u0": [-2.0, 2.0],
                 }
             },
             "PSPL_blend_piE": {
                 "fitting_package": "pyLIMA",
-                "fitting_method": "TRF",
+                "fitting_method": "DE",
                 "boundaries": {
-                    "u0": [0.0, 2.0],
+                    "u0": [-2.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
             },
             "PSPL_no_blend_piE": {
                 "fitting_package": "pyLIMA",
-                "fitting_method": "TRF",
+                "fitting_method": "DE",
                 "boundaries": {
-                    "u0": [0.0, 2.0],
+                    "u0": [-2.0, 2.0],
                     "piEN": [-1.0, 1.0],
                     "piEE": [-1.0, 1.0],
                 }
@@ -130,7 +137,7 @@ scenario_gsa = {
             "survey": "Gaia",
             "band": "G",
             "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_GSA_G.dat",
+            "path": "tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat",
         },
         {
             "survey": "LCO",
@@ -148,6 +155,7 @@ scenario_gsa = {
             "path": "tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_i.dat",
         },
     ],
+    "fit_result": "tests/ralph/data/input/test_results/gaia24amo_fit_results.json",
 }
 
 
@@ -284,7 +292,10 @@ class FitAnalystTest:
         status, t0 = analyst.perform_ongoing_check()
         logs.close_log(log)
 
-        assert status
+        if config['event_name'] == "Gaia24amo":
+            assert status
+        elif config['event_name'] == "GaiaDR3_ULENS_025":
+            assert not status
 
     def test_fit(self):
         """
@@ -361,11 +372,13 @@ def test_run():
     """
     Run all tests.
     """
-    case = scenario_gaia
-    test = FitAnalystTest(case)
-    test.test_parse_config()
-    test.test_check_ongoing()
-    test.test_fit()
+
+    for case in [scenario_gaia, scenario_gsa]:
+        test = FitAnalystTest(case)
+        test.test_parse_config()
+        test.test_check_ongoing()
+        if case.get("event_name") == "GaiaDR3_ULENS_025":
+            test.test_fit()
 
     for case in [scenario_gaia, scenario_gsa]:
         analyst_path = case.get("analyst_path")
@@ -388,6 +401,8 @@ def test_run():
             "PSPL_no_blend_no_piE.html",
             "PSPL_blend_no_piE.html",
             "PSPL_blend_piE.html",
+            "PSPL_blend_piE_p.html",
+            "PSPL_blend_piE_n.html",
         ]
         for element in files:
             output = Path(analyst_path + element)

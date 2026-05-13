@@ -109,7 +109,6 @@ python-json-logger==4.1.0
 pyvo==1.8.1
 PyYAML==6.0.3
 pyzmq==27.1.0
-ralph @ file:///home/katarzyna/Documents/Microlensing_Fitting_Pipeline/new/ralph
 referencing==0.37.0
 requests==2.33.1
 rfc3339-validator==0.1.4

@@ -124,7 +124,7 @@ def check_ongoing_time(model_params, time_now):
     ongoing = False
     t_0, t_e = model_params["t0"], model_params["tE"]
 
-    if t_0 + t_e < time_now:
+    if t_0 + t_e > time_now:
         ongoing = True
 
     return ongoing

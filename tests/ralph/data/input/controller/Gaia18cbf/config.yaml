@@ -3,20 +3,41 @@ ra: 241.16190
 dec: -41.10483
 
 lc_analyst:
-    n_max : 10
-    ongoing_magnification_thershold: 1.10
-    ongoing_amplitude_thershold: 1.0
+  acceptable_mag_range:
+    upper_limit: -10.0
+    lower_limit: 30.0
 
 fit_analyst:
-    fitting_package: pylima
-
-cmd_analyst:
-    catalogues:
-        - name: Gaia_DR3
-          band:
-              - Gaia_G
-              - Gaia_BP
-              - Gaia_RP
+  ongoing_magnification_thershold: 1.10
+  ongoing_amplitude_thershold: 1.0
+  model_fit_configuration:
+    PSPL_no_blend_no_piE:
+      fitting_package: pyLIMA
+      fitting_method: DE
+      fitting_method_args:
+        DE_population: 10
+        loss_function: soft_l1
+      boundaries:
+        u0: [ 0.0, 2.0 ]
+    PSPL_blend_no_piE:
+      fitting_package: pyLIMA
+      fitting_method: TRF
+      boundaries:
+        u0: [ 0.0, 2.0 ]
+    PSPL_blend_piE:
+      fitting_package: pyLIMA
+      fitting_method: DE
+      boundaries:
+        u0: [ -2.0, 2.0 ]
+        piEN: [ -1.0, 1.0 ]
+        piEE: [ -1.0, 1.0 ]
+    PSPL_no_blend_piE:
+      fitting_package: pyLIMA
+      fitting_method: DE
+      boundaries:
+        u0: [ -2.0, 2.0 ]
+        piEN: [ -1.0, 1.0 ]
+        piEE: [ -1.0, 1.0 ]
 
 light_curves:
     - survey: Gaia

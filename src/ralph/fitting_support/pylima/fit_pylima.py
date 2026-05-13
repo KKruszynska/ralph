@@ -105,6 +105,7 @@ class FitPylima(Fitter):
         return_norm_lc=False,
         use_boundaries=None,
         fitting_method=None,
+        **kwargs
     ):
         """
         Perform a point source-point lens model fit.
@@ -139,6 +140,9 @@ class FitPylima(Fitter):
         :param fitting_method: A label of the type of fitting method used in pyLIMA.
         :type fitting_method: str, optional
 
+        :param kwargs: Optional keyword arguments holding information about fitting method set up
+        :type kwargs: dict, optional
+
         :return: A dictionary with the parameters of the best-fitting model, and, if available, a list with
             a light curve aligned to it and its residuals.
         :rtype: list
@@ -160,12 +164,26 @@ class FitPylima(Fitter):
             self.log.info("Fit Analyst -- pyLIMA: Fitting without microlensing parallax.")
             pspl = PSPL_model.PSPLmodel(event, parallax=["None", 0.0], blend_flux_parameter=blend_param)
 
+        DE_population, loss_function = None, None
+        for key, value in kwargs.items():
+            if key == "DE_population":
+                DE_population = int(value)
+            if key == "loss_function":
+                loss_function = value
+
         if fitting_method is not None:
             self.log.info(f"Fit Analyst -- pyLIMA: Fitting method: {fitting_method}.")
+            if loss_function is None:
+                loss_function = "soft_l1"
             if fitting_method == "DE":
-                fit_event = DE_fit.DEfit(pspl, loss_function="soft_l1")
+                if DE_population is None:
+                    DE_population = 10
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: DE_pop={DE_population}.")
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
+                fit_event = DE_fit.DEfit(pspl, DE_population_size=DE_population, loss_function=loss_function)
             elif fitting_method == "TRF":
-                fit_event = TRF_fit.TRFfit(pspl, loss_function="soft_l1")
+                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
+                fit_event = TRF_fit.TRFfit(pspl, loss_function=loss_function)
         else:
             self.log.info("Fit Analyst -- pyLIMA: Using default fitting method (TRF).")
             fit_event = TRF_fit.TRFfit(pspl, loss_function="soft_l1")
@@ -185,8 +203,24 @@ class FitPylima(Fitter):
         else:
             self.log.info("Fit Analyst -- pyLIMA: Using boundaries passed by the User.")
             for key in use_boundaries:
-
+                self.log.debug(
+                    f"Fit Analyst -- pyLIMA: Boundaries for {key} = {use_boundaries[key]}."
+                )
                 fit_event.fit_parameters[key][1] = [use_boundaries[key][0], use_boundaries[key][1]]
+
+        for key in fit_event.fit_parameters:
+            self.log.debug(
+                f"Fit Analyst -- pyLIMA: Final boundaries for {key} = {fit_event.fit_parameters[key][1]}."
+            )
+        self.log.info(f"Fit Analyst -- pyLIMA: Adding starting parameters:")
+        start_guess = []
+        for key in fit_event.fit_parameters:
+            if key in starting_params:
+                self.log.info(
+                    f"Fit Analyst -- pyLIMA: Adding starting parameters: {key} = {starting_params[key]}"
+                )
+                start_guess.append(starting_params[key])
+        fit_event.model_parameters_guess = start_guess
 
         self.log.info("Fit Analyst -- pyLIMA: Staring fit.")
         fit_event.fit()

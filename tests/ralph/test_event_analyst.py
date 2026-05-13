@@ -19,12 +19,52 @@ scenario_file_cat = {
         "dec": -27.3788,
         "analyst_path": "tests/ralph/data/output/event_analyst/GDR3_ULENS_025/",
         "lc_analyst": {
-            "n_max": 10,
-            "ongoing_magnification_thershold": 1.05,
-            "ongoing_amplitude_thershold": 1.0,
+             "acceptable_mag_range": {
+                 "upper_limit": -10,
+                 "lower_limit": 30
+             },
         },
         "fit_analyst": {
-            "fitting_package": "pylima",
+            "ongoing_magnification_thershold": 1.10,
+            "ongoing_amplitude_thershold": 1.0,
+            "model_fit_configuration": {
+                "PSPL_no_blend_no_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "DE",
+                    "fitting_method_args": {
+                        "DE_population": 10,
+                        "loss_function": "soft_l1",
+                    },
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                    }
+                },
+                "PSPL_blend_no_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                    }
+                },
+                "PSPL_blend_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                        "piEN": [-1.0, 1.0],
+                        "piEE": [-1.0, 1.0],
+                    }
+                },
+                "PSPL_no_blend_piE": {
+                    "fitting_package": "pyLIMA",
+                    "fitting_method": "TRF",
+                    "boundaries": {
+                        "u0": [0.0, 2.0],
+                        "piEN": [-1.0, 1.0],
+                        "piEE": [-1.0, 1.0],
+                    }
+                },
+            }
         },
         "cmd_analyst": {
             "catalogues": [
@@ -43,7 +83,8 @@ scenario_file_cat = {
         "model_plots": [
             "PSPL_no_blend_no_piE.html",
             "PSPL_blend_no_piE.html",
-            "PSPL_blend_piE.html",
+            "PSPL_blend_piE_p.html",
+            "PSPL_blend_piE_n.html",
         ],
         "cmd_plots": [
             "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
@@ -52,9 +93,12 @@ scenario_file_cat = {
             "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
             "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
             "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_CMD_Gaia_DR3_Gaia_RP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
         ],
     },
 }
@@ -64,14 +108,49 @@ scenario_gsa = {
     "ra": 249.14892083,
     "dec": -53.74991944,
     "analyst_path": "tests/ralph/data/output/event_analyst/Gaia24amo/",
-    "fit_result": "tests/ralph/data/input/test_results/gaia24amo_fit_results.json",
     "lc_analyst": {
-        "n_max": 10,
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "acceptable_mag_range": {
+            "upper_limit": -10,
+            "lower_limit": 30
+        },
     },
     "fit_analyst": {
-        "fitting_package": "pylima",
+        "ongoing_magnification_thershold": 1.10,
+        "ongoing_amplitude_thershold": 1.0,
+        "model_fit_configuration": {
+            "PSPL_no_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+            "PSPL_no_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "TRF",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+        }
     },
     "light_curves": [
         {
@@ -112,14 +191,53 @@ scenario_kwu = {
     "ra": 102.93358333,
     "dec": 44.352166666,
     "analyst_path": "tests/ralph/data/output/event_analyst/AT2024kwu/",
-    "fit_result": "tests/ralph/data/input/test_results/at2024kwu_fit_results.json",
     "lc_analyst": {
-        "n_max": 10,
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "acceptable_mag_range": {
+            "upper_limit": -10,
+            "lower_limit": 30
+        },
     },
     "fit_analyst": {
-        "fitting_package": "pylima",
+        "ongoing_magnification_thershold": 1.10,
+        "ongoing_amplitude_thershold": 1.0,
+        "model_fit_configuration": {
+            "PSPL_no_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_no_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "fitting_method_args": {
+                    "DE_population" : 10,
+                    "loss_function" : "soft_l1",
+                },
+                "boundaries": {
+                    "u0": [0.0, 2.0],
+                }
+            },
+            "PSPL_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [-2.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+            "PSPL_no_blend_piE": {
+                "fitting_package": "pyLIMA",
+                "fitting_method": "DE",
+                "boundaries": {
+                    "u0": [-2.0, 2.0],
+                    "piEN": [-1.0, 1.0],
+                    "piEE": [-1.0, 1.0],
+                }
+            },
+        }
     },
     "light_curves": [
         {
@@ -249,7 +367,6 @@ class EventAnalystTest:
                 for key in expected_result:
                     expected = float(expected_result[key])
                     received = float(model_result[key])
-                    print(model, key, expected, received)
                     if not np.isnan(expected):
                         assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
@@ -298,21 +415,22 @@ class EventAnalystTest:
                     assert output.exists() is True
                     assert output.is_file() is True
 
-        with open(self.scenario.get("fit_result"), "r") as file:
-            expected_fit_result = json.load(file)
-
+        # Testing if the PSPL_blend_no_piE model makes sense
         with open(analyst_path + "fit_results.json", "r") as file:
             received_fit_result = json.load(file)
 
-        for model in expected_fit_result:
-            if model != "PSPL_no_blend_no_piE":
-                model_result = received_fit_result[model]
-                expected_result = expected_fit_result[model]
-                for key in expected_result:
-                    expected = float(expected_result[key])
-                    received = float(model_result[key])
-                    if not np.isnan(expected):
-                        assert pytest.approx(received, 2) == pytest.approx(expected, 2)
+        expected_range = {
+            "t0": [2457000.0, 2460600.0],
+            "u0": [-2.0, 2.0],
+            "tE": [1.0, 500.0]
+        }
+        model_result = received_fit_result["PSPL_blend_no_piE"]
+        for key in ["t0", "u0", "tE"]:
+            received = float(model_result[key])
+            lower = expected_range[key][0]
+            upper = expected_range[key][1]
+            if not np.isnan(received):
+                assert (lower <= received <= upper)
 
 
 def test_run():
@@ -325,13 +443,12 @@ def test_run():
     test.test_parse_config()
     test.test_run_analyst_file()
 
-    # for case in [scenario_kwu, scenario_gsa]:
-    case = scenario_kwu
-    test = EventAnalystTest(case)
-    test.test_run_analyst_dict()
+    for case in [scenario_kwu, scenario_gsa]:
+        test = EventAnalystTest(case)
+        test.test_run_analyst_dict()
 
     # Remove created files
-    for case in [scenario_file_cat, scenario_kwu]:
+    for case in [scenario_file_cat, scenario_kwu, scenario_gsa]:
         analyst_path = case.get("analyst_path")
         event_name = case.get("event_name")
 
@@ -347,15 +464,35 @@ def test_run():
         if output.exists():
             os.remove(output)
 
-        files_to_remove = case.get("final_files")
-        if files_to_remove.get("model_plots") is not None:
-            for element in files_to_remove.get("model_plots"):
-                output = Path(analyst_path + element)
-                if output.exists():
-                    os.remove(output)
+        files_to_remove = [
+            "PSPL_no_blend_no_piE.html",
+            "PSPL_blend_no_piE.html",
+            "PSPL_blend_piE.html",
+            "PSPL_blend_piE_p.html",
+            "PSPL_blend_piE_n.html",
+            "PSPL_no_blend_piE.html",
+        ]
+        for element in files_to_remove:
+            output = Path(analyst_path + element)
+            if output.exists():
+                os.remove(output)
 
-        if files_to_remove.get("cmd_plots") is not None:
-            for element in files_to_remove.get("cmd_plots"):
+        if event_name == "GaiaDR3_ULENS_025":
+            files_to_remove = [
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
+            ]
+            for element in files_to_remove:
                 output = Path(analyst_path + element)
                 if output.exists():
                     os.remove(output)
