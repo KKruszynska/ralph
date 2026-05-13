@@ -29,6 +29,18 @@ class LightCurveAnalyst(Analyst):
 
     :param config_path: A path to the configuration file of the Event Analyst.
     :type config_path: str, optional
+
+    Notes on configuration:
+    ------------------------------
+    The configuration dictionary can contain the following keywords:
+
+    * `acceptable_mag_range`: dict
+        A dictionary with upper and lower limit of the acceptable magnitude range.
+        Values outside of this range will be regarded as invalid, see:
+        :ralph.analyst.light_curve_analyst.LightCurveAnalyst.flag_invalid_mags:
+            Allowed models keywords are:
+                - `lower_limit` - lower limit of the acceptable magnitude range;
+                - `upper_limit` - upper limit of the acceptable magnitude range.
     """
 
     def __init__(self, event_name, analyst_path, light_curves, log, config_dict=None, config_path=None):
