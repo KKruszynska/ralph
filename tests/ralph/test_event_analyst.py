@@ -84,7 +84,7 @@ scenario_file_cat = {
             "PSPL_no_blend_no_piE.html",
             "PSPL_blend_no_piE.html",
             "PSPL_blend_piE_p.html",
-            "PSPL_blend_piE_m.html",
+            "PSPL_blend_piE_n.html",
         ],
         "cmd_plots": [
             "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
@@ -96,9 +96,9 @@ scenario_file_cat = {
             "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
             "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
             "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_RP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
+            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
         ],
     },
 }
@@ -469,7 +469,7 @@ def test_run():
             "PSPL_blend_no_piE.html",
             "PSPL_blend_piE.html",
             "PSPL_blend_piE_p.html",
-            "PSPL_blend_piE_m.html",
+            "PSPL_blend_piE_n.html",
             "PSPL_no_blend_piE.html",
         ]
         for element in files_to_remove:
@@ -488,9 +488,9 @@ def test_run():
                 "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
                 "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
                 "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
-                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_BP.html",
-                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_G.html",
-                "GaiaDR3_ULENS_025_PSPL_blend_piE_m_CMD_Gaia_DR3_Gaia_RP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
+                "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
             ]
             for element in files_to_remove:
                 output = Path(analyst_path + element)

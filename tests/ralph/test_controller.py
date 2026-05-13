@@ -69,7 +69,7 @@ class ControllerPathsTest:
                 "PSPL_no_blend_no_piE",
                 "PSPL_blend_no_piE",
                 "PSPL_blend_piE_p",
-                "PSPL_blend_piE_m",
+                "PSPL_blend_piE_n",
             ]
 
             for file_path in model_plots:
@@ -173,7 +173,7 @@ class ControllerPathsOngoingTest:
                     "PSPL_no_blend_no_piE",
                     "PSPL_blend_no_piE",
                     "PSPL_blend_piE_p",
-                    "PSPL_blend_piE_m",
+                    "PSPL_blend_piE_n",
                 ]
 
             for file_path in model_plots:
@@ -254,7 +254,7 @@ def test_run():
             "PSPL_blend_no_piE",
             "PSPL_blend_piE",
             "PSPL_blend_piE_p",
-            "PSPL_blend_piE_m",
+            "PSPL_blend_piE_n",
         ]
 
         for file_path in model_plots:

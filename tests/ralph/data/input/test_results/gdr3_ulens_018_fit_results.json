@@ -263,7 +263,7 @@
         "aic_test": 21290.785,
         "bic_test": 21414.615
     },
-    "PSPL_blend_piE_m": {
+    "PSPL_blend_piE_n": {
         "t0_par": 2457712,
         "t0": 2457710.538,
         "t0_error": 2.316,

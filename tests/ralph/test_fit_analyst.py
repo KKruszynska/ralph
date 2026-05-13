@@ -402,7 +402,7 @@ def test_run():
             "PSPL_blend_no_piE.html",
             "PSPL_blend_piE.html",
             "PSPL_blend_piE_p.html",
-            "PSPL_blend_piE_m.html",
+            "PSPL_blend_piE_n.html",
         ]
         for element in files:
             output = Path(analyst_path + element)
