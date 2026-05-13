@@ -407,7 +407,7 @@ class FitAnalyst(Analyst):
             "piEN": 0.0,
             "piEE": 0.0,
         }
-        sign = "p" if np.sign(starting_params["u0"]) > 0 else "m"
+        sign = "p" if np.sign(starting_params["u0"]) > 0 else "n"
         self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{sign}")
         boundaries = {
             "u0": [0.0, 2.0],
@@ -436,7 +436,7 @@ class FitAnalyst(Analyst):
             "piEN": self.best_results["PSPL_blend_piE_" + sign]["piEN"],
             "piEE": self.best_results["PSPL_blend_piE_" + sign]["piEE"],
         }
-        sign = "p" if np.sign(starting_params["u0"]) > 0 else "m"
+        sign = "p" if np.sign(starting_params["u0"]) > 0 else "n"
         self.log.info(f"Fit Analyst: Starting fitting model PSPL_blend_piE_{sign}")
 
         boundaries["u0"] =  [-2.0, 0.0]
