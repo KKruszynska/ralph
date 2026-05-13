@@ -276,8 +276,9 @@ class FitAnalyst(Analyst):
         baseline_mag = fit_params_pspl_nopar["baseline_magnitude"]
         self.start_time = time.time()
 
-        # todo: this currently supports only PSPL, but it should support more models, if we have them from the
-        # todo: past. This should be consulted with the system flowchart though.
+        # todo: this currently supports only PSPL, but it should support more models,
+        #  if we have them from the past. This should be consulted with the system
+        #  flowchart though.
 
         ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(
             self.config["ongoing_amplitude_thershold"], aligned_data, residuals, baseline_mag
