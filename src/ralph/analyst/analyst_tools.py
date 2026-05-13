@@ -2,23 +2,6 @@ import numpy as np
 
 from ralph.fitting_support.pylima import fit_pylima
 
-
-def cmd_catalogues_to_bands(catalogue):
-    """
-    This function provides a list of bands used to create a CMD with the requested catalogue.
-
-    :param catalogue: str, catalogue name
-
-    :return: list of bands
-    """
-    bands = None
-
-    if "Gaia" in catalogue:
-        bands = ["Gaia_G", "Gaia_BP", "Gaia_RP"]
-
-    return bands
-
-
 def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, log):
     """
     This function returns baseline magnitude based on source and blend magnitude.
