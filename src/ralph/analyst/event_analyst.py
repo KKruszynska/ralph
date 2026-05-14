@@ -98,8 +98,9 @@ class EventAnalyst(Analyst):
 
             self.parse_event_config(config_path=config_path, config_dict=config_dict)
         else:
-            self.log.error("Event Analyst: Error! Event Analyst needs information.")
-            quit()
+            raise UnboundLocalError(
+                "Event Analyst requires a configuration file or a configuration dictionary."
+            )
 
     def parse_event_config(self, config_path=None, config_dict=None):
         """

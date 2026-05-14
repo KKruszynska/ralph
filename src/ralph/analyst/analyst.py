@@ -27,9 +27,9 @@ class Analyst:
             # read config path
             self.parse_config(config_path)
         else:
-            # todo: raise custom exception here?
-            print("Error! Analyst needs information!!!")
-            quit()
+            raise UnboundLocalError(
+                    "The Analyst requires a configuration file or a configuration dictionary"
+                )
 
     def parse_config(self, config_path):
         """
