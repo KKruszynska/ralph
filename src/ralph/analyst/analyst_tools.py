@@ -8,35 +8,30 @@ from astropy import units as u
 
 from ralph.fitting_support.pylima import fit_pylima
 
-
-def cmd_catalogues_to_bands(catalogue):
-    """
-    This function provides a list of bands used to create a CMD with the requested catalogue.
-
-    :param catalogue: str, catalogue name
-
-    :return: list of bands
-    """
-    bands = None
-
-    if "Gaia" in catalogue:
-        bands = ["Gaia_G", "Gaia_BP", "Gaia_RP"]
-
-    return bands
-
-
 def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, log):
     """
-    This function returns baseline magnitude based on source and blend magnitude.
+    Returns baseline magnitude based on source and blend magnitude.
 
-    :param mag_source: source brightness in magnitudes
-    :param err_source: source uncertainty in magnitudes
-    :param mag_blend: blend brightness in magnitudes
-    :param err_blend: blend uncertainty in magnitudes
-    :param fit_package: package used for fitting
-    :param log: logger instance
+    :param mag_source: Source brightness in magnitudes.
+    :type mag_source: float
 
-    :return: baseline brightness and its uncertainty in magnitudes
+    :param err_source: Source uncertainty in magnitudes.
+    :type err_source: float
+
+    :param mag_blend: Blend brightness in magnitudes.
+    :type mag_blend: float
+
+    :param err_blend: blend uncertainty in magnitudes.
+    :type err_blend: float
+
+    :param fit_package: Name of the package used for fitting events.
+    :type fit_package: str
+
+    :param log: A logger instance started by the Event Analyst.
+    :type log: logging.Logger
+
+    :return: Baseline brightness and its uncertainty in magnitudes.
+    :rtype: [float, float]
     """
     baseline_mag, err_baseline_mag = None, None
 
@@ -53,16 +48,28 @@ def get_baseline_mag(mag_source, err_source, mag_blend, err_blend, fit_package, 
 
 def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
     """
-    This function returns blend magnitude based on source and baseline magnitude.
+    Returns blend magnitude based on source and baseline magnitude.
 
-    :param mag_source: source brightness in magnitudes
-    :param err_source: source uncertainty in magnitudes
-    :param mag_base: baseline brightness in magnitudes
-    :param err_base: baseline uncertainty in magnitudes
-    :param fit_package: package used for fitting
-    :param log: logger instance
+    :param mag_source: Source brightness in magnitudes.
+    :type mag_source: float
 
-    :return: baseline brightness and its uncertainty in magnitudes
+    :param err_source: Source uncertainty in magnitudes.
+    :type err_source: float
+
+    :param mag_base: Baseline brightness in magnitudes.
+    :type mag_base: float
+
+    :param err_base: Baseline uncertainty in magnitudes.
+    :type err_base: float
+
+    :param fit_package: The name of the package used for fitting events.
+    :type fit_package: str
+
+    :param log: A logger instance started by the Event Analyst.
+    :type log: logging.Logger
+
+    :return: Baseline brightness and its uncertainty in magnitudes.
+    :rtype: [float, float]
     """
     blend_mag, err_blend_mag = None, None
 
@@ -80,10 +87,13 @@ def get_blend_mag(mag_source, err_source, mag_base, err_base, fit_package, log):
 def placeholder(n_max):
     """
     Placeholder function to put in parts of the code that are not complete.
+    It counts to the number of n_max end then ends.
 
-    :param n_max: int, maximum number of the counter
+    :param n_max: A maximum number of the counter.
+    :type n_max: int
 
-    :return: counted number, should be equal to n_max
+    :return: Counted number, equal to n_max.
+    :rtype: int
     """
 
     count = 0
@@ -95,15 +105,23 @@ def placeholder(n_max):
 
 def find_time_of_peak(light_curves, bin_size):
     """
-    Find the time of peak among all the light curves.
+    Finds the time of peak among all the light curves.
 
-    :param light_curves: list of light curves
+    :param light_curves: A list of  dictionaries containing light curves.
+    :type light_curves: list
 
     :return: time of peak in JD
+    :rtype: float
     """
 
     time_of_peak = 0.0
     max_amplitude = 0.0
+
+    # first, lets bin the data
+    binned_lc = []
+    for entry in light_curves:
+        lc = np.asarray(entry["light_curve"])
+
     for entry in light_curves:
         lc = np.asarray(entry["light_curve"])
         time = Time(lc[:,0], format='jd')
@@ -135,10 +153,16 @@ def check_ongoing_time(model_params, time_now):
     This check is passed if current time is smaller than the sum of the time
     of peak and Einstein time.
 
-    :param model_params: dict, dictionary containing model parameters
-    :param time_now: float, current time in JD
+    :param model_params: A dictionary containing model parameters.
+    :type model_params: dict
 
-    :return: boolean flag if the event is ongoing
+    :param time_now: Julian Date of the latest data point.
+    :type time_now: float
+
+    :return: A flag, `True` if time of the latest data point is larger than the sum
+        of the base point source-point lens model's time of peak and Einstein timescale,
+        `False` otherwise.
+    :rtype: bool
     """
     ongoing = False
     t_0, t_e = model_params["t0"], model_params["tE"]
@@ -155,13 +179,25 @@ def check_ongoing_amplitude(threshold, aligned_data, residuals, baseline_mag):
     of the last point aligned with the model and the standard deviation of the
     model residuals.
 
-    :param threshold: float, if the amplitude is larger than threshold amount of standard deviation of
-                      the light curve, then the event is considered ongoing
-    :param aligned_data: numpy array, array containing photometric data aligned to a microlensing model
-    :param residuals: numpy array, array containing residuals of the microlensing model
-    :param baseline_mag: float, baseline magnitude of the model
+    :param threshold: Threshold for the amplitude; if the amplitude is larger than
+        the threshold amount of standard deviation of the light curve, then the event
+        is considered ongoing.
+    :type threshold: float
 
-    :return: boolean, is the event over and the time of the last point
+    :param aligned_data: An array containing photometric data aligned to
+        a microlensing model.
+    :type aligned_data: numpy array
+
+    :param residuals: An array containing residuals of the microlensing model.
+    :type residuals: numpy array
+
+    :param baseline_mag: The baseline magnitude of the microlensing model.
+    :type baseline_mag: float
+
+    :return: A flag of the amplitude check and the Julian Date of the latest data point.
+        The flag is `True` if the amplitude at the lastest data point is above
+        the threshold times standard deviation from the baseline, `False` otherwise.
+    :rtype: bool, float
     """
     ongoing = False
 
@@ -187,12 +223,19 @@ def check_ongoing_magnification(threshold, model_params, time_now):
     """
     Checks if the event is ongoing based on microlensing model's magnification.
 
-    :param threshold: float, threshold for microlensing model's magnification, if larger
-                       the event is considered ongoing
-    :param model_params: dict, dictionary containing microlensing model parameters
-    :param time_now: current time
+    :param threshold: A threshold for microlensing model's magnification, if larger
+                       the event is considered ongoing.
+    :type threshold: float
 
-    :return: boolean flag if the event is still ongoing
+    :param model_params: A dictionary containing microlensing model parameters.
+    :type model_params: dict
+
+    :param time_now: Julian Date of the latest data point.
+    :type time_now: float
+
+    :return: A flag, `True` if the magnification of the base point source-point lens model
+        at the latest data point is larger than the threshold, `False` otherwise.
+    :rtype: bool
     """
     ongoing = False
     t_0, u_0, t_e = model_params["t0"], model_params["u0"], model_params["tE"]
