@@ -41,9 +41,15 @@ class FitAnalyst(Analyst):
     * `ongoing_magnification_thershold`: float
         Threshold for magnification. If current magnification of the source is larger
         than the threshold, the event is considered as ongoing.
+        Default value: 1.05
     * `ongoing_amplitude_thershold`: float
         Threshold for amplitude. If current amplitude of the event is above the threshold,
         the event is considered as ongoing.
+        Default value: 1.0
+    * `time_of_peak_bin_size`: float, in days
+        Size of the bin used when binning the light curve data to look for the first
+        approximation of the time of peak.
+        Default value: 2.0
     * `model_fit_configuration`: dictionary
         A dictionary with configuration for specific types of models.
         Allowed models keywords are:
@@ -109,6 +115,10 @@ class FitAnalyst(Analyst):
         )
         self.config["ongoing_amplitude_thershold"] = config["fit_analyst"].get(
             "ongoing_amplitude_thershold", 1.0
+        )
+
+        self.config["top_bin_size"] = config["fit_analyst"].get(
+            "time_of_peak_bin_size", 2.0
         )
 
         params = {}
@@ -245,7 +255,12 @@ class FitAnalyst(Analyst):
         )
         self.log.info("Fit Analyst: Starting ongoing check fit.")
         self.log.info("Fit Analyst:  Find PSPL starting parameters.")
-        time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
+
+        time_of_peak = analyst_tools.find_time_of_peak(
+            self.light_curves,
+            self.config["top_bin_size"]
+        )
+
         starting_params = {
             "ra": self.config["ra"],
             "dec": self.config["dec"],
@@ -276,8 +291,9 @@ class FitAnalyst(Analyst):
         baseline_mag = fit_params_pspl_nopar["baseline_magnitude"]
         self.start_time = time.time()
 
-        # todo: this currently supports only PSPL, but it should support more models, if we have them from the
-        # todo: past. This should be consulted with the system flowchart though.
+        # todo: this currently supports only PSPL, but it should support more models,
+        #  if we have them from the past. This should be consulted with the system
+        #  flowchart though.
 
         ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(
             self.config["ongoing_amplitude_thershold"], aligned_data, residuals, baseline_mag
