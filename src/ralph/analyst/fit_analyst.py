@@ -41,12 +41,15 @@ class FitAnalyst(Analyst):
     * `ongoing_magnification_thershold`: float
         Threshold for magnification. If current magnification of the source is larger
         than the threshold, the event is considered as ongoing.
+        Default value: 1.05
     * `ongoing_amplitude_thershold`: float
         Threshold for amplitude. If current amplitude of the event is above the threshold,
         the event is considered as ongoing.
+        Default value: 1.0
     * `time_of_peak_bin_size`: float, in days
         Size of the bin used when binning the light curve data to look for the first
         approximation of the time of peak.
+        Default value: 2.0
     * `model_fit_configuration`: dictionary
         A dictionary with configuration for specific types of models.
         Allowed models keywords are:
