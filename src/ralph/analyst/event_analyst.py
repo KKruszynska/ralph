@@ -84,7 +84,6 @@ class EventAnalyst(Analyst):
     ):
 
         super().__init__(event_name, analyst_path, config_dict=config_dict, config_path=config_path)
-        # Analyst.__init__(self, event_name, analyst_path, config_dict=config_dict, config_path=config_path)
         self.light_curves = []
 
         # start
@@ -93,35 +92,41 @@ class EventAnalyst(Analyst):
         self.log.info(f"Event Analyst: Analyzing event {event_name:s}")
         self.log.info("-------------------------------------------")
 
-        if config_path is not None:
-            self.parse_config(config_path)
-            self.parse_event_config(config_path)
-        elif config_dict is not None:
-            self.add_config_dict(config_dict)
+        if (config_path is not None) or (config_dict is not None):
+            if config_path is not None:
+                self.parse_config(config_path)
+
+            self.parse_event_config(config_path=config_path, config_dict=config_dict)
         else:
             self.log.error("Event Analyst: Error! Event Analyst needs information.")
             quit()
 
-    def parse_event_config(self, config_path):
+    def parse_event_config(self, config_path=None, config_dict=None):
         """
-        Parses file with configuration and adds it into the internal
-        dictionary of the Event Analyst.
+        Either parses the file or a dictionary with configuration and
+        adds it into the internal dictionary of the Event Analyst.
 
-        :param config_path: A path with YAML or JSON file containing
+        :param config_path: A path with a YAML or JSON file containing
             the configuration needed for the Event Analyst.
         :type config_path: str
+
+        :param config_dict: A dictionary containing configuration for the Event Analyst.
+        :type config_dict: dict
         """
 
         try:
-            file_format = config_path.split(".")[-1]
+            if config_path is not None:
+                file_format = config_path.split(".")[-1]
 
-            if file_format == "yaml":
-                with open(config_path, "r") as file:
-                    event_config = yaml.safe_load(file)
-            elif file_format == "json":
-                with open(config_path, "r") as file:
-                    event_config = json.load(file)
-                    file.close()
+                if file_format == "yaml":
+                    with open(config_path, "r") as file:
+                        event_config = yaml.safe_load(file)
+                elif file_format == "json":
+                    with open(config_path, "r") as file:
+                        event_config = json.load(file)
+                        file.close()
+            elif config_dict is not None:
+                event_config = config_dict
 
             if "lc_analyst" in event_config:
                 self.config["lc_analyst"] = event_config.get("lc_analyst")
@@ -143,39 +148,6 @@ class EventAnalyst(Analyst):
 
             self.light_curves = self.parse_light_curves(event_config.get("light_curves"))
             self.log.info("Event Analyst: Light curves received.")
-
-        except Exception as err:
-            self.log.error(f"Event Analyst: {err}, {type(err)}")
-
-    def add_config_dict(self, conifg_dict):
-        """
-        Parses a dictionary with configuration and adds it into the internal
-        dictionary of the Event Analyst.
-
-        :param conifg_dict: A dictionary containing configuration for the Event Analyst.
-        :type conifg_dict: dict
-        """
-
-        try:
-            self.light_curves = self.parse_light_curves(conifg_dict.get("light_curves"))
-
-            if "lc_analyst" in conifg_dict:
-                self.config["lc_analyst"] = conifg_dict.get("lc_analyst")
-                self.log.info("Event Analyst: Light Curve Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
-
-            if "fit_analyst" in conifg_dict:
-                self.config["fit_analyst"] = conifg_dict.get("fit_analyst")
-                self.log.info("Event Analyst: Fit Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
-
-            if "cmd_analyst" in conifg_dict:
-                self.config["cmd_analyst"] = conifg_dict.get("cmd_analyst")
-                self.log.info("Event Analyst: CMD Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
 
         except Exception as err:
             self.log.error(f"Event Analyst: {err}, {type(err)}")
@@ -262,8 +234,6 @@ class EventAnalyst(Analyst):
         Launches the Light Curve Analyst to check the quality of the light curve,
         and remove invalid entries.
         """
-
-        lc_quality_status = False
 
         self.log.info("Event Analyst: Starting Light Curve Analyst.")
         lc_analyst = LightCurveAnalyst(
