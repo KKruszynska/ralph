@@ -116,12 +116,6 @@ def find_time_of_peak(light_curves, bin_size):
 
     time_of_peak = 0.0
     max_amplitude = 0.0
-
-    # first, lets bin the data
-    binned_lc = []
-    for entry in light_curves:
-        lc = np.asarray(entry["light_curve"])
-
     for entry in light_curves:
         lc = np.asarray(entry["light_curve"])
         time = Time(lc[:,0], format='jd')

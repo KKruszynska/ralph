@@ -250,7 +250,7 @@ class EventAnalyst(Analyst):
             catalogue = dictionary["name"]
             for solution in self.fit_results:
                 results = self.fit_results[solution]
-                bands = analyst_tools.cmd_catalogues_to_bands(catalogue)
+                bands = dictionary["band"]
 
                 # gather photometric params
                 base, source, blend = {}, {}, {}
