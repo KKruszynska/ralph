@@ -93,9 +93,7 @@ class EventAnalyst(Analyst):
         self.log.info("-------------------------------------------")
 
         if (config_path is not None) or (config_dict is not None):
-            if config_path is not None:
-                self.parse_config(config_path)
-
+            # self.parse_config(config_path=config_path, config_dict=config_dict)
             self.parse_event_config(config_path=config_path, config_dict=config_dict)
         else:
             raise UnboundLocalError(
