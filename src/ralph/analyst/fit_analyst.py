@@ -44,6 +44,9 @@ class FitAnalyst(Analyst):
     * `ongoing_amplitude_thershold`: float
         Threshold for amplitude. If current amplitude of the event is above the threshold,
         the event is considered as ongoing.
+    * `time_of_peak_bin_size`: float, in days
+        Size of the bin used when binning the light curve data to look for the first
+        approximation of the time of peak.
     * `model_fit_configuration`: dictionary
         A dictionary with configuration for specific types of models.
         Allowed models keywords are:
@@ -109,6 +112,10 @@ class FitAnalyst(Analyst):
         )
         self.config["ongoing_amplitude_thershold"] = config["fit_analyst"].get(
             "ongoing_amplitude_thershold", 1.0
+        )
+
+        self.config["top_bin_size"] = config["fit_analyst"].get(
+            "time_of_peak_bin_size", 2.0
         )
 
         params = {}
@@ -245,7 +252,12 @@ class FitAnalyst(Analyst):
         )
         self.log.info("Fit Analyst: Starting ongoing check fit.")
         self.log.info("Fit Analyst:  Find PSPL starting parameters.")
-        time_of_peak = analyst_tools.find_time_of_peak(self.light_curves)
+
+        time_of_peak = analyst_tools.find_time_of_peak(
+            self.light_curves,
+            self.config["top_bin_size"]
+        )
+
         starting_params = {
             "ra": self.config["ra"],
             "dec": self.config["dec"],
