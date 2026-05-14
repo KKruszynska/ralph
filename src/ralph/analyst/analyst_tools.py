@@ -1,4 +1,10 @@
+
 import numpy as np
+
+from astropy.table import QTable
+from astropy.time import Time
+from astropy.timeseries import TimeSeries, aggregate_downsample
+from astropy import units as u
 
 from ralph.fitting_support.pylima import fit_pylima
 
@@ -87,7 +93,7 @@ def placeholder(n_max):
     return count
 
 
-def find_time_of_peak(light_curves):
+def find_time_of_peak(light_curves, bin_size):
     """
     Find the time of peak among all the light curves.
 
@@ -100,14 +106,27 @@ def find_time_of_peak(light_curves):
     max_amplitude = 0.0
     for entry in light_curves:
         lc = np.asarray(entry["light_curve"])
-        idx_max = np.argmin(lc[:, 1])
-        amplitude = np.max(lc[:, 1]) - lc[idx_max, 1]
-        time_max = lc[idx_max, 0]
+        time = Time(lc[:,0], format='jd')
+        mag, err = lc[:,1] * u.mag, lc[:,2] * u.mag
+        lc = QTable(
+            data=[time, mag, err],
+            names=['time', 'mag', 'err'],
+        )
+        time_series = TimeSeries(lc)
+        lc_binned = aggregate_downsample(
+            time_series,
+            time_bin_size=bin_size * u.day,
+            aggregate_func=np.nanmedian
+        )
+
+        idx_max = np.nanargmin(lc_binned['mag'])
+        amplitude = np.nanmax(lc_binned['mag']) - lc_binned['mag'][idx_max]
+        time_max = lc_binned['time_bin_start'][idx_max]
 
         if max_amplitude < amplitude:
             time_of_peak, max_amplitude = time_max, amplitude
 
-    return time_of_peak
+    return time_of_peak.jd
 
 
 def check_ongoing_time(model_params, time_now):
