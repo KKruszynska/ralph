@@ -7,6 +7,8 @@ import pytest
 
 from ralph.controller.controller import Controller
 
+ralph_tests_home = os.path.join("tests", "ralph", "data")
+
 class ControllerPathsTest:
     """
     Tests to check if controller works for a finished event.
@@ -39,29 +41,29 @@ class ControllerPathsTest:
 
         # Check if expected files exist
         # Controller log
-        controller_log_path = "tests/ralph/data/output/controller_launch/"
-        output = Path(controller_log_path + "controller.log")
+        controller_log_path = os.path.join(ralph_tests_home, "output", "controller_launch")
+        output = Path(os.path.join(controller_log_path, "controller.log"))
         assert output.exists() is True
         assert output.is_file() is True
 
         # Analyst output files
-        analyst_home = "tests/ralph/data/input/controller/"
+        analyst_home = os.path.join(ralph_tests_home, "input", "controller")
         for event in event_list:
-            analyst_path = analyst_home + event
+            analyst_path = os.path.join(analyst_home, event)
 
             output = Path(analyst_path)
             assert output.exists() is True
             assert output.is_dir() is True
 
-            output = Path(analyst_path + "/fit_results.json")
+            output = Path(os.path.join(analyst_path, "fit_results.json"))
             assert output.exists() is True
             assert output.is_file() is True
 
-            output = Path(analyst_path + "/fit_stats.txt")
+            output = Path(os.path.join(analyst_path, "fit_stats.txt"))
             assert output.exists() is True
             assert output.is_file() is True
 
-            output = Path(analyst_path + "/" + event + "_analyst.log")
+            output = Path(os.path.join(analyst_path, event + "_analyst.log"))
             assert output.exists() is True
             assert output.is_file() is True
 
@@ -73,7 +75,7 @@ class ControllerPathsTest:
             ]
 
             for file_path in model_plots:
-                output = Path(analyst_path + "/" + file_path + ".html")
+                output = Path(os.path.join(analyst_path, file_path + ".html"))
                 assert output.exists() is True
                 assert output.is_file() is True
 
@@ -84,7 +86,7 @@ class ControllerPathsTest:
             ]
             for model in model_plots:
                 for band in bands:
-                    output = Path(analyst_path + "/" + event + "_" + model + band + ".html")
+                    output = Path(os.path.join(analyst_path, event + "_" + model + band + ".html"))
                     assert output.exists() is True
                     assert output.is_file() is True
 
@@ -92,7 +94,7 @@ class ControllerPathsTest:
             with open(expected_result_path, "r") as file:
                 expected_fit_result = json.load(file)
 
-            with open(analyst_path + "/fit_results.json", "r") as file:
+            with open(os.path.join(analyst_path, "fit_results.json"), "r") as file:
                 received_fit_result = json.load(file)
 
             for model in expected_fit_result:
@@ -136,29 +138,29 @@ class ControllerPathsOngoingTest:
 
         # Check if expected files exist
         # Controller log
-        controller_log_path = "tests/ralph/data/output/controller_analysts/"
-        output = Path(controller_log_path + "controller.log")
+        controller_log_path = os.path.join(ralph_tests_home, "output", "controller_analysts")
+        output = Path(os.path.join(controller_log_path, "controller.log"))
         assert output.exists() is True
         assert output.is_file() is True
 
         # Analyst output files
-        analyst_home = "tests/ralph/data/input/controller/"
+        analyst_home = os.path.join(ralph_tests_home, "input", "controller")
         for event in event_list:
-            analyst_path = analyst_home + event
+            analyst_path = os.path.join(analyst_home, event)
 
             output = Path(analyst_path)
             assert output.exists() is True
             assert output.is_dir() is True
 
-            output = Path(analyst_path + "/fit_results.json")
+            output = Path(os.path.join(analyst_path, "fit_results.json"))
             assert output.exists() is True
             assert output.is_file() is True
 
-            output = Path(analyst_path + "/fit_stats.txt")
+            output = Path(os.path.join(analyst_path, "fit_stats.txt"))
             assert output.exists() is True
             assert output.is_file() is True
 
-            output = Path(analyst_path + "/" + event + "_analyst.log")
+            output = Path(os.path.join(analyst_path, event + "_analyst.log"))
             assert output.exists() is True
             assert output.is_file() is True
 
@@ -177,7 +179,7 @@ class ControllerPathsOngoingTest:
                 ]
 
             for file_path in model_plots:
-                output = Path(analyst_path + "/" + file_path + ".html")
+                output = Path(os.path.join(analyst_path, file_path + ".html"))
                 assert output.exists() is True
                 assert output.is_file() is True
 
@@ -186,7 +188,7 @@ class ControllerPathsOngoingTest:
                 with open(expected_result_path, "r") as file:
                     expected_fit_result = json.load(file)
 
-                with open(analyst_path + "/fit_results.json", "r") as file:
+                with open(os.path.join(analyst_path, "fit_results.json"), "r") as file:
                     received_fit_result = json.load(file)
 
                 for model in expected_fit_result:
@@ -221,11 +223,11 @@ def test_run():
     ]
 
     for controller_path in controller_log_path:
-        output = Path(controller_path + "controller.log")
+        output = Path(os.path.join(controller_path, "controller.log"))
         if output.exists():
             os.remove(output)
 
-    analyst_home = "tests/ralph/data/input/controller/"
+    analyst_home = os.path.join(ralph_tests_home, "input", "controller")
 
     test_events = [
         "GaiaDR3_ULENS_018",
@@ -235,17 +237,17 @@ def test_run():
     ]
 
     for event in test_events:
-        analyst_path = analyst_home + event
+        analyst_path = os.path.join(analyst_home, event)
 
-        output = Path(analyst_path + "/fit_results.json")
+        output = Path(os.path.join(analyst_path, "fit_results.json"))
         if output.exists():
             os.remove(output)
 
-        output = Path(analyst_path + "/fit_stats.txt")
+        output = Path(os.path.join(analyst_path,  "fit_stats.txt"))
         if output.exists():
             os.remove(output)
 
-        output = Path(analyst_path + "/" + event + "_analyst.log")
+        output = Path(os.path.join(analyst_path, event + "_analyst.log"))
         if output.exists():
             os.remove(output)
 
@@ -258,7 +260,7 @@ def test_run():
         ]
 
         for file_path in model_plots:
-            output = Path(analyst_path + "/" + file_path + ".html")
+            output = Path(os.path.join(analyst_path, file_path + ".html"))
             if output.exists():
                 os.remove(output)
 
@@ -269,6 +271,6 @@ def test_run():
         ]
         for model in model_plots:
             for band in bands:
-                output = Path(analyst_path + "/" + event + "_" + model + band + ".html")
+                output = Path(os.path.join(analyst_path, event + "_" + model + band + ".html"))
                 if output.exists():
                     os.remove(output)
