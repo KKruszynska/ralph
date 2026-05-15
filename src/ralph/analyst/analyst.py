@@ -1,7 +1,7 @@
 import yaml
 
 
-class Analyst:
+class BaseAnalyst:
     """
     This is a class that analyzes one event.
     This class creates bare bones of other analysts and contains elements they all share.

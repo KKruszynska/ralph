@@ -62,7 +62,7 @@ class Controller:
                 ch.setFormatter(formatter)
                 logger.addHandler(ch)
             else:
-                filename = self.config["log_location"] + "controller.log"
+                filename = os.path.join(self.config["log_location"], "controller.log")
 
                 if not os.path.isdir(self.config["log_location"]):
                     os.makedirs(self.config["log_location"])
