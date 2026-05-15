@@ -4,17 +4,17 @@ import sys
 import yaml
 
 from ralph.analyst import analyst_tools
-from ralph.analyst.analyst import Analyst
+from ralph.analyst.analyst import BaseAnalyst
 from ralph.analyst.cmd_analyst import CmdAnalyst
 from ralph.analyst.fit_analyst import FitAnalyst
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs
 
 
-class EventAnalyst(Analyst):
+class EventAnalyst(BaseAnalyst):
     """
     A class that analyzes a single event.
-    It is a subclass of the :class:`ralph.analyst.analyst.Analyst`
+    It is a subclass of the :class:`ralph.analyst.analyst.BaseAnalyst`
     It coordinates and manages other analysts that handle the analysis of
     the microlensing event (e.g., preprocessing the light curve, fitting
     different microlensing models, creating files with results, event plots,
@@ -93,9 +93,7 @@ class EventAnalyst(Analyst):
         self.log.info("-------------------------------------------")
 
         if (config_path is not None) or (config_dict is not None):
-            if config_path is not None:
-                self.parse_config(config_path)
-
+            self.parse_config(config_path=config_path, config_dict=config_dict)
             self.parse_event_config(config_path=config_path, config_dict=config_dict)
         else:
             raise UnboundLocalError(

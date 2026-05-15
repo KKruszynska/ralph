@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 from plotly import graph_objs as go
 
-from ralph.analyst.analyst import Analyst
+from ralph.analyst.analyst import BaseAnalyst
 
 
-class CmdAnalyst(Analyst):
+class CmdAnalyst(BaseAnalyst):
     """
     This is a class that creates a color-magnitude diagram for one event, one catalogue
     and one solution.
-    It is a subclass of the :class:`ralph.analyst.analyst.Analyst`
+    It is a subclass of the :class:`ralph.analyst.analyst.BaseAnalyst`
 
     A CMD Analyst doesn't need config dict, but it needs a self.config already initialized by
     another process.
@@ -50,11 +50,12 @@ class CmdAnalyst(Analyst):
         A separator used in the file with the catalogue.
     """
 
-    def __init__(
-        self, event_name, analyst_path, catalogue, light_curve_data, log, config_dict=None, config_path=None
+    def __init__(self, event_name, analyst_path, catalogue,
+                 light_curve_data, log, config_dict=None,
+                 config_path=None
     ):
 
-        Analyst.__init__(self, event_name, analyst_path, config_dict=config_dict, config_path=config_path)
+        super().__init__(event_name, analyst_path, config_dict=config_dict, config_path=config_path)
         self.log = log
 
         self.catalogue_name = None

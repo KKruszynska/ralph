@@ -19,13 +19,8 @@ class Analyst:
         self.event_name = self.update_names_paths(event_name)
         self.analyst_path = self.update_names_paths(analyst_path)
 
-        self.config = {}
-        if config_dict is not None:
-            # READ config_dict
-            self.config = config_dict
-        elif config_path is not None:
-            # read config path
-            self.parse_config(config_path)
+        if (config_path is not None) or (config_dict is not None):
+            self.config = self.parse_config(config_path=config_path, config_dict=config_dict)
         else:
             raise UnboundLocalError(
                     "The Analyst requires a configuration file or a configuration dictionary"
@@ -33,18 +28,31 @@ class Analyst:
 
     def parse_config(self, config_path):
         """
-        Parse YAML file with configuration, turn it into a dictionary and add it to self.
+        Either parses the file or a dictionary with configuration and
+        returns it as a dictionary.
 
-        :param config_path: str, path with YAML file containing Analyst configuration.
+        :param config_path: A path with a YAML or JSON file containing
+            the configuration needed for the Base Analyst.
+        :type config_path: str
+
+        :param config_dict: A dictionary containing configuration for the Base Analyst.
+        :type config_dict: dict
+
+        :return: A configuration dictionary with basic information.
+        :rtype: dict
         """
 
         try:
             with open(config_path, "r") as file:
                 event_config = yaml.safe_load(file)
 
-            self.config["event_name"] = event_config.get("event_name")
-            self.config["ra"] = float(event_config.get("ra"))
-            self.config["dec"] = float(event_config.get("dec"))
+            config = {
+                "event_name": event_config.get("event_name"),
+                "ra": float(event_config.get("ra")),
+                "dec": float(event_config.get("dec")),
+            }
+
+            return config
 
         except Exception as err:
             print(f"Unexpected {err}, {type(err)}")

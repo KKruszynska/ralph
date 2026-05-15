@@ -6,13 +6,15 @@ from cycler import cycler
 
 def define_plotting_dictionaries(telescope_names):
     """
-    Define plotting dictionaries with telescopes having
+    Defines plotting dictionaries with telescopes having
     consistent markers and colors.
 
     :param telescope_names: list of telescope names
+    :type telescope_names: list
 
     :return: Dictionaries with telescope name and assigned color (color_dict),
-    and telescope name and assigned marker (marker_dict).
+        and telescope name and assigned marker (marker_dict).
+    :rtype: dict
     """
     # Fixed color for each telescope
     # Similar like in pylima
@@ -30,8 +32,6 @@ def define_plotting_dictionaries(telescope_names):
     marker_symbols = np.array([["o", ".", "*", "v", "^", "<", ">", "s", "p", "d", "x"] * 10])
 
     marker_cycle = marker_symbols[0][:n_telescopes]
-    # color_cycle = cycler.cycler(color=hexcolor)
-    # matplotlib.rcParams['axes.prop_cycle'] = cycler.cycler(color=hexcolor)
     color_dict = dict(zip(telescope_names, hexcolor, strict=False))
     marker_dict = dict(zip(telescope_names, marker_cycle, strict=False))
     return color_dict, marker_dict
@@ -39,12 +39,18 @@ def define_plotting_dictionaries(telescope_names):
 
 def plot_pylima(event, fit, log):
     """
-    Producing plot of the fit, geometry and a corner plot of posteriors for the solution.
+    Produces plot of the best-fitting model, its geometry and a corner plot of
+    the posterior parameter probability distribution.
 
-    :param event: pylima event, instance of an event for which the fit was performed
-    :param fit: pylima fit, instance of a fit
-    :param log: logger instance
+    :param event: A pyLIMA event instance.
+    :type event: pyLIMA.event.Event
 
+    :param fit: A pyLIMA fit instance.
+    :type fit: pyLIMA.fits.ML_fit or its subclass
+
+    :param log: A logger instance initialized by the Event Analyst,
+        to which the logs will be written.
+    :type log: logging.Logger
     """
     plt.close('all')
 
@@ -73,9 +79,3 @@ def plot_pylima(event, fit, log):
     log.info("Fit Analyst: Plotting finished.")
 
     plt.close('all')
-
-    # try:
-    #     fit.fit_outputs(bokeh_plot=True)
-    #     log.info('Fit Analyst: Plotting finished.')
-    # except Exception as err:
-    #     log.error(f'Fit Analyst: %s, %s' % (err, type(err)))
