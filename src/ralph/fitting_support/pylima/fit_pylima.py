@@ -55,7 +55,8 @@ class FitPylima(Fitter):
             lc = np.array(entry["light_curve"])
             survey = entry["survey"]
             band = entry["band"]
-            if (t_min > np.min(lc[:, 0])) and (t_max < np.max(lc[:, 0])) and (max_n_points < len(lc[:, 0])):
+            if ((t_min > np.min(lc[:, 0])) and (t_max < np.max(lc[:, 0])) and
+                    (max_n_points < len(lc[:, 0]))):
                 survey_to_align = survey
                 max_n_points = len(lc[:, 0])
                 t_min, t_max = np.min(lc[:, 0]), np.max(lc[:, 0])
@@ -114,8 +115,9 @@ class FitPylima(Fitter):
             the best-fitting model will be saved.
         :type fit_name: str
 
-        :param light_curves: A list of dictionaries with event name, light curve, survey name, filter name,
-            and, if available, an ephemeris of the space observatory which was used to obtain the observations.
+        :param light_curves: A list of dictionaries with event name, light curve, survey name,
+            filter name, and, if available, an ephemeris of the space observatory which was
+            used to obtain the observations.
         :type light_curves: list
 
         :param starting_params: A dictionary containing starting parameters.
@@ -125,12 +127,12 @@ class FitPylima(Fitter):
             if `False` it will not.
         :type parallax: bool
 
-        :param blend: If `True` blending will be fitted for this event, if `False`, the model will assume
-            that all light is coming from the source.
+        :param blend: If `True` blending will be fitted for this event, if `False`, the model
+            will assume that all light is coming from the source.
         :type blend: bool
 
-        :param return_norm_lc: If `True`, this method will return a light curve and residuals aligned to
-            the best-fitting model it found.
+        :param return_norm_lc: If `True`, this method will return a light curve and residuals
+            aligned to the best-fitting model it found.
         :type return_norm_lc: bool, optional
 
         :param use_boundaries: A dictionary containing upper and lower limits for specific
@@ -143,8 +145,8 @@ class FitPylima(Fitter):
         :param kwargs: Optional keyword arguments holding information about fitting method set up
         :type kwargs: dict, optional
 
-        :return: A dictionary with the parameters of the best-fitting model, and, if available, a list with
-            a light curve aligned to it and its residuals.
+        :return: A dictionary with the parameters of the best-fitting model, and, if available,
+            a list with a light curve aligned to it and its residuals.
         :rtype: list
         """
 
@@ -178,11 +180,20 @@ class FitPylima(Fitter):
             if fitting_method == "DE":
                 if DE_population is None:
                     DE_population = 10
-                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: DE_pop={DE_population}.")
-                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
-                fit_event = DE_fit.DEfit(pspl, DE_population_size=DE_population, loss_function=loss_function)
+                self.log.debug(
+                    f"Fit Analyst -- pyLIMA: Fitting method set up: DE_pop={DE_population}."
+                )
+                self.log.debug(
+                    f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}."
+                )
+                fit_event = DE_fit.DEfit(pspl,
+                                         DE_population_size=DE_population,
+                                         loss_function=loss_function
+                                         )
             elif fitting_method == "TRF":
-                self.log.debug(f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}.")
+                self.log.debug(
+                    f"Fit Analyst -- pyLIMA: Fitting method set up: loss_fun={loss_function}."
+                )
                 fit_event = TRF_fit.TRFfit(pspl, loss_function=loss_function)
         else:
             self.log.info("Fit Analyst -- pyLIMA: Using default fitting method (TRF).")
@@ -436,7 +447,8 @@ class FitPylima(Fitter):
         :param parameters: A dictionary with parameters of a pyLIMA model.
         :type parameters: dict
 
-        :return: A list with numpy arrays containing light curve data aligned to a model and its residuals.
+        :return: A list with numpy arrays containing light curve data aligned to a model
+            and its residuals.
         :rtype: list
         """
 
@@ -482,12 +494,13 @@ class FitPylima(Fitter):
                 # time_mask = [False for i in range(len(ref_magnification[ref_index]))]
                 time_mask = []
                 for time in tel.lightcurve["time"].value:
-                    time_index = np.where(list_of_telescopes[ref_index].lightcurve["time"].value == time)[0][
-                        0
-                    ]
+                    time_index = np.where(
+                        list_of_telescopes[ref_index].lightcurve["time"].value == time)[0][0]
                     time_mask.append(time_index)
 
-                model_flux = reference_source * ref_magnification[ref_index][time_mask] + reference_blend
+                model_flux = (reference_source * ref_magnification[ref_index][time_mask]
+                              + reference_blend
+                              )
                 magnitude = toolbox.brightness_transformation.flux_to_magnitude(model_flux)
 
                 aligned_magnitude = np.array(
@@ -541,7 +554,9 @@ def return_baseline_mag(mag_source, err_mag_source, mag_blend, err_mag_blend, lo
 
     try:
         base_mag = toolbox.brightness_transformation.flux_to_magnitude(base_flux)
-        err_base_mag = toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_base, base_flux)
+        err_base_mag = (
+            toolbox.brightness_transformation.error_flux_to_error_magnitude(err_f_base, base_flux)
+        )
     except Exception as err:
         log.error(f"Fit Analyst -- pyLIMA: {err}, {type(err)}")
 
@@ -573,9 +588,13 @@ def return_blend_mag(mag_source, err_mag_source, mag_base, err_mag_base, log):
     blend_mag, err_blend_mag = None, None
 
     flux_source = toolbox.brightness_transformation.magnitude_to_flux(mag_source)
-    err_fs = toolbox.brightness_transformation.error_magnitude_to_error_flux(err_mag_source, flux_source)
+    err_fs = toolbox.brightness_transformation.error_magnitude_to_error_flux(
+        err_mag_source, flux_source
+    )
     flux_baseline = toolbox.brightness_transformation.magnitude_to_flux(mag_base)
-    err_fbase = toolbox.brightness_transformation.error_magnitude_to_error_flux(err_mag_base, flux_baseline)
+    err_fbase = toolbox.brightness_transformation.error_magnitude_to_error_flux(
+        err_mag_base, flux_baseline
+    )
 
     blend_flux = flux_baseline - flux_source
     err_f_blend = np.sqrt(err_fs**2 + err_fbase**2)
