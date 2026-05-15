@@ -4,28 +4,73 @@ import sys
 import yaml
 
 from ralph.analyst import analyst_tools
-from ralph.analyst.analyst import Analyst
+from ralph.analyst.analyst import BaseAnalyst
 from ralph.analyst.cmd_analyst import CmdAnalyst
 from ralph.analyst.fit_analyst import FitAnalyst
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs
 
 
-class EventAnalyst(Analyst):
+class EventAnalyst(BaseAnalyst):
     """
-    This is a class that analyzes one event.
-    It is a child of the :class:`ralph.analyst.analyst.Analyst`
-    It takes care of other sub-analysts that fit microlensing models to the light curve,
-    create colour-magnitude diagrams and perform other additional tasks.
+    A class that analyzes a single event.
+    It is a subclass of the :class:`ralph.analyst.analyst.BaseAnalyst`
+    It coordinates and manages other analysts that handle the analysis of
+    the microlensing event (e.g., preprocessing the light curve, fitting
+    different microlensing models, creating files with results, event plots,
+    and color-magnitude diagrams).
 
     An Event Analyst needs either a config_path or config_dict, otherwise it will not work.
 
-    :param event_name: str, name of the analyzed event
-    :param analyst_path: str, path to the folder where the outputs are saved
-    :param log_level: str, level of logging
-    :param config_dict: dictionary, optional, dictionary with Event Analyst configuration
-    :param config_path: str, optional, path to the YAML configuration file of the Event Analyst
-    :param stream: optional, boolean, should the log be accessible through Kubernetes?
+    :param event_name: A name of the analyzed event.
+    :type event_name: str
+
+    :param analyst_path: A path to the folder where the input and output files are saved.
+    :type analyst_path: str
+
+    :param log_level: The logging.Logger level (`debug`, `info`, or `error`).
+    :type log_level: str
+
+    :param config_dict: A dictionary with Event Analyst configuration.
+    :type config_dict: dict, optional
+
+    :param config_path: The path to the configuration file of the Event Analyst.
+    :type config_path: str, optional
+
+    :param stream: Flag whether the logging.Logger instance should be available as a stream,
+        to be accessible through, for example, Kubernetes.
+    :type stream: bool, optional
+
+     Notes on configuration:
+    ------------------------------
+    The configuration dictionary can contain the following keywords:
+
+    * `event_name`: str
+        Event name, mandatory field.
+    * `ra`: float
+        Right Ascension of the event in degrees.
+    * `dec`: float
+        Declination of the event in degrees.
+    * `lc_analyst`: dict, optional
+        A dictionary with Light Curve Analyst configuration,
+        see: :class:`ralph.analyst.light_curve_analyst.LightCurveAnalyst`.
+    * `fit_analyst`: dict, optional
+        A dictionary with Fit Analyst configuration,
+        see: :class:`ralph.analyst.fit_analyst.FitAnalyst`.
+    * `cmd_analyst`: dict, optional
+        A dictionary with CMD Analyst configuration,
+        see: :class:`ralph.analyst.cmd_analyst.CMDAnalyst`.
+    * `light_curves`: list of dictionaries
+        A list of dictionaries with the light curves for the event, mandatory.
+        The dictionaries contain the following keywords:
+        - `survey`: str
+            Name of the survey.
+        - `band`: str
+            Name of the filter in which the data was taken.
+        - `ephemeris`: str, optional
+            Path to a file with an ephemeris for a space-based observatory.
+        - `path`: str
+            Path to a file with the light curve.
     """
 
     def __init__(
@@ -39,7 +84,6 @@ class EventAnalyst(Analyst):
     ):
 
         super().__init__(event_name, analyst_path, config_dict=config_dict, config_path=config_path)
-        # Analyst.__init__(self, event_name, analyst_path, config_dict=config_dict, config_path=config_path)
         self.light_curves = []
 
         # start
@@ -48,33 +92,40 @@ class EventAnalyst(Analyst):
         self.log.info(f"Event Analyst: Analyzing event {event_name:s}")
         self.log.info("-------------------------------------------")
 
-        if config_path is not None:
-            self.parse_config(config_path)
-            self.parse_event_config(config_path)
-        elif config_dict is not None:
-            self.add_config_dict(config_dict)
+        if (config_path is not None) or (config_dict is not None):
+            self.parse_config(config_path=config_path, config_dict=config_dict)
+            self.parse_event_config(config_path=config_path, config_dict=config_dict)
         else:
-            self.log.error("Event Analyst: Error! Event Analyst needs information.")
-            quit()
+            raise UnboundLocalError(
+                "Event Analyst requires a configuration file or a configuration dictionary."
+            )
 
-    def parse_event_config(self, config_path):
+    def parse_event_config(self, config_path=None, config_dict=None):
         """
-        Parse file with configuration and turn it into a dictionary.
+        Either parses the file or a dictionary with configuration and
+        adds it into the internal dictionary of the Event Analyst.
 
-        :param config_path: str, path with YAML or JSON file
-                            containing configuration information needed for an Event Analyst.
+        :param config_path: A path with a YAML or JSON file containing
+            the configuration needed for the Event Analyst.
+        :type config_path: str
+
+        :param config_dict: A dictionary containing configuration for the Event Analyst.
+        :type config_dict: dict
         """
 
         try:
-            file_format = config_path.split(".")[-1]
+            if config_path is not None:
+                file_format = config_path.split(".")[-1]
 
-            if file_format == "yaml":
-                with open(config_path, "r") as file:
-                    event_config = yaml.safe_load(file)
-            elif file_format == "json":
-                with open(config_path, "r") as file:
-                    event_config = json.load(file)
-                    file.close()
+                if file_format == "yaml":
+                    with open(config_path, "r") as file:
+                        event_config = yaml.safe_load(file)
+                elif file_format == "json":
+                    with open(config_path, "r") as file:
+                        event_config = json.load(file)
+                        file.close()
+            elif config_dict is not None:
+                event_config = config_dict
 
             if "lc_analyst" in event_config:
                 self.config["lc_analyst"] = event_config.get("lc_analyst")
@@ -100,43 +151,17 @@ class EventAnalyst(Analyst):
         except Exception as err:
             self.log.error(f"Event Analyst: {err}, {type(err)}")
 
-    def add_config_dict(self, conifg_dict):
-        """
-        Adds sections of config relevant to Event Analyst to its configuration file.
-
-        :param conifg_dict: dict, dictionary containing configuration for Event Analyst
-
-        """
-
-        try:
-            self.light_curves = self.parse_light_curves(conifg_dict.get("light_curves"))
-
-            if "lc_analyst" in conifg_dict:
-                self.config["lc_analyst"] = conifg_dict.get("lc_analyst")
-                self.log.info("Event Analyst: Light Curve Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No Light Curve Analyst config, it will not be launched.")
-
-            if "fit_analyst" in conifg_dict:
-                self.config["fit_analyst"] = conifg_dict.get("fit_analyst")
-                self.log.info("Event Analyst: Fit Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No Fit Analyst config, it will not be launched.")
-
-            if "cmd_analyst" in conifg_dict:
-                self.config["cmd_analyst"] = conifg_dict.get("cmd_analyst")
-                self.log.info("Event Analyst: CMD Analyst configuration received.")
-            else:
-                self.log.info("Event Analyst: No CMD Analyst config, it will not be launched.")
-
-        except Exception as err:
-            self.log.error(f"Event Analyst: {err}, {type(err)}")
-
     def parse_light_curves(self, lc_config):
         """
-        This function parses the light curve information.
-        :param lc_config: dictionary with light curves specified for the event
-        :return: a list with event names, light curves, survey names, bands
+        Parses the light curve information to be added to the internal dictionary
+        of the Event Analyst.
+
+        :param lc_config: A list of dictionaries with the event light curves.
+        :type lc_config: list
+
+        :return: a list of dictionaries with the event names, light curves, survey names,
+            bands, and, if available, ephemeris.
+        :rtype: list
         """
         light_curves = []
         for entry in lc_config:
@@ -179,12 +204,13 @@ class EventAnalyst(Analyst):
 
     def run_single_analyst(self):
         """
-        Perform tasks assigned to a single Event Analyst. First the event is handled by a Fit Analyst,
-        searching for fitting microlensing models. After fitting is done, output information is passed
-        to a CMD Analyst, that creates a CMD plot for specified catalogs and plots the source and blend
-        for each found solution.
-
-        :return: status?
+        Performs tasks assigned to a single Event Analyst. Depending on the configuration it may pass from
+        the Light Curve Analyst, to Fit Analyst, to CMD Analyst. All steps are optional.
+        The Light Curve Analyst to pre-process the light curves (remove invalid entries).
+        The Fit Analyst finds best-fitting microlensing models.
+        After fitting is done, output information may be passed to a CMD Analyst,
+        that creates a color-magnitude diagram for specified catalogs and plots the source and
+        the blend for each found solution.
         """
 
         self.log.info("Event Analyst: Processing started.")
@@ -204,11 +230,9 @@ class EventAnalyst(Analyst):
 
     def run_lc_analyst(self):
         """
-        Launch Light Curve Analyst to check the quality of the light curve.
-        Placeholder.
+        Launches the Light Curve Analyst to check the quality of the light curve,
+        and remove invalid entries.
         """
-
-        lc_quality_status = False
 
         self.log.info("Event Analyst: Starting Light Curve Analyst.")
         lc_analyst = LightCurveAnalyst(
@@ -226,7 +250,9 @@ class EventAnalyst(Analyst):
 
     def run_fit_analyst(self):
         """
-        Launch Fit Analyst to find all fitting microlensing events.
+        Launches the Fit Analyst to find best-fitting microlensing models.
+        The Fit Analyst adds a dictionary with all found solitions to
+        the internal dictionary of the Event Analyst.
         """
 
         self.log.info("Event Analyst: Starting Fit Analyst.")
@@ -241,9 +267,8 @@ class EventAnalyst(Analyst):
 
     def run_cmd_analyst(self):
         """
-        Launch CMD Analyst to create a CMD plot for all solutions and specified catalogues.
-
-        :return: a list of boolean values corresponding to status of the created cmd plots.
+        Launches the CMD Analyst to create color-magnitude diagrams for all
+        specified catalogues and solutions found by the Fit Analyst.
         """
 
         for dictionary in self.config["cmd_analyst"]["catalogues"]:

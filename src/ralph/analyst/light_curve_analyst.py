@@ -1,13 +1,13 @@
 import numpy as np
 
-from ralph.analyst.analyst import Analyst
+from ralph.analyst.analyst import BaseAnalyst
 
 
-class LightCurveAnalyst(Analyst):
+class LightCurveAnalyst(BaseAnalyst):
     """
     Performs light curve quality test and removes bad data entries that would interfere
     with modeling a microlensing event.
-    It is a subclass of the :class:`ralph.analyst.analyst.Analyst`.
+    It is a subclass of the :class:`ralph.analyst.analyst.BaseAnalyst`.
     It follows a flowchart specified here: link link link
 
     The Light Curve Analyst needs either a config_path or config_dict, otherwise it will not work.
@@ -52,6 +52,10 @@ class LightCurveAnalyst(Analyst):
         self.log = log
 
         if config_dict is not None:
+            print("====")
+            print("config dict not none!!")
+            print(config_dict)
+            self.parse_config(config_dict=config_dict)
             self.add_lc_config(config_dict)
         elif "lc_analyst" in self.config:
             self.add_lc_config(self.config)
@@ -69,7 +73,7 @@ class LightCurveAnalyst(Analyst):
         """
 
         self.log.debug("LC Analyst: Reading lc config.")
-        self.acceptable_mag_range = config_dict["lc_analyst"].get("acceptable_mag_range", None)
+        self.config["acceptable_mag_range"] = config_dict["lc_analyst"].get("acceptable_mag_range", None)
         self.log.debug("LC Analyst: Finished reading lc config.")
 
     def perform_quality_check(self):

@@ -4,14 +4,14 @@ import time
 import numpy as np
 
 from ralph.analyst import analyst_tools
-from ralph.analyst.analyst import Analyst
+from ralph.analyst.analyst import BaseAnalyst
 from ralph.fitting_support import pylima
 
 
-class FitAnalyst(Analyst):
+class FitAnalyst(BaseAnalyst):
     """
     Performs fitting microlensing models to one event.
-    It is a subclass of the :class:`ralph.analyst.analyst.Analyst`
+    It is a subclass of the :class:`ralph.analyst.analyst.BaseAnalyst`
     It follows a flowchart specified here: link link link
 
     A Fit Analyst needs either a config_path or config_dict, otherwise it will not work.
@@ -90,10 +90,10 @@ class FitAnalyst(Analyst):
         self.start_time = time.time()
 
         if config_dict is not None:
-            self.parse_config(config_dict)
+            self.parse_config(config_dict=config_dict)
             self.add_fit_config(config_dict)
         elif "fit_analyst" in self.config:
-            self.parse_config(self.config)
+            self.parse_config(config_dict=self.config)
             self.add_fit_config(self.config)
         else:
             self.log.error("Fit Analyst: Error! Fit Analyst needs configuration parameters.")

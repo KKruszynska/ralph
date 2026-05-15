@@ -52,7 +52,8 @@ def plot_pylima(event, fit, log):
         to which the logs will be written.
     :type log: logging.Logger
     """
-    plt.close()
+    plt.close('all')
+
     tel_names = []
     for tel in event.telescopes:
         tel_names.append(tel.name)
@@ -77,4 +78,4 @@ def plot_pylima(event, fit, log):
     fit.fit_outputs(bokeh_plot=True)
     log.info("Fit Analyst: Plotting finished.")
 
-    plt.close()
+    plt.close('all')
