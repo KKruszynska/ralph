@@ -432,6 +432,20 @@ class EventAnalystTest:
             if not np.isnan(received):
                 assert (lower <= received <= upper)
 
+    @pytest.mark.skip(reason="This test is for debugging code only")
+    def test_no_config(self):
+        """
+        Test if an error is raised when there is no configuration
+        for the Event Analyst.
+        """
+
+        event_analyst = EventAnalyst(
+            "no_config", "tests/ralph/data/output/event_analyst/no_config/",
+            "debug", config_dict=self.scenario, stream=True
+        )
+
+
+
 
 def test_run():
     """
