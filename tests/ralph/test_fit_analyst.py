@@ -221,9 +221,9 @@ class FitAnalystTest:
 
         log = logs.start_log(path_outputs, "debug", event_name=config["event_name"], stream=True)
         analyst = FitAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
-        on_mag_t_config = analyst.config["fit_analyst"]["ongoing_magnification_thershold"]
-        on_ampl_t_config = analyst.config["fit_analyst"]["ongoing_amplitude_thershold"]
-        model_fit_config = analyst.config["fit_analyst"]["model_fit_configuration"]
+        on_mag_t_config = analyst.config["ongoing_magnification_thershold"]
+        on_ampl_t_config = analyst.config["ongoing_amplitude_thershold"]
+        model_fit_config = analyst.config["model_fit_configuration"]
 
         logs.close_log(log)
 

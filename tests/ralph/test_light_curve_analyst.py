@@ -114,9 +114,11 @@ class LightCurveAnalystTest:
 
         log = logs.start_log(path_outputs, "debug", event_name=config["event_name"], stream=True)
         analyst = LightCurveAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
-        upper_mag = analyst.config["lc_analyst"]["acceptable_mag_range"]["upper_limit"]
-        lower_mag = analyst.config["lc_analyst"]["acceptable_mag_range"]["lower_limit"]
-        mag_range_dict = analyst.acceptable_mag_range
+        print("===================")
+        print(analyst.config)
+        upper_mag = analyst.config["acceptable_mag_range"]["upper_limit"]
+        lower_mag = analyst.config["acceptable_mag_range"]["lower_limit"]
+        mag_range_dict = analyst.config["acceptable_mag_range"]
         logs.close_log(log)
 
         assert upper_mag == dictionary["acceptable_mag_range"].get("upper_limit")
