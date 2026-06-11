@@ -119,8 +119,6 @@ class Controller:
     def launch_analysts(self):
         """
         This function starts and parallelizes the :class:`ralph.analyst.event_analyst.EventAnalyst`.
-
-        :return: Status of work???
         """
 
         logger.info("Controller: Start processing.")

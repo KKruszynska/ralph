@@ -1,6 +1,6 @@
 import json
-import time
 import os
+import time
 
 import numpy as np
 
@@ -63,16 +63,15 @@ class FitAnalyst(BaseAnalyst):
             - `PSPL_blend_piE` - point source-point lens model with blending and
                 microlensing parallax effect;
         For each model the User can specify following keywords:
-            - `fitting_package` - str, name of the fitting package supported by `ralph`,
-                available options: pyLIMA;
+            - `fitting_package` - str, name of the fitting package supported by `ralph`;
             - `fitting_method` - str, type of fitting method supported by the `fitting_package` and `ralph`;
-                available options: TRF, DE;
             - `boundaries` - dict, a dictionary containing a list of keywords, and a list with two
                 elements, a lower and upper limit for the given parameter:
                 `key: [lower_limit, upper_limit]`
                 Supported keys include:
                     - `t0` - time when the source and the lens at lowest projected separation;
-                    - `u0` - impact parameter scaled by the angular Einstein radius, when the source and lens are t0;
+                    - `u0` - impact parameter scaled by the angular Einstein radius,
+                        when the source and lens are t0;
                     - `tE` - Einstein timescale of the event;
                     - `piEN` - Northern component of the microlensing parallax vector;
                     - `piEE` - Eastern component of the microlensing parallax vector.
@@ -93,10 +92,10 @@ class FitAnalyst(BaseAnalyst):
         self.start_time = time.time()
 
         if config_dict is not None:
-            self.parse_config(config_dict=config_dict)
+            self.config = self.parse_config(config_dict=config_dict)
             self.add_fit_config(config_dict)
         elif "fit_analyst" in self.config:
-            self.parse_config(config_dict=self.config)
+            self.config = self.parse_config(config_dict=self.config)
             self.add_fit_config(self.config)
         else:
             self.log.error("Fit Analyst: Error! Fit Analyst needs configuration parameters.")
@@ -189,7 +188,7 @@ class FitAnalyst(BaseAnalyst):
                     boundaries[key] = use_boundaries.get(key, boundaries.get(key))
 
             if boundaries is not None:
-                self.log.debug(f"Fit Analyst: Set up: boundaries:")
+                self.log.debug("Fit Analyst: Set up: boundaries:")
                 for key in boundaries:
                     self.log.debug(f"{key}: {boundaries[key]}\n")
 
@@ -223,8 +222,8 @@ class FitAnalyst(BaseAnalyst):
                     )
         else:
             self.log.info("Fit Analyst: Using default fitting setup.")
-            self.log.debug(f"Fit Analyst: Set up: fitting package: pyLIMA, "
-                           f"fitting method: TRF."
+            self.log.debug("Fit Analyst: Set up: fitting package: pyLIMA, "
+                           "fitting method: TRF."
                            )
 
             fit_pspl = pylima.fit_pylima.FitPylima(self.log)
@@ -535,13 +534,13 @@ class FitAnalyst(BaseAnalyst):
             if "piEN" in params:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
-                    f"piEN={params["piEN"]:.2f}, piEE={params["piEE"]:.2f}\n"
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
+                    f"piEN={params['piEN']:.2f}, piEE={params['piEE']:.2f}\n"
                 )
             else:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
                 )
 
         # Save results
@@ -556,16 +555,16 @@ class FitAnalyst(BaseAnalyst):
         file_name = self.analyst_path + "fit_stats.txt"
         with open(file_name, "w", encoding="utf-8") as file:
             file.write(
-                f"{"# name":<20s} : {"chi2":<7s} {"red_chi2":<7s}"
-                f"{"SW":<7s} {"AD":<7s} {"KS":<7s} {"AIC":<7s} {"BIC":<7s}\n"
+                f"{'# name':<20s} : {'chi2':<7s} {'red_chi2':<7s}"
+                f"{'SW':<7s} {'AD':<7s} {'KS':<7s} {'AIC':<7s} {'BIC':<7s}\n"
             )
             file.write("#--------------------------------------------------------------------------------\n")
             for model in self.best_results:
                 params = self.best_results[model]
                 file.write(
-                    f"{model:20s} : {params["chi2"]:7.2f} {params["red_chi2"]:7.2f}"
-                    f"{params["sw_test"]:7.2f} {params["ad_test"]:7.2f} {params["ks_test"]:7.2f}"
-                    f"{params["aic_test"]:7.2f} {params["bic_test"]:7.2f}\n"
+                    f"{model:20s} : {params['chi2']:7.2f} {params['red_chi2']:7.2f}"
+                    f"{params['sw_test']:7.2f} {params['ad_test']:7.2f} {params['ks_test']:7.2f}"
+                    f"{params['aic_test']:7.2f} {params['bic_test']:7.2f}\n"
                 )
 
         return self.best_results

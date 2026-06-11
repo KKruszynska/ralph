@@ -1,5 +1,7 @@
-import yaml
 import json
+
+import yaml
+
 
 class BaseAnalyst:
     """
@@ -7,7 +9,7 @@ class BaseAnalyst:
     This class creates bare bones of other analysts and contains elements they all share.
 
     :param event_name: str, name of the analyzed event
-    :param ra: float, Right Ascention of the analyzed event
+    :param ra: float, Right Ascension of the analyzed event
     :param dec: float, declination of the analyzed event
     :param analyst_path: str, path to the folder where the outputs are saved
     :param config_dict: dictionary, optional, dictionary with Analyst configuration
