@@ -48,6 +48,7 @@ class LightCurveAnalyst(BaseAnalyst):
         super().__init__(event_name, analyst_path, config_dict=config_dict, config_path=config_path)
 
         self.acceptable_mag_range = None
+        self.max_acceptable_err = None
         self.light_curves = light_curves
         self.log = log
 
@@ -71,6 +72,7 @@ class LightCurveAnalyst(BaseAnalyst):
 
         self.log.debug("LC Analyst: Reading lc config.")
         self.config["acceptable_mag_range"] = config_dict["lc_analyst"].get("acceptable_mag_range", None)
+        self.config["max_acceptable_err"] = config_dict["lc_analyst"].get("max_acceptable_err", None)
         self.log.debug("LC Analyst: Finished reading lc config.")
 
     def perform_quality_check(self):
@@ -90,15 +92,20 @@ class LightCurveAnalyst(BaseAnalyst):
             mask_inf_entry = self.flag_infinite_entries(lc)
             preliminary_mask = np.logical_and(mask_inf_entry, mask_duplicate)
             preliminary_lc = lc[preliminary_mask]
-            self.log.debug("LC Analyst: Applying non numerical and duplicates mask.")
+            self.log.debug("LC Analyst: Applied non numerical and duplicates mask.")
 
             mask_inv_mags = self.flag_invalid_mags(preliminary_lc)
-            self.log.debug("LC Analyst: Applying bad data mask.")
-            cleaned_lc = preliminary_lc[mask_inv_mags]
+            preliminary_lc = preliminary_lc[mask_inv_mags]
+            self.log.debug("LC Analyst: Applied mask for mags outside of range.")
+            mask_inv_errs = self.flag_huge_errors(preliminary_lc)
+            preliminary_lc = preliminary_lc[mask_inv_errs]
+            self.log.debug("LC Analyst: Applied mask for errs outside of range ."
+                           )
+            mask_neg_err = self.flag_negative_errors(preliminary_lc)
+            cleaned_lc = preliminary_lc[mask_neg_err]
+            self.log.debug("LC Analyst: Applied masks for negative errs.")
 
-            mask_neg_err = self.flag_negative_errorbars(preliminary_lc)
-            fin_lc = cleaned_lc[mask_neg_err]
-            entry["light_curve"] = fin_lc
+            entry["light_curve"] = cleaned_lc
 
         self.log.info("LC Analyst: Quality check ended.")
 
@@ -111,6 +118,7 @@ class LightCurveAnalyst(BaseAnalyst):
         :type light_curve: numpy ndarray
 
         :return: A mask with entries that are only finite values.
+        :rtype: numpy ndarray
         """
 
         mask_finite_mag = np.isfinite(light_curve[:, 1])
@@ -119,7 +127,7 @@ class LightCurveAnalyst(BaseAnalyst):
 
         return final_mask
 
-    def flag_negative_errorbars(self, light_curve):
+    def flag_negative_errors(self, light_curve):
         """
         Flags entries with negative errors.
 
@@ -128,11 +136,15 @@ class LightCurveAnalyst(BaseAnalyst):
         :type light_curve: numpy ndarray
 
         :return: A mask with entries that have only positive uncertainties.
+        :rtype: numpy ndarray
         """
 
         mask_neg_err = np.where(light_curve[:, 2] > 0)
 
-        return mask_neg_err
+        print("Mask neg err")
+        print(len(mask_neg_err), len(mask_neg_err[0]))
+
+        return mask_neg_err[0]
 
     def flag_invalid_mags(self, light_curve):
         """
@@ -146,6 +158,7 @@ class LightCurveAnalyst(BaseAnalyst):
         :type light_curve: numpy ndarray
 
         :return: A mask with entries within allowed magnitude range.
+        :rtype: numpy ndarray
         """
 
         custom_range = self.acceptable_mag_range
@@ -157,7 +170,7 @@ class LightCurveAnalyst(BaseAnalyst):
         else:
             mask_inv_mag = np.where((light_curve[:, 1] > -10) & (light_curve[:, 1] < 40))
 
-        return mask_inv_mag
+        return mask_inv_mag[0]
 
     def flag_duplicate_entries(self, light_curve):
         """
@@ -168,6 +181,7 @@ class LightCurveAnalyst(BaseAnalyst):
         :type light_curve: numpy ndarray
 
         :return: A mask with unique entries.
+        :rtype: numpy ndarray
         """
 
         unique_entries, unique_index = np.unique(light_curve[:, 0], return_index=True)
@@ -179,3 +193,25 @@ class LightCurveAnalyst(BaseAnalyst):
                 mask_unique.append(False)
 
         return mask_unique
+
+    def flag_huge_errors(self, light_curve):
+        """
+        Flags entries with huge errors.
+
+        :param light_curve: An array containing Julian Days, magnitudes and errors
+            for the whole light curve.
+        :type light_curve: numpy ndarray
+
+        :return: mask containing entries that have huge uncertainty values
+        :rtype: numpy ndarray
+        """
+
+        custom_err_max = self.config["max_acceptable_err"]
+        if custom_err_max is not None:
+            mask_inv_err = np.where(
+                (light_curve[:, 2] < custom_err_max)
+            )
+        else:
+            mask_inv_err = np.where((light_curve[:, 2] < 1.0))
+
+        return mask_inv_err[0]

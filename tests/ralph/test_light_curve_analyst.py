@@ -11,7 +11,10 @@ scenario_gaia = {
     "event_name": "GDR3_ULENS_025",
     "ra": 260.8781,
     "dec": -27.3788,
-    "lc_analyst": {"acceptable_mag_range": {"upper_limit": -10, "lower_limit": 30}},
+    "lc_analyst": {"acceptable_mag_range":
+                       {"upper_limit": -10, "lower_limit": 30},
+                   "max_acceptable_err": 1.0
+                   },
     "light_curves": [
         {
             "survey": "Gaia",
@@ -45,7 +48,10 @@ scenario_gsa = {
     "ra": 249.14892083,
     "dec": -53.74991944,
     "fit_analyst": {"fitting_package": "pylima"},
-    "lc_analyst": {"upper_limit": -10, "lower_limit": 30},
+    "lc_analyst": {"acceptable_mag_range":
+                       {"upper_limit": -10, "lower_limit": 30},
+                   "max_acceptable_err": 1.0
+                   },
     "light_curves": [
         {
             "survey": "Gaia",
@@ -87,14 +93,18 @@ class LightCurveAnalystTest:
         Parse the configuration file and check if it is done as expected.
         """
 
-        config = {}
-        config["event_name"] = self.scenario.get("event_name")
-        path_outputs = self.scenario.get("path_outputs")
-        config["ra"], config["dec"] = self.scenario.get("ra"), self.scenario.get("dec")
-        config["lc_analyst"] = {}
         dictionary = self.scenario.get("lc_analyst")
-        config["lc_analyst"]["acceptable_mag_range"] = dictionary.get("acceptable_mag_range")
-        config["light_curves"] = self.scenario.get("light_curves")
+        config = {
+            "event_name": self.scenario.get("event_name"),
+            "ra": self.scenario.get("ra"),
+            "dec": self.scenario.get("dec"),
+            "lc_analyst": {
+                "acceptable_mag_range": dictionary.get("acceptable_mag_range"),
+                "max_acceptable_err": dictionary.get("max_acceptable_err"),
+            },
+            "light_curves": self.scenario.get("light_curves"),
+        }
+        path_outputs = self.scenario.get("path_outputs")
 
         light_curves = []
         for entry in config["light_curves"]:
@@ -117,25 +127,32 @@ class LightCurveAnalystTest:
         upper_mag = analyst.config["acceptable_mag_range"]["upper_limit"]
         lower_mag = analyst.config["acceptable_mag_range"]["lower_limit"]
         mag_range_dict = analyst.config["acceptable_mag_range"]
-        logs.close_log(log)
+        max_err = analyst.config["max_acceptable_err"]
 
         assert upper_mag == dictionary["acceptable_mag_range"].get("upper_limit")
         assert lower_mag == dictionary["acceptable_mag_range"].get("lower_limit")
         assert mag_range_dict == dictionary["acceptable_mag_range"]
+        assert max_err == dictionary["max_acceptable_err"]
+
+        logs.close_log(log)
 
     def test_run_analyst(self):
         """
         Test running the Light Curve Analyst.
         """
 
-        config = {}
-        config["event_name"] = self.scenario.get("event_name")
+        dictionary = self.scenario.get("lc_analyst")
+        config = {
+            "event_name": self.scenario.get("event_name"),
+            "ra": self.scenario.get("ra"),
+            "dec": self.scenario.get("dec"),
+            "lc_analyst": {
+                "acceptable_mag_range": dictionary.get("acceptable_mag_range"),
+                "max_acceptable_err": dictionary.get("max_acceptable_err"),
+            },
+            "light_curves": self.scenario.get("light_curves"),
+        }
         path_outputs = self.scenario.get("path_outputs")
-        config["ra"], config["dec"] = self.scenario.get("ra"), self.scenario.get("dec")
-        config["lc_analyst"] = {}
-        dict = self.scenario.get("lc_analyst")
-        config["lc_analyst"]["n_max"] = dict.get("n_max")
-        config["light_curves"] = self.scenario.get("light_curves")
 
         light_curves = []
         for entry in config["light_curves"]:
@@ -189,6 +206,10 @@ class BadLightCurvesTest:
                 [2457006.0, 17.0, np.inf],
                 [2457007.0, 17.09, 0.02],
                 [2457008.0, 17.2, 0.02],
+                [2457009.0, 99.0, 1.00],
+                [2457010.0, -99.0, 1.00],
+                [2457011.0, 17.2, 2.02],
+                [2457012.0, 17.2, 1.02],
             ],
         }
 
@@ -209,6 +230,9 @@ class BadLightCurvesTest:
             assert len(out_of_bounds[0]) == len([])
             out_of_bounds = np.where(lc[:, 1] > 40)
             assert len(out_of_bounds[0]) == len([])
+
+            large_errs = np.where(lc[:, 2] > 1.0)
+            assert len(large_errs[0]) == len([])
 
             unique_entries = np.unique(lc[:, 0])
             assert len(unique_entries) == len(lc[:, 0])
