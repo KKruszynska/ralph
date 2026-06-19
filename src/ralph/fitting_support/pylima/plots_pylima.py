@@ -75,7 +75,7 @@ def plot_pylima(event, fit, log):
 
     log.info("Fit Analyst: Starting a plot.")
 
-    fit.fit_outputs(bokeh_plot=True)
+    fit.fit_outputs(bokeh_plot=True, bokeh_plot_name=event.name+".html")
     log.info("Fit Analyst: Plotting finished.")
 
     plt.close('all')

@@ -62,7 +62,7 @@ class Controller:
                 ch.setFormatter(formatter)
                 logger.addHandler(ch)
             else:
-                filename = self.config["log_location"] + "controller.log"
+                filename = os.path.join(self.config["log_location"], "controller.log")
 
                 if not os.path.isdir(self.config["log_location"]):
                     os.makedirs(self.config["log_location"])
@@ -119,8 +119,6 @@ class Controller:
     def launch_analysts(self):
         """
         This function starts and parallelizes the :class:`ralph.analyst.event_analyst.EventAnalyst`.
-
-        :return: Status of work???
         """
 
         logger.info("Controller: Start processing.")
@@ -130,11 +128,11 @@ class Controller:
         for event in self.event_list:
             command = [
                 self.config["python_compiler"],
-                self.config["software_dir"] + "event_analyst.py",
+                os.path.join(self.config["software_dir"], "event_analyst.py"),
                 "--event_name",
                 event,
                 "--analyst_path",
-                self.config["events_path"] + str(event) + "/",
+                os.path.join(self.config["events_path"],  event + "/"),
                 "--log_level",
                 self.config["log_level"],
             ]
@@ -152,7 +150,7 @@ class Controller:
                     will look for information in their config files.")
                 command.append("--config_path")
                 command.append(
-                    f"{self.config['events_path']}{str(event)}/config.{self.config['config_type']}"
+                    os.path.join(self.config['events_path'], event, f"config.{self.config['config_type']}")
                 )
 
             commands.append(command)

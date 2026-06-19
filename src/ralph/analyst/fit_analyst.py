@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 import numpy as np
@@ -38,11 +39,11 @@ class FitAnalyst(BaseAnalyst):
     ------------------------------
     The configuration dictionary can contain the following keywords:
 
-    * `ongoing_magnification_thershold`: float
+    * `ongoing_magnification_threshold`: float
         Threshold for magnification. If current magnification of the source is larger
         than the threshold, the event is considered as ongoing.
         Default value: 1.05
-    * `ongoing_amplitude_thershold`: float
+    * `ongoing_amplitude_threshold`: float
         Threshold for amplitude. If current amplitude of the event is above the threshold,
         the event is considered as ongoing.
         Default value: 1.0
@@ -69,7 +70,8 @@ class FitAnalyst(BaseAnalyst):
                 `key: [lower_limit, upper_limit]`
                 Supported keys include:
                     - `t0` - time when the source and the lens at lowest projected separation;
-                    - `u0` - impact parameter scaled by the angular Einstein radius, when the source and lens are t0;
+                    - `u0` - impact parameter scaled by the angular Einstein radius,
+                        when the source and lens are t0;
                     - `tE` - Einstein timescale of the event;
                     - `piEN` - Northern component of the microlensing parallax vector;
                     - `piEE` - Eastern component of the microlensing parallax vector.
@@ -90,10 +92,10 @@ class FitAnalyst(BaseAnalyst):
         self.start_time = time.time()
 
         if config_dict is not None:
-            self.parse_config(config_dict=config_dict)
+            self.config = self.parse_config(config_dict=config_dict)
             self.add_fit_config(config_dict)
         elif "fit_analyst" in self.config:
-            self.parse_config(config_dict=self.config)
+            self.config = self.parse_config(config_dict=self.config)
             self.add_fit_config(self.config)
         else:
             self.log.error("Fit Analyst: Error! Fit Analyst needs configuration parameters.")
@@ -110,10 +112,10 @@ class FitAnalyst(BaseAnalyst):
 
         self.log.debug("Fit Analyst: Reading fit config.")
 
-        self.config["ongoing_magnification_thershold"] = config["fit_analyst"].get(
-            "ongoing_magnification_thershold", 1.05
+        self.config["ongoing_magnification_threshold"] = config["fit_analyst"].get(
+            "ongoing_magnification_threshold", 1.05
         )
-        self.config["ongoing_amplitude_thershold"] = config["fit_analyst"].get(
+        self.config["ongoing_amplitude_threshold"] = config["fit_analyst"].get(
             "ongoing_amplitude_thershold", 1.0
         )
 
@@ -185,9 +187,10 @@ class FitAnalyst(BaseAnalyst):
                 for key in use_boundaries:
                     boundaries[key] = use_boundaries.get(key, boundaries.get(key))
 
-            self.log.debug(f"Fit Analyst: Set up: boundaries:")
-            for key in boundaries:
-                self.log.debug(f"{key}: {boundaries[key]}\n")
+            if boundaries is not None:
+                self.log.debug("Fit Analyst: Set up: boundaries:")
+                for key in boundaries:
+                    self.log.debug(f"{key}: {boundaries[key]}\n")
 
             fitting_args = fit_config.get("fitting_method_args", None)
 
@@ -219,12 +222,9 @@ class FitAnalyst(BaseAnalyst):
                     )
         else:
             self.log.info("Fit Analyst: Using default fitting setup.")
-            self.log.debug(f"Fit Analyst: Set up: fitting package: pyLIMA, "
-                           f"fitting method: TRF."
+            self.log.debug("Fit Analyst: Set up: fitting package: pyLIMA, "
+                           "fitting method: TRF."
                            )
-            self.log.debug(f"Fit Analyst: Set up: boundaries:")
-            for key in use_boundaries:
-                self.log.debug(f"{key}: {use_boundaries[key]}\n")
 
             fit_pspl = pylima.fit_pylima.FitPylima(self.log)
             results = fit_pspl.fit_pspl(
@@ -272,7 +272,7 @@ class FitAnalyst(BaseAnalyst):
         self.log.info("Fit Analyst: Performing PSPL fit without blend and parallax.")
         results = self.fit_pspl(
             "PSPL_no_blend_no_piE",
-            self.analyst_path + "PSPL_no_blend_no_piE",
+            os.path.join(self.analyst_path, "PSPL_no_blend_no_piE"),
             starting_params,
             False,
             False,
@@ -296,11 +296,11 @@ class FitAnalyst(BaseAnalyst):
         #  flowchart though.
 
         ongoing_ampl, t_last = analyst_tools.check_ongoing_amplitude(
-            self.config["ongoing_amplitude_thershold"], aligned_data, residuals, baseline_mag
+            self.config["ongoing_amplitude_threshold"], aligned_data, residuals, baseline_mag
         )
         ongoing_time = analyst_tools.check_ongoing_time(fit_params_pspl_nopar, t_last)
         ongoing_mag = analyst_tools.check_ongoing_magnification(
-            self.config["ongoing_magnification_thershold"], fit_params_pspl_nopar, t_last
+            self.config["ongoing_magnification_threshold"], fit_params_pspl_nopar, t_last
         )
         self.log.debug(f"Fit Analyst: Time of the last data point: {t_last}")
         self.log.debug(
@@ -341,7 +341,7 @@ class FitAnalyst(BaseAnalyst):
         self.log.info("Fit Analyst: Performing PSPL fit.")
         results = self.fit_pspl(
             "PSPL_blend_no_piE",
-            self.analyst_path + "PSPL_blend_no_piE",
+            os.path.join(self.analyst_path, "PSPL_blend_no_piE"),
             starting_params,
             False,
             True,
@@ -356,7 +356,7 @@ class FitAnalyst(BaseAnalyst):
         self.log.info("Fit Analyst: Using default fitting setup.")
         results = self.fit_pspl(
             "PSPL_blend_piE",
-            self.analyst_path + "PSPL_blend_piE",
+            os.path.join(self.analyst_path, "PSPL_blend_piE"),
             starting_params,
             True,
             True,
@@ -404,7 +404,7 @@ class FitAnalyst(BaseAnalyst):
         self.log.info("Fit Analyst:Performing PSPL with blend fit.")
         results = self.fit_pspl(
             "PSPL_blend_no_piE",
-            self.analyst_path + "PSPL_blend_no_piE",
+            os.path.join(self.analyst_path, "PSPL_blend_no_piE"),
             starting_params,
             False,
             True,
@@ -433,7 +433,7 @@ class FitAnalyst(BaseAnalyst):
         }
         results = self.fit_pspl(
             "PSPL_blend_piE",
-            self.analyst_path + "PSPL_blend_piE_" + sign,
+            os.path.join(self.analyst_path, "PSPL_blend_piE_" + sign),
             starting_params,
             True,
             True,
@@ -534,13 +534,13 @@ class FitAnalyst(BaseAnalyst):
             if "piEN" in params:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
-                    f"piEN={params["piEN"]:.2f}, piEE={params["piEE"]:.2f}\n"
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
+                    f"piEN={params['piEN']:.2f}, piEE={params['piEE']:.2f}\n"
                 )
             else:
                 self.log.debug(
                     f"Fit Analyst: {model:s} : \n"
-                    f"t0={params["t0"]:.2f}, u0={params["u0"]:.2f}, tE={params["tE"]:.2f}, \n"
+                    f"t0={params['t0']:.2f}, u0={params['u0']:.2f}, tE={params['tE']:.2f}, \n"
                 )
 
         # Save results
@@ -555,16 +555,16 @@ class FitAnalyst(BaseAnalyst):
         file_name = self.analyst_path + "fit_stats.txt"
         with open(file_name, "w", encoding="utf-8") as file:
             file.write(
-                f"{"# name":<20s} : {"chi2":<7s} {"red_chi2":<7s}"
-                f"{"SW":<7s} {"AD":<7s} {"KS":<7s} {"AIC":<7s} {"BIC":<7s}\n"
+                f"{'# name':<20s} : {'chi2':<7s} {'red_chi2':<7s}"
+                f"{'SW':<7s} {'AD':<7s} {'KS':<7s} {'AIC':<7s} {'BIC':<7s}\n"
             )
             file.write("#--------------------------------------------------------------------------------\n")
             for model in self.best_results:
                 params = self.best_results[model]
                 file.write(
-                    f"{model:20s} : {params["chi2"]:7.2f} {params["red_chi2"]:7.2f}"
-                    f"{params["sw_test"]:7.2f} {params["ad_test"]:7.2f} {params["ks_test"]:7.2f}"
-                    f"{params["aic_test"]:7.2f} {params["bic_test"]:7.2f}\n"
+                    f"{model:20s} : {params['chi2']:7.2f} {params['red_chi2']:7.2f}"
+                    f"{params['sw_test']:7.2f} {params['ad_test']:7.2f} {params['ks_test']:7.2f}"
+                    f"{params['aic_test']:7.2f} {params['bic_test']:7.2f}\n"
                 )
 
         return self.best_results

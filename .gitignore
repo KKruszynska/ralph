@@ -87,11 +87,11 @@ cover/
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+## Django stuff:
+#*.log
+#local_settings.py
+#db.sqlite3
+#db.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -119,3 +119,9 @@ tests/ralph/data/input/*.html
 tests/ralph/data/output/*.html
 tests/ralph/data/output/*/fit_results.json
 tests/ralph/data/output/*/fit_stats.txt
+
+# files created by pyLIMA
+PSPL_no_piE.html
+PSPL_piE.html
+pyLIMA_fit.json
+pyLIMA_fit_DE_population.npz

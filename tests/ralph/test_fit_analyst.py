@@ -14,8 +14,8 @@ scenario_gaia = {
     "ra": 260.8781,
     "dec": -27.3788,
     "fit_analyst": {
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "ongoing_magnification_threshold": 1.10,
+        "ongoing_amplitude_threshold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
@@ -91,8 +91,8 @@ scenario_gsa = {
         "n_max": 10,
     },
     "fit_analyst": {
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "ongoing_magnification_threshold": 1.10,
+        "ongoing_amplitude_threshold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
@@ -181,8 +181,8 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
-            "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
+            "ongoing_magnification_threshold": fit_params.get("ongoing_magnification_threshold"),
+            "ongoing_amplitude_threshold": fit_params.get("ongoing_amplitude_threshold"),
         }
 
         model_params = fit_params.get("model_fit_configuration")
@@ -221,14 +221,14 @@ class FitAnalystTest:
 
         log = logs.start_log(path_outputs, "debug", event_name=config["event_name"], stream=True)
         analyst = FitAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
-        on_mag_t_config = analyst.config["ongoing_magnification_thershold"]
-        on_ampl_t_config = analyst.config["ongoing_amplitude_thershold"]
+        on_mag_t_config = analyst.config["ongoing_magnification_threshold"]
+        on_ampl_t_config = analyst.config["ongoing_amplitude_threshold"]
         model_fit_config = analyst.config["model_fit_configuration"]
 
         logs.close_log(log)
 
-        assert on_mag_t_config == fit_params.get("ongoing_magnification_thershold")
-        assert on_ampl_t_config == fit_params.get("ongoing_amplitude_thershold")
+        assert on_mag_t_config == fit_params.get("ongoing_magnification_threshold")
+        assert on_ampl_t_config == fit_params.get("ongoing_amplitude_threshold")
 
         model_params = fit_params.get("model_fit_configuration")
         for model in model_fit_config:
@@ -250,8 +250,8 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
-            "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
+            "ongoing_magnification_thereshold": fit_params.get("ongoing_magnification_threshold"),
+            "ongoing_amplitude_threshold": fit_params.get("ongoing_amplitude_threshold"),
         }
 
         model_params = fit_params.get("model_fit_configuration")
@@ -311,8 +311,8 @@ class FitAnalystTest:
         fit_params = self.scenario.get("fit_analyst")
 
         config["fit_analyst"] = {
-            "ongoing_magnification_thershold": fit_params.get("ongoing_magnification_thershold"),
-            "ongoing_amplitude_thershold": fit_params.get("ongoing_amplitude_thershold"),
+            "ongoing_magnification_threshold": fit_params.get("ongoing_magnification_threshold"),
+            "ongoing_amplitude_threshold": fit_params.get("ongoing_amplitude_threshold"),
         }
 
         model_params = fit_params.get("model_fit_configuration")

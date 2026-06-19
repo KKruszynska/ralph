@@ -8,8 +8,8 @@ lc_analyst:
       lower_limit: 30.0
 
 fit_analyst:
-    ongoing_magnification_thershold: 1.10
-    ongoing_amplitude_thershold: 1.0
+    ongoing_magnification_threshold: 1.10
+    ongoing_amplitude_threshold: 1.0
     model_fit_configuration:
       PSPL_no_blend_no_piE:
         fitting_package: pyLIMA

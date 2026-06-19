@@ -25,8 +25,8 @@ scenario_file_cat = {
              },
         },
         "fit_analyst": {
-            "ongoing_magnification_thershold": 1.10,
-            "ongoing_amplitude_thershold": 1.0,
+            "ongoing_magnification_threshold": 1.10,
+            "ongoing_amplitude_threshold": 1.0,
             "model_fit_configuration": {
                 "PSPL_no_blend_no_piE": {
                     "fitting_package": "pyLIMA",
@@ -115,8 +115,8 @@ scenario_gsa = {
         },
     },
     "fit_analyst": {
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "ongoing_magnification_threshold": 1.10,
+        "ongoing_amplitude_threshold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
@@ -198,8 +198,8 @@ scenario_kwu = {
         },
     },
     "fit_analyst": {
-        "ongoing_magnification_thershold": 1.10,
-        "ongoing_amplitude_thershold": 1.0,
+        "ongoing_magnification_threshold": 1.10,
+        "ongoing_amplitude_threshold": 1.0,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",

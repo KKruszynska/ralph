@@ -139,7 +139,8 @@ class FitPylima(Fitter):
             model parameters, defined by the User.
         :type use_boundaries: dict, optional
 
-        :param fitting_method: A label of the type of fitting method used in pyLIMA.
+        :param fitting_method: A label of the type of fitting method used in pyLIMA;
+            Available options: TRF, DE.
         :type fitting_method: str, optional
 
         :param kwargs: Optional keyword arguments holding information about fitting method set up

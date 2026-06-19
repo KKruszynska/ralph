@@ -16,8 +16,9 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
+    "astropy>=7.2",
     "cycler>=0.12.1",
     "ipython>=9.12.0",
     "json5>=0.14.0",
@@ -46,6 +47,10 @@ dev = [
     "pytest",
     "pytest-cov", # Used to report total code coverage
     "ruff", # Used for static linting of files
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-copybutton",
+    "sphinx-rtd-theme>=3.1.0",
 ]
 
 [build-system]
@@ -127,7 +132,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 [tool.setuptools.package-data]
 ralph = ["py.typed"]
 

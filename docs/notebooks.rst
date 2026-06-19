@@ -1,6 +1,9 @@
+.. _notebooks:
+
 Notebooks
 ========================================================================================
 
 .. toctree::
 
-    Introducing Jupyter Notebooks <notebooks/intro_notebook>
+    Setting up Controller and Event Analysts <notebooks/controller_setup>
+    Intro notebook <notebooks/intro_notebook>

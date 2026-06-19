@@ -114,8 +114,6 @@ class LightCurveAnalystTest:
 
         log = logs.start_log(path_outputs, "debug", event_name=config["event_name"], stream=True)
         analyst = LightCurveAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
-        print("===================")
-        print(analyst.config)
         upper_mag = analyst.config["acceptable_mag_range"]["upper_limit"]
         lower_mag = analyst.config["acceptable_mag_range"]["lower_limit"]
         mag_range_dict = analyst.config["acceptable_mag_range"]

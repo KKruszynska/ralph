@@ -1,13 +1,15 @@
+import json
+
 import yaml
 
 
-class Analyst:
+class BaseAnalyst:
     """
     This is a class that analyzes one event.
     This class creates bare bones of other analysts and contains elements they all share.
 
     :param event_name: str, name of the analyzed event
-    :param ra: float, Right Ascention of the analyzed event
+    :param ra: float, Right Ascension of the analyzed event
     :param dec: float, declination of the analyzed event
     :param analyst_path: str, path to the folder where the outputs are saved
     :param config_dict: dictionary, optional, dictionary with Analyst configuration
@@ -26,7 +28,7 @@ class Analyst:
                     "The Analyst requires a configuration file or a configuration dictionary"
                 )
 
-    def parse_config(self, config_path):
+    def parse_config(self, config_path=None, config_dict=None):
         """
         Either parses the file or a dictionary with configuration and
         returns it as a dictionary.
@@ -43,8 +45,18 @@ class Analyst:
         """
 
         try:
-            with open(config_path, "r") as file:
-                event_config = yaml.safe_load(file)
+            if config_path is not None:
+                file_format = config_path.split(".")[-1]
+
+                if file_format == "yaml":
+                    with open(config_path, "r") as file:
+                        event_config = yaml.safe_load(file)
+                elif file_format == "json":
+                    with open(config_path, "r") as file:
+                        event_config = json.load(file)
+                        file.close()
+            elif config_dict is not None:
+                event_config = config_dict
 
             config = {
                 "event_name": event_config.get("event_name"),

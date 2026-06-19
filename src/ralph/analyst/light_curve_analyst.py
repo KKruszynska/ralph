@@ -52,10 +52,7 @@ class LightCurveAnalyst(BaseAnalyst):
         self.log = log
 
         if config_dict is not None:
-            print("====")
-            print("config dict not none!!")
-            print(config_dict)
-            self.parse_config(config_dict=config_dict)
+            self.config = self.parse_config(config_dict=config_dict)
             self.add_lc_config(config_dict)
         elif "lc_analyst" in self.config:
             self.add_lc_config(self.config)
