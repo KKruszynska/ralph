@@ -36,9 +36,9 @@ def start_log(log_location, log_type, event_name=None, stream=False):
         log.addHandler(ch)
     else:
         if event_name is not None:
-            filename = log_location + f"{event_name}_analyst.log"
+            filename = os.path.join(log_location, f"{event_name}_analyst.log")
         else:
-            filename = log_location + "controller.log"
+            filename = os.path.join(log_location, "controller.log")
 
         if not os.path.isdir(log_location):
             os.makedirs(log_location)
