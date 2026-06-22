@@ -125,3 +125,7 @@ PSPL_no_piE.html
 PSPL_piE.html
 pyLIMA_fit.json
 pyLIMA_fit_DE_population.npz
+
+# certain PPT files
+docs/notebooks/README.md
+docs/requirements.txt
