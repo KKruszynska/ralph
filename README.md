@@ -1,8 +1,5 @@
 
 # Ralph
-
-Ralph is a package that will help you model batches of microlensing events.
-
 [![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
 
 [![PyPI](https://img.shields.io/pypi/v/ralph?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/ralph/)
@@ -11,32 +8,33 @@ Ralph is a package that will help you model batches of microlensing events.
 [![Read The Docs](https://img.shields.io/readthedocs/ralph)](https://ralph.readthedocs.io/)
 [![Benchmarks](https://img.shields.io/github/actions/workflow/status/KKruszynska/ralph/asv-main.yml?label=benchmarks)](https://KKruszynska.github.io/ralph/)
 
+Ralph is a Python software package that will help you model multiple gravitational microlensing events at once. 
+It can pre-process light curves, find best fitting models, and create color-magnitude diagrams. 
+It can analyze several events in parallel, to optimize the compute time, and can support different microlensing modeling
+packages. 
+Currently, only [pyLIMA](https://github.com/ebachelet/pyLIMA) is supported.
+
+To start, please check the Installation Guide, and the Set-Up Tutorial. 
+
+You can look up the Documentation here. 
+
+If you run into any issues, [please create 
+an Issue through GitHub](https://github.com/KKruszynska/ralph/issues).
+
+## Author's list
+This package was created by:
+- Katarzyna Kruszyńska, Las Cumbres Observatory
+- [Rachel Street](https://lco.global/user/rstreet/), Las Cumbres Observatory.
+
+## Acknowledgments
+We will post resources to cite this package once they are available.
+
+## About Ralph
+This project's development was supported by the [National Science Foundation](https://www.nsf.gov/) through 
+the grant number 2206828.
+
 This project was automatically generated using the LINCC-Frameworks 
 [python-project-template](https://github.com/lincc-frameworks/python-project-template).
 
 For more information about the project template see the 
 [documentation](https://lincc-ppt.readthedocs.io/en/latest/).
-
-## Installation guide
-
-1. Ensure that you have `python3.12` installed on your machine.
-   - Make sure to install both `python3.12`, `python3.12-venv`, and `python3.12-dev`
-2. Create a virtual environment with `python3.12` for Ralph:
-
-    `python3.12 -m venv path_to_your_venv`
-
-3. Activate your newly created virtual environment:
-    - in bash
-    `source path_to_your_venv/bin/activate`
-    - in tcshell
-   `source path_to_your_venv/bin/activate.tcsh`
-4. Update `pip` to at least 24.0
-5. Clone Ralph's repository.
-6. Go to the folder where you cloned the repository, and run:
-    `python -m pip install .`
-7. To make sure that the installation process went well, check if unit tests run correctly:
-    `pytest tests/.`
-
-If all went well, you should see an information that all unit tests passed!
-
-Enjoy!
