@@ -1,40 +1,44 @@
 event_name: GaiaDR3_ULENS_025
 ra: 260.8781
 dec: -27.3788
+analyst_path: tests/ralph/data/output/event_analyst/GDR3_ULENS_025/
 
 lc_analyst:
-  acceptable_mag_range:
-    upper_limit: -10.0
-    lower_limit: 30.0
+    acceptable_mag_range:
+      upper_limit: -10.0
+      lower_limit: 30.0
 
 fit_analyst:
-  ongoing_magnification_threshold: 1.10
-  ongoing_amplitude_threshold: 1.0
-  model_fit_configuration:
-    PSPL_no_blend_no_piE:
-      fitting_package: pyLIMA
-      fitting_method: DE
-      boundaries:
-        u0: [ 0.0, 2.0 ]
-    PSPL_blend_no_piE:
-      fitting_package: pyLIMA
-      fitting_method: TRF
-      boundaries:
-        u0: [ 0.0, 2.0 ]
-    PSPL_blend_piE:
-      fitting_package: pyLIMA
-      fitting_method: TRF
-      boundaries:
-        u0: [ -2.0, 2.0 ]
-        piEN: [ -1.0, 1.0 ]
-        piEE: [ -1.0, 1.0 ]
-    PSPL_no_blend_piE:
-      fitting_package: pyLIMA
-      fitting_method: TRF
-      boundaries:
-        u0: [ -2.0, 2.0 ]
-        piEN: [ -1.0, 1.0 ]
-        piEE: [ -1.0, 1.0 ]
+    ongoing_magnification_threshold: 1.1
+    ongoing_amplitude_threshold: 1.0
+    model_fit_configuration:
+      PSPL_no_blend_no_piE:
+        fitting_package: pyLIMA
+        fitting_method: DE
+        fitting_method_args:
+            DE_population : 10
+            loss_function : soft_l1
+        boundaries:
+          u0: [0.0, 2.0]
+      PSPL_blend_no_piE:
+        fitting_package: pyLIMA
+        fitting_method: TRF
+        boundaries:
+          u0: [0.0, 2.0]
+      PSPL_blend_piE:
+        fitting_package: pyLIMA
+        fitting_method: TRF
+        boundaries:
+          u0: [0.0, 2.0]
+          piEN: [-1.0, 1.0]
+          piEE: [-1.0, 1.0]
+      PSPL_no_blend_piE:
+        fitting_package: pyLIMA
+        fitting_method: TRF
+        boundaries:
+          u0: [0.0, 2.0]
+          piEN: [-1.0, 1.0]
+          piEE: [-1.0, 1.0]
 
 cmd_analyst:
     catalogues:
@@ -57,6 +61,7 @@ light_curves:
       band: BP
       ephemeris: tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt
       path: tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat
+
 
     - survey: Gaia
       band: RP

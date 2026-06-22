@@ -13,10 +13,8 @@ def load_light_curve_from_path(path):
     data = data.T
     return data
 
-def load_ephemeris_from_path(path,
-                             skip_header=0,
-                             skip_footer=0,
-                             usecols=None):
+
+def load_ephemeris_from_path(path, skip_header=0, skip_footer=0, usecols=None):
     """
     Utility function to load ephemeris data from file on disk.
 
@@ -28,16 +26,13 @@ def load_ephemeris_from_path(path,
     :return: ephemeris data in numpy array
     """
 
-    ephemeris = np.genfromtxt(path,
-                              skip_header=skip_header,
-                              skip_footer=skip_footer,
-                              unpack=True,
-                              usecols=usecols,
-                              )
+    ephemeris = np.genfromtxt(
+        path,
+        skip_header=skip_header,
+        skip_footer=skip_footer,
+        unpack=True,
+        usecols=usecols,
+    )
     ephemeris = ephemeris.T
 
     return ephemeris
-
-
-
-
