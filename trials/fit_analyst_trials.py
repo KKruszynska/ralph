@@ -10,12 +10,3 @@ def perform_anomaly_finder(self):
     return anomaly_found
 
 
-def evaluate_model(self):
-    """
-    Evaluate all found models.
-
-    :return: return the key for the best model
-    """
-    best_model_name = ""
-
-    return best_model_name
