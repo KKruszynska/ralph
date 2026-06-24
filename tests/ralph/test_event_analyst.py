@@ -7,17 +7,21 @@ import pytest
 
 from ralph.analyst.event_analyst import EventAnalyst
 
+ralph_output = os.path.join("tests", "ralph", "data", "output")
+ralph_input = os.path.join("tests", "ralph", "data", "input")
+ralph_light_curves = os.path.join(ralph_input, "light_curves")
+
 scenario_file_cat = {
-    "event_name": "GaiaDR3_ULENS_025",
+    "event_name": "GDR3_ULENS_025",
     "ra": 260.8781,
     "dec": -27.3788,
-    "analyst_path": "tests/ralph/data/output/event_analyst/GDR3_ULENS_025/",
-    "fit_result": "tests/ralph/data/input/test_results/gdr3_ulens_025_fit_results.json",
+    "analyst_path": os.path.join(ralph_output, "event_analyst", "GDR3_ULENS_025"),
+    "fit_result": os.path.join(ralph_input, "test_results", "gdr3_ulens_025_fit_results_best.json"),
     "config_final": {
-        "event_name": "GaiaDR3_ULENS_025",
+        "event_name": "GDR3_ULENS_025",
         "ra": 260.8781,
         "dec": -27.3788,
-        "analyst_path": "tests/ralph/data/output/event_analyst/GDR3_ULENS_025/",
+        "analyst_path": os.path.join(ralph_output, "event_analyst" "GDR3_ULENS_025"),
         "lc_analyst": {
              "acceptable_mag_range": {
                  "upper_limit": -10,
@@ -27,6 +31,7 @@ scenario_file_cat = {
         "fit_analyst": {
             "ongoing_magnification_threshold": 1.10,
             "ongoing_amplitude_threshold": 1.0,
+            "return_all_models": False,
             "model_fit_configuration": {
                 "PSPL_no_blend_no_piE": {
                     "fitting_package": "pyLIMA",
@@ -71,7 +76,7 @@ scenario_file_cat = {
                 {
                     "name": "Gaia_DR3",
                     "band": ["Gaia_G", "Gaia_BP", "Gaia_RP"],
-                    "cmd_path": "tests/ralph/data/input/cmd/gdr3_ulens_025_result.csv",
+                    "cmd_path": os.path.join("tests","ralph","data","input","cmd","gdr3_ulens_025_result.csv"),
                     "cmd_separator": ",",
                 },
             ]
@@ -79,26 +84,14 @@ scenario_file_cat = {
     },
     "final_files": {
         "event_folder": "GDR3_ULENS_025",
-        "analyst_log": "GaiaDR3_ULENS_025_analyst.log",
+        "analyst_log": "GDR3_ULENS_025_analyst.log",
         "model_plots": [
-            "PSPL_no_blend_no_piE.html",
-            "PSPL_blend_no_piE.html",
-            "PSPL_blend_piE_p.html",
             "PSPL_blend_piE_n.html",
         ],
         "cmd_plots": [
-            "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_no_blend_no_piE_CMD_Gaia_DR3_Gaia_RP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_p_CMD_Gaia_DR3_Gaia_RP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
-            "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
+            "GDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_BP.html",
+            "GDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_G.html",
+            "GDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
         ],
     },
 }
@@ -107,7 +100,7 @@ scenario_gsa = {
     "event_name": "Gaia24amo",
     "ra": 249.14892083,
     "dec": -53.74991944,
-    "analyst_path": "tests/ralph/data/output/event_analyst/Gaia24amo/",
+    "analyst_path": os.path.join(ralph_output, "event_analyst", "Gaia24amo"),
     "lc_analyst": {
         "acceptable_mag_range": {
             "upper_limit": -10,
@@ -117,6 +110,7 @@ scenario_gsa = {
     "fit_analyst": {
         "ongoing_magnification_threshold": 1.10,
         "ongoing_amplitude_threshold": 1.0,
+        "return_all_models": True,
         "model_fit_configuration": {
             "PSPL_no_blend_no_piE": {
                 "fitting_package": "pyLIMA",
@@ -156,23 +150,23 @@ scenario_gsa = {
         {
             "survey": "Gaia",
             "band": "G",
-            "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_input, "light_curves", "Gaia24amo_Gaia_G.dat"),
         },
         {
             "survey": "LCO",
             "band": "g",
-            "path": "tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_g.dat",
+            "path": os.path.join(ralph_input, "light_curves", "cleaned_Gaia24amo_LCO_g.dat"),
         },
         {
             "survey": "LCO",
             "band": "r",
-            "path": "tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_r.dat",
+            "path": os.path.join(ralph_input, "light_curves", "cleaned_Gaia24amo_LCO_r.dat"),
         },
         {
             "survey": "LCO",
             "band": "i",
-            "path": "tests/ralph/data/input/light_curves/cleaned_Gaia24amo_LCO_i.dat",
+            "path": os.path.join(ralph_input, "light_curves", "cleaned_Gaia24amo_LCO_i.dat"),
         },
     ],
     "final_files": {
@@ -190,7 +184,7 @@ scenario_kwu = {
     "event_name": "AT2024kwu",
     "ra": 102.93358333,
     "dec": 44.352166666,
-    "analyst_path": "tests/ralph/data/output/event_analyst/AT2024kwu/",
+    "analyst_path": os.path.join(ralph_output, "event_analyst", "AT2024kwu/"),
     "lc_analyst": {
         "acceptable_mag_range": {
             "upper_limit": -10,
@@ -243,33 +237,33 @@ scenario_kwu = {
         {
             "survey": "Gaia",
             "band": "G",
-            "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_Gaia_G.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_Gaia_G.dat"),
         },
         {
             "survey": "LCO",
             "band": "g",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_LCO_g.dat",
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_LCO_g.dat"),
         },
         {
             "survey": "LCO",
             "band": "r",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_LCO_r.dat",
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_LCO_r.dat"),
         },
         {
             "survey": "LCO",
             "band": "i",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_LCO_i.dat",
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_LCO_i.dat"),
         },
         {
             "survey": "ZTF",
             "band": "g",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_ZTF_g.dat",
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_ZTF_g.dat"),
         },
         {
             "survey": "ZTF",
             "band": "r",
-            "path": "tests/ralph/data/input/light_curves/AT2024kwu_ZTF_r.dat",
+            "path": os.path.join(ralph_input, "light_curves", "AT2024kwu_ZTF_r.dat"),
         },
     ],
     "final_files": {
@@ -300,9 +294,13 @@ class EventAnalystTest:
         event_name = self.scenario.get("event_name")
         analyst_path = self.scenario.get("analyst_path")
         event_analyst = EventAnalyst(
-            event_name, analyst_path, "debug", config_path=analyst_path + "config.yaml", stream=True
+            event_name,
+            analyst_path,
+            "debug",
+            config_path=os.path.join(analyst_path, "config.yaml"),
+            stream=True
         )
-        event_analyst.parse_config(analyst_path + "config.yaml")
+        event_analyst.parse_config(os.path.join(analyst_path, "config.yaml"))
 
         assert type(event_analyst.config) is type(self.scenario.get("config_final"))
 
@@ -317,16 +315,22 @@ class EventAnalystTest:
         event_name = self.scenario.get("event_name")
         analyst_path = self.scenario.get("analyst_path")
         event_analyst = EventAnalyst(
-            event_name, analyst_path, "debug", config_path=analyst_path + "config.yaml", stream=False
+            event_name,
+            analyst_path,
+            "debug",
+            config_path=os.path.join(analyst_path, "config.yaml"),
+            stream=False
         )
         event_analyst.run_single_analyst()
 
         # Check if expected files exist
-        output = Path(analyst_path + "fit_results.json")
+        fpath = os.path.join(analyst_path, "fit_results.json")
+        output = Path(fpath)
         assert output.exists() is True
         assert output.is_file() is True
 
-        output = Path(analyst_path + "fit_stats.txt")
+        fpath = os.path.join(analyst_path, "fit_stats.txt")
+        output = Path(fpath)
         assert output.exists() is True
         assert output.is_file() is True
 
@@ -338,26 +342,30 @@ class EventAnalystTest:
                 assert output.is_dir() is True
 
             if element == "analyst_log":
-                output = Path(analyst_path + final_files[element])
+                fpath = os.path.join(analyst_path, final_files[element])
+                output = Path(fpath)
                 assert output.exists() is True
                 assert output.is_file() is True
 
             if element == "model_plots":
                 for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
+                    fpath = os.path.join(analyst_path, file_path)
+                    output = Path(fpath)
                     assert output.exists() is True
                     assert output.is_file() is True
 
             if element == "cmd_plots":
                 for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
+                    fpath = os.path.join(analyst_path, file_path)
+                    output = Path(fpath)
                     assert output.exists() is True
                     assert output.is_file() is True
 
         with open(self.scenario.get("fit_result"), "r") as file:
             expected_fit_result = json.load(file)
 
-        with open(analyst_path + "fit_results.json", "r") as file:
+        fpath = os.path.join(analyst_path, "fit_results.json")
+        with open(fpath, "r") as file:
             received_fit_result = json.load(file)
 
         for model in expected_fit_result:
@@ -383,11 +391,13 @@ class EventAnalystTest:
         event_analyst.run_single_analyst()
 
         # Check if expected files exist
-        output = Path(analyst_path + "fit_results.json")
+        fpath = os.path.join(analyst_path, "fit_results.json")
+        output = Path(fpath)
         assert output.exists() is True
         assert output.is_file() is True
 
-        output = Path(analyst_path + "fit_stats.txt")
+        fpath = os.path.join(analyst_path, "fit_stats.txt")
+        output = Path(fpath)
         assert output.exists() is True
         assert output.is_file() is True
 
@@ -399,24 +409,28 @@ class EventAnalystTest:
                 assert output.is_dir() is True
 
             if element == "analyst_log":
-                output = Path(analyst_path + final_files[element])
+                fpath = os.path.join(analyst_path, final_files[element])
+                output = Path(fpath)
                 assert output.exists() is True
                 assert output.is_file() is True
 
             if element == "model_plots":
                 for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
+                    fpath = os.path.join(analyst_path, file_path)
+                    output = Path(fpath)
                     assert output.exists() is True
                     assert output.is_file() is True
 
             if element == "cmd_plots":
                 for file_path in final_files[element]:
-                    output = Path(analyst_path + file_path)
+                    fpath = os.path.join(analyst_path, file_path)
+                    output = Path(fpath)
                     assert output.exists() is True
                     assert output.is_file() is True
 
         # Testing if the PSPL_blend_no_piE model makes sense
-        with open(analyst_path + "fit_results.json", "r") as file:
+        fpath = os.path.join(analyst_path, "fit_results.json")
+        with open(fpath, "r") as file:
             received_fit_result = json.load(file)
 
         expected_range = {
@@ -466,15 +480,18 @@ def test_run():
         analyst_path = case.get("analyst_path")
         event_name = case.get("event_name")
 
-        output = Path(analyst_path + "fit_results.json")
+        fpath = os.path.join(analyst_path, "fit_results.json")
+        output = Path(fpath)
         if output.exists():
             os.remove(output)
 
-        output = Path(analyst_path + "fit_stats.txt")
+        fpath = os.path.join(analyst_path, "fit_stats.txt")
+        output = Path(fpath)
         if output.exists():
             os.remove(output)
 
-        output = Path(analyst_path + event_name + "_analyst.log")
+        fpath = os.path.join(analyst_path, event_name + "_analyst.log")
+        output = Path(fpath)
         if output.exists():
             os.remove(output)
 
@@ -487,7 +504,8 @@ def test_run():
             "PSPL_no_blend_piE.html",
         ]
         for element in files_to_remove:
-            output = Path(analyst_path + element)
+            fpath = os.path.join(analyst_path, element)
+            output = Path(fpath)
             if output.exists():
                 os.remove(output)
 
@@ -507,6 +525,7 @@ def test_run():
                 "GaiaDR3_ULENS_025_PSPL_blend_piE_n_CMD_Gaia_DR3_Gaia_RP.html",
             ]
             for element in files_to_remove:
-                output = Path(analyst_path + element)
+                fpath = os.path.join(analyst_path, element)
+                output = Path(fpath)
                 if output.exists():
                     os.remove(output)
