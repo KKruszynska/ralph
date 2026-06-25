@@ -6,8 +6,13 @@ import numpy as np
 from ralph.analyst.light_curve_analyst import LightCurveAnalyst
 from ralph.toolbox import input_tools, logs
 
+ralph_output = os.path.join("tests", "ralph", "data", "output")
+ralph_input = os.path.join("tests", "ralph", "data", "input")
+ralph_light_curves = os.path.join(ralph_input, "light_curves")
+
+
 scenario_gaia = {
-    "path_outputs": "tests/ralph/data/output/lc_analyst/",
+    "path_outputs": os.path.join(ralph_output, "lc_analyst/"),
     "event_name": "GDR3_ULENS_025",
     "ra": 260.8781,
     "dec": -27.3788,
@@ -19,31 +24,31 @@ scenario_gaia = {
         {
             "survey": "Gaia",
             "band": "G",
-            "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_G.dat"),
         },
         {
             "survey": "Gaia",
             "band": "BP",
-            "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_BP.dat"),
         },
         {
             "survey": "Gaia",
             "band": "RP",
-            "ephemeris": "tests/ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_RP.dat"),
         },
         {
             "survey": "OGLE",
             "band": "I",
-            "path": "tests/ralph/data/input/light_curves/GaiaDR3_ULENS_025_OGLE.dat",
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_OGLE.dat"),
         },
     ],
 }
 
 scenario_gsa = {
-    "path_outputs": "tests/ralph/data/output/lc_analyst/",
+    "path_outputs": os.path.join(ralph_output, "lc_analyst/"),
     "event_name": "Gaia24amo",
     "ra": 249.14892083,
     "dec": -53.74991944,
@@ -56,26 +61,64 @@ scenario_gsa = {
         {
             "survey": "Gaia",
             "band": "G",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_Gaia_G.dat"),
         },
         {
             "survey": "LCO",
             "band": "g",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_LCO_g.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_g.dat"),
         },
         {
             "survey": "LCO",
             "band": "r",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_LCO_r.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_r.dat"),
         },
         {
             "survey": "LCO",
             "band": "i",
-            "path": "tests/ralph/data/input/light_curves/Gaia24amo_LCO_i.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_i.dat"),
         },
     ],
 }
 
+scenario_moa = {
+    "path_outputs": os.path.join(ralph_output, "lc_analyst"),
+    "event_name": "MOA_2025_BLG_0088",
+    "ra": 268.9010250,
+    "dec": -34.9196530,
+    "fit_analyst": {"fitting_package": "pylima"},
+    "lc_analyst": {"acceptable_mag_range":
+                       {"upper_limit": -10, "lower_limit": 30},
+                   "max_acceptable_err": 1.0,
+                   "hampel":
+                       {"window": "3D", "n_sigma": 5.0},
+                   },
+    "light_curves": [
+        {
+            "survey": "MOA",
+            "band": "I",
+            "path": os.path.join(ralph_light_curves, "MB250088_MOA_I.dat"),
+        },
+    ],
+}
+
+roman_events = {
+    "ulwdc1_118_W149": {
+        "light_curve_path": "ulwdc1_118_W149.txt",
+        "ra": 267.735,
+        "dec": -30.1666,
+    },
+    "ulwdc1_014_W149": {
+        "light_curve_path": "ulwdc1_014_W149.txt",
+        "ra": 268.028,
+        "dec": -28.9286,
+    },
+    "ulwdc1_018_W149": {
+        "light_curve_path": "ulwdc1_018_W149.txt",
+        "ra": 267.871,
+        "dec": -29.6712,
+    },
+}
 
 class LightCurveAnalystTest:
     """
@@ -172,6 +215,43 @@ class LightCurveAnalystTest:
             negative_errs = np.where(light_curve[:, 2] < 0)
             assert len(negative_errs[0]) == len([])
 
+    def test_noisy_lc(self):
+        """
+        Test if noisy light curve outliers are correctly removed.
+        """
+        dictionary = self.scenario.get("lc_analyst")
+        config = {
+            "event_name": self.scenario.get("event_name"),
+            "ra": self.scenario.get("ra"),
+            "dec": self.scenario.get("dec"),
+            "lc_analyst": {
+                "acceptable_mag_range": dictionary.get("acceptable_mag_range"),
+                "max_acceptable_err": dictionary.get("max_acceptable_err"),
+            },
+            "light_curves": self.scenario.get("light_curves"),
+        }
+        path_outputs = self.scenario.get("path_outputs")
+
+        light_curves = []
+        for entry in config["light_curves"]:
+            survey = entry["survey"]
+            band = entry["band"]
+            if "path" in entry:
+                light_curve = input_tools.load_light_curve_from_path(entry["path"])
+                light_curves.append({"light_curve": light_curve, "survey": survey, "band": band})
+
+        log = logs.start_log(path_outputs, "debug", event_name=config["event_name"])
+        analyst = LightCurveAnalyst(config["event_name"], path_outputs, light_curves, log, config_dict=config)
+        analyst.perform_quality_check()
+
+        result = analyst.perform_outlier_check()
+        print(result)
+        np.savetxt(f"{config["event_name"]}_1d_cleaned.txt", analyst.light_curves[0]["light_curve"])
+        np.savetxt(f"{config["event_name"]}_1d_is_outlier.txt", result["is_outlier"])
+        np.savetxt(f"{config["event_name"]}_1d_is_medians.txt", result["medians"])
+        np.savetxt(f"{config["event_name"]}_1d_is_mads.txt", result["mads"])
+        np.savetxt(f"{config["event_name"]}_1d_is_thresholds.txt", result["thresholds"])
+
 
 class BadLightCurvesTest:
     """
@@ -184,8 +264,8 @@ class BadLightCurvesTest:
         """
 
         config = {}
-        config["event_name"] = "test_negative_errs"
-        path_outputs = "tests/ralph/data/output/lc_analyst/"
+        config["event_name"] = "test_bad_lc"
+        path_outputs = os.path.join(ralph_output, "lc_analyst"),
         config["ra"], config["dec"] = 1.0, 1.0
         config["lc_analyst"] = {}
         config["lc_analyst"]["n_max"] = 10.0
@@ -245,7 +325,6 @@ class BadLightCurvesTest:
 
         logs.close_log(log)
 
-
 def test_run():
     """
     Run all tests.
@@ -267,6 +346,41 @@ def test_run():
         analyst_path = case.get("path_outputs")
         event_name = case.get("event_name")
 
-        output = Path(analyst_path + event_name + "_analyst.log")
+        fpath = os.path.join(analyst_path, event_name + "_analyst.log")
+        output = Path(fpath)
         if output.exists():
             os.remove(output)
+
+def test_outlier_run():
+    """
+    Run all tests.
+    """
+    #
+    # test = LightCurveAnalystTest(scenario_moa)
+    # test.test_parse_config()
+    # test.test_noisy_lc()
+    for event in roman_events:
+        scenario = {
+            "path_outputs": os.path.join(ralph_output, "lc_analyst"),
+            "event_name": event,
+            "ra": roman_events[event]["ra"],
+            "dec": roman_events[event]["dec"],
+            "fit_analyst": {"fitting_package": "pylima"},
+            "lc_analyst": {"acceptable_mag_range":
+                               {"upper_limit": -10, "lower_limit": 30},
+                           "max_acceptable_err": 1.0,
+                           "hampel":
+                               {"window": "1D", "n_sigma": 5.0},
+                           },
+            "light_curves": [
+                {
+                    "survey": "Roman",
+                    "band": "W149",
+                    "path": os.path.join(ralph_light_curves, roman_events[event]["light_curve_path"]),
+                },
+            ],
+        }
+
+        test = LightCurveAnalystTest(scenario)
+        test.test_parse_config()
+        test.test_noisy_lc()

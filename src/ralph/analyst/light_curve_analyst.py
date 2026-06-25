@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from ralph.analyst.analyst import BaseAnalyst
 
@@ -37,10 +38,26 @@ class LightCurveAnalyst(BaseAnalyst):
     * `acceptable_mag_range`: dict
         A dictionary with upper and lower limit of the acceptable magnitude range.
         Values outside of this range will be regarded as invalid, see:
-        :ralph.analyst.light_curve_analyst.LightCurveAnalyst.flag_invalid_mags:
-            Allowed models keywords are:
-                - `lower_limit` - lower limit of the acceptable magnitude range;
-                - `upper_limit` - upper limit of the acceptable magnitude range.
+       :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.flag_invalid_mags`
+            Allowed keywords are:
+                - `lower_limit` - lower limit of the acceptable magnitude range, default value: 40.0;
+                - `upper_limit` - upper limit of the acceptable magnitude range, default value: -10.0;
+    * `max_acceptable_err`: float
+        A float representing the maximum acceptable error of a datapoint in the light curve,
+        errors larger than that will be masked.
+    * `hampel:
+        Parameters controlling the Hampel filter performing outlier marking,
+        see :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.hampel_filter`.
+            Allowed keywords are:
+                - `window`: str
+                    Window size (in days), as a `pandas` offset string (e.g. '3D' is 3 days),
+                    half of this is applied on each side of each point.
+                    Default value: '3D'
+                - `n_sigma`: float
+                    Number of standard deviations to use for the Hampel filter, used as a threshold in
+                    scaled Median Absolute Deviation for flagging outliers.
+                    Default value: 5.0
+
     """
 
     def __init__(self, event_name, analyst_path, light_curves, log, config_dict=None, config_path=None):
@@ -73,41 +90,8 @@ class LightCurveAnalyst(BaseAnalyst):
         self.log.debug("LC Analyst: Reading lc config.")
         self.config["acceptable_mag_range"] = config_dict["lc_analyst"].get("acceptable_mag_range", None)
         self.config["max_acceptable_err"] = config_dict["lc_analyst"].get("max_acceptable_err", None)
+        self.config["hampel"] = config_dict["lc_analyst"].get("hampel", None)
         self.log.debug("LC Analyst: Finished reading lc config.")
-
-    def perform_quality_check(self):
-        """
-        Performs a quality checks of light curves stored in the internal dictionary,
-        and applies masks to invalid entries. A cleaned light curve replaces
-        the old entry in the internal analyst dictionary.
-        """
-
-        self.log.info("LC Analyst: Start quality check.")
-        for entry in self.light_curves:
-            # extract np array with the light curve
-            lc = np.array(entry["light_curve"])
-
-            self.log.debug("LC Analyst: Masking bad data.")
-            mask_duplicate = self.flag_duplicate_entries(lc)
-            mask_inf_entry = self.flag_infinite_entries(lc)
-            preliminary_mask = np.logical_and(mask_inf_entry, mask_duplicate)
-            preliminary_lc = lc[preliminary_mask]
-            self.log.debug("LC Analyst: Applied non numerical and duplicates mask.")
-
-            mask_inv_mags = self.flag_invalid_mags(preliminary_lc)
-            preliminary_lc = preliminary_lc[mask_inv_mags]
-            self.log.debug("LC Analyst: Applied mask for mags outside of range.")
-            mask_inv_errs = self.flag_huge_errors(preliminary_lc)
-            preliminary_lc = preliminary_lc[mask_inv_errs]
-            self.log.debug("LC Analyst: Applied mask for errs outside of range ."
-                           )
-            mask_neg_err = self.flag_negative_errors(preliminary_lc)
-            cleaned_lc = preliminary_lc[mask_neg_err]
-            self.log.debug("LC Analyst: Applied masks for negative errs.")
-
-            entry["light_curve"] = cleaned_lc
-
-        self.log.info("LC Analyst: Quality check ended.")
 
     def flag_infinite_entries(self, light_curve):
         """
@@ -215,3 +199,125 @@ class LightCurveAnalyst(BaseAnalyst):
             mask_inv_err = np.where((light_curve[:, 2] < 1.0))
 
         return mask_inv_err[0]
+
+    def perform_quality_check(self):
+        """
+        Performs quality checks of light curves stored in the internal dictionary,
+        and applies masks to invalid entries. A cleaned light curve replaces
+        the old entry in the internal analyst dictionary.
+        """
+
+        self.log.info("LC Analyst: Start quality check.")
+        for entry in self.light_curves:
+            # extract np array with the light curve
+            lc = np.array(entry["light_curve"])
+
+            self.log.debug("LC Analyst: Masking bad data.")
+            mask_duplicate = self.flag_duplicate_entries(lc)
+            mask_inf_entry = self.flag_infinite_entries(lc)
+            preliminary_mask = np.logical_and(mask_inf_entry, mask_duplicate)
+            preliminary_lc = lc[preliminary_mask]
+            self.log.debug("LC Analyst: Applied non numerical and duplicates mask.")
+
+            mask_inv_mags = self.flag_invalid_mags(preliminary_lc)
+            preliminary_lc = preliminary_lc[mask_inv_mags]
+            self.log.debug("LC Analyst: Applied mask for mags outside of range.")
+            mask_inv_errs = self.flag_huge_errors(preliminary_lc)
+            preliminary_lc = preliminary_lc[mask_inv_errs]
+            self.log.debug("LC Analyst: Applied mask for errs outside of range ."
+                           )
+            mask_neg_err = self.flag_negative_errors(preliminary_lc)
+            cleaned_lc = preliminary_lc[mask_neg_err]
+            self.log.debug("LC Analyst: Applied masks for negative errs.")
+
+            entry["light_curve"] = cleaned_lc
+
+        self.log.info("LC Analyst: Quality check ended.")
+
+    def hampel_filter(self, light_curve, window='3D', n_sigma=3.0):
+        """
+        A Hampel filter with a time-based window. More about Hampel filter can be
+        found [here](https://medium.com/@migueloteropedrido/hampel-filter-with-python-17db1d265375).
+        This method was created with the help of Claude.ai, and modified to resemble the output
+        of the [hampel](https://github.com/MichaelisTrofficus/hampel_filter/tree/master) package.
+
+        :param light_curve: An array containing Julian Days, magnitudes and errors
+                for the whole light curve.
+        :type light_curve: numpy ndarray
+
+        :param window: Window size (in days), as a `pandas` offset string (e.g. '3D' is 3 days),
+            half of this is applied on each side of each point.
+        :type window: str
+
+        :param n_sigma: Number of standard deviations to use for Hampel filter, used as a threshold in
+            scaled Median Absolute Deviation for flagging outliers.
+        :type n_sigma: float
+
+        :return: A dictionary with filtered data, points marked as outliers, medians, MADs, and
+        thresholds for each window.
+        :rtype: dict
+        """
+        datetime = pd.to_datetime(light_curve[:, 0], origin='julian', unit='D')
+        series = pd.Series(light_curve[:,1], index=datetime)
+        series = series.sort_index()
+        times = series.index
+        values = series.to_numpy()
+        half_window = pd.Timedelta(window) / 2
+        k = 1.4826  # scales MAD to be comparable to std dev for normal data
+
+        is_outlier = np.zeros(len(values), dtype=bool)
+        medians = np.zeros(len(values), dtype=float)
+        mads = np.zeros(len(values), dtype=float)
+        thresholds = np.zeros(len(values), dtype=float)
+
+        for i, t in enumerate(times):
+            left = times.searchsorted(t - half_window, side='left')
+            right = times.searchsorted(t + half_window, side='right')
+            window_vals = values[left:right]
+
+            med = np.median(window_vals)
+            mad = k * np.median(np.abs(window_vals - med))
+            thresh = n_sigma * mad
+
+            if mad > 0 and np.abs(values[i] - med) > thresh:
+                is_outlier[i] = True
+
+            medians[i] = med
+            mads[i] = mad
+            thresholds[i] = thresh
+
+        result = {
+            'is_outlier': is_outlier,
+            'medians': medians,
+            'mads': mads,
+            'thresholds': thresholds,
+        }
+
+        return result
+
+    def perform_outlier_check(self):
+        """
+        Checks for outliers in the light curve using the Hampel filter.
+        Then evaluates found outliers to check if they aren't candidates
+        for anomalies.
+        """
+
+        self.log.info("LC Analyst: Start outlier check.")
+        for entry in self.light_curves:
+            # extract np array with the light curve
+            lc = np.array(entry["light_curve"])
+            if self.config["hampel"] is not None:
+                results = self.hampel_filter(
+                    lc,
+                    window=self.config["hampel"]["window"],
+                    n_sigmas=self.config["hampel"]["n_sigma"],
+                )
+            else:
+                results = self.hampel_filter(lc)
+
+            print(results)
+
+            self.log.debug("LC Analyst: Doing stufff.")
+
+        self.log.info("LC Analyst: Outlier check ended.")
+        return results
