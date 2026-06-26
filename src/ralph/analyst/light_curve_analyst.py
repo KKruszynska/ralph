@@ -1,5 +1,9 @@
 import numpy as np
 import pandas as pd
+import weightedstats as wst
+
+import json
+import os
 
 from ralph.analyst.analyst import BaseAnalyst
 
@@ -45,7 +49,7 @@ class LightCurveAnalyst(BaseAnalyst):
     * `max_acceptable_err`: float
         A float representing the maximum acceptable error of a datapoint in the light curve,
         errors larger than that will be masked.
-    * `hampel:
+    * `hampel`:
         Parameters controlling the Hampel filter performing outlier marking,
         see :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.hampel_filter`.
             Allowed keywords are:
@@ -57,6 +61,19 @@ class LightCurveAnalyst(BaseAnalyst):
                     Number of standard deviations to use for the Hampel filter, used as a threshold in
                     scaled Median Absolute Deviation for flagging outliers.
                     Default value: 5.0
+    * `save_outlier_results`: bool
+        If `True`, results of outlier finding procedure will be saved in two files:
+        `outlier_results.npz` and `outlier_sequences.json`.
+        File called `outlier_results.npz` contains four arrays for each light curve.
+        These arrays are:
+            - 'is_outlier' - an array of flags if the point was found to be an outlier;
+            - 'medians' - an array for weighted medians for windows used by the Hampel filter;
+            - 'mads' - an array of MADs found in windows used by the Hampel filter;
+            - 'thresholds' - an array of thresholds used by the Hampel filter to flag a point
+                as an outlier.
+            See: :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.hampel_filter`.
+        File called `outlier_sequences.json` contains a JSON file with all sequences of consecutive
+        outliers found by :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.vet_outliers`.
 
     """
 
@@ -68,6 +85,8 @@ class LightCurveAnalyst(BaseAnalyst):
         self.max_acceptable_err = None
         self.light_curves = light_curves
         self.log = log
+        self.outlier_results = {}
+        self.outlier_seqs = {}
 
         if config_dict is not None:
             self.config = self.parse_config(config_dict=config_dict)
@@ -91,6 +110,8 @@ class LightCurveAnalyst(BaseAnalyst):
         self.config["acceptable_mag_range"] = config_dict["lc_analyst"].get("acceptable_mag_range", None)
         self.config["max_acceptable_err"] = config_dict["lc_analyst"].get("max_acceptable_err", None)
         self.config["hampel"] = config_dict["lc_analyst"].get("hampel", None)
+        self.config["save_outlier_results"] = config_dict["lc_analyst"].get("save_outlier_results", False)
+
         self.log.debug("LC Analyst: Finished reading lc config.")
 
     def flag_infinite_entries(self, light_curve):
@@ -124,9 +145,6 @@ class LightCurveAnalyst(BaseAnalyst):
         """
 
         mask_neg_err = np.where(light_curve[:, 2] > 0)
-
-        print("Mask neg err")
-        print(len(mask_neg_err), len(mask_neg_err[0]))
 
         return mask_neg_err[0]
 
@@ -253,12 +271,13 @@ class LightCurveAnalyst(BaseAnalyst):
             scaled Median Absolute Deviation for flagging outliers.
         :type n_sigma: float
 
-        :return: A dictionary with filtered data, points marked as outliers, medians, MADs, and
+        :return: A dictionary with an array of points marked as outliers, array of weighted medians for
+            each window, array of MADs for each window, and array of thresholds for each window.
         thresholds for each window.
         :rtype: dict
         """
         datetime = pd.to_datetime(light_curve[:, 0], origin='julian', unit='D')
-        series = pd.Series(light_curve[:,1], index=datetime)
+        series = pd.Series(light_curve[:, 1], index=datetime)
         series = series.sort_index()
         times = series.index
         values = series.to_numpy()
@@ -269,13 +288,16 @@ class LightCurveAnalyst(BaseAnalyst):
         medians = np.zeros(len(values), dtype=float)
         mads = np.zeros(len(values), dtype=float)
         thresholds = np.zeros(len(values), dtype=float)
+        weights = 1.0 / (light_curve[:, 2]**2)
 
         for i, t in enumerate(times):
             left = times.searchsorted(t - half_window, side='left')
             right = times.searchsorted(t + half_window, side='right')
             window_vals = values[left:right]
+            # window_weights = weights[left:right]
 
             med = np.median(window_vals)
+            # med = wst.numpy_weighted_median(window_vals, weights=window_weights)
             mad = k * np.median(np.abs(window_vals - med))
             thresh = n_sigma * mad
 
@@ -295,10 +317,49 @@ class LightCurveAnalyst(BaseAnalyst):
 
         return result
 
+    def vet_outliers(self, light_curve, is_outlier):
+        """
+        Function that checks if found outliers form a sequence of consecutive points
+        in the light curve. Doesn't take into time-skips between data.
+
+        :param light_curve: An array containing Julian Days, magnitudes and errors
+                for the whole light curve.
+        :type light_curve: numpy ndarray
+
+        :param is_outlier: An array indicating whether point at this index is considered
+            an outlier by the outlier flagging procedure
+            (e.g., :meth:`ralph.analyst.light_curve_analyst.LightCurveAnalyst.hampel_filter`).
+
+        :return: A list of dictionaries with all found sequences of outliers, marking their
+            start time, end time and length of the sequence.
+        """
+        groups = []
+        n_seqs = 0
+        n_pts_in_seq = 0
+        t_start, t_end = 0.0, 0.0
+        for i in range(len(light_curve[:, 0])):
+            if is_outlier[i]:
+                n_pts_in_seq += 1
+                if n_pts_in_seq == 1:
+                    t_start = light_curve[i, 0]
+            else:
+                t_end = light_curve[i, 0]
+                if n_pts_in_seq > 1:
+                    n_seqs += 1
+                    new_sequence = {
+                        't_start': t_start,
+                        't_end': t_end,
+                        'sequence_length': n_pts_in_seq,
+                    }
+                    groups.append(new_sequence)
+                n_pts_in_seq = 0
+        return groups
+
     def perform_outlier_check(self):
         """
         Checks for outliers in the light curve using the Hampel filter.
-        Then evaluates found outliers to check if they aren't candidates
+        Then evaluates found outliers if they form a group of consecutive
+        points. This can be used to check if they aren't candidates
         for anomalies.
         """
 
@@ -307,17 +368,36 @@ class LightCurveAnalyst(BaseAnalyst):
             # extract np array with the light curve
             lc = np.array(entry["light_curve"])
             if self.config["hampel"] is not None:
-                results = self.hampel_filter(
-                    lc,
-                    window=self.config["hampel"]["window"],
-                    n_sigmas=self.config["hampel"]["n_sigma"],
-                )
+                self.outlier_results[f"{entry["survey"]}_{entry["band"]}"] = (
+                    self.hampel_filter(
+                        lc,
+                        window=self.config["hampel"]["window"],
+                        n_sigma=self.config["hampel"]["n_sigma"],
+                ))
             else:
-                results = self.hampel_filter(lc)
+                self.outlier_results[f"{entry["survey"]}_{entry["band"]}"] = (
+                    self.hampel_filter(lc)
+                )
 
-            print(results)
+            self.log.debug(f"LC Analyst: Hampel filter to look for outliers for: {entry["survey"]}_{entry["band"]}.")
 
-            self.log.debug("LC Analyst: Doing stufff.")
+            outlier_flags = self.outlier_results[f"{entry["survey"]}_{entry["band"]}"]["is_outlier"]
+            self.outlier_seqs[f"{entry["survey"]}_{entry["band"]}"] = (
+                self.vet_outliers(lc, outlier_flags)
+            )
+            self.log.debug(f"LC Analyst: Outliers vetted for: {entry["survey"]}_{entry["band"]}.")
+            self.log.info(
+                f"LC Analyst: Found {len(self.outlier_seqs)} outlier sequences for {entry["survey"]}_{entry["band"]}."
+            )
+
+        if self.config["save_outlier_results"]:
+            np.savez(
+                os.path.join(self.analyst_path, "outlier_results.npz"),
+                self.outlier_results,
+            )
+
+            with open(os.path.join(self.analyst_path, "outlier_sequences.json"), "w", encoding="utf-8") as file:
+                json.dump(self.outlier_seqs, file, ensure_ascii=False, indent=4)
+            self.log.debug(f"LC Analyst: Outlier analysis results saved.")
 
         self.log.info("LC Analyst: Outlier check ended.")
-        return results
