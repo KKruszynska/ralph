@@ -95,7 +95,7 @@ scenario_moa = {
                        "n_sigma": 5.0,
                        "use_weighted": True,
                    },
-                   "save_outlier_results": True,
+                   "save_outlier_results": False,
                    },
     "light_curves": [
         {
@@ -106,8 +106,8 @@ scenario_moa = {
     ],
     "answers": {
         "MOA_I": {
-            "number_of_outliers": 375,
-            "number_of_sequences": 24,
+            "number_of_outliers": 380,
+            "number_of_sequences": 26,
             "longest_sequence": 3,
         },
     },
@@ -125,9 +125,9 @@ scenario_roman = {
                    "hampel": {
                        "window": "1D",
                        "n_sigma": 3.0,
-                       "use_weighted": True,
+                       "use_weighted": False,
                    },
-                   "save_outlier_results": True,
+                   "save_outlier_results": False,
                    },
     "light_curves": [
         {
@@ -138,9 +138,9 @@ scenario_roman = {
     ],
     "answers": {
             "Roman_W149": {
-                "number_of_outliers": 24,
+                "number_of_outliers": 183,
                 "number_of_sequences": 1,
-                "longest_sequence": 22,
+                "longest_sequence": 23,
             },
         },
 }
@@ -245,21 +245,21 @@ class LightCurveAnalystTest:
         analyst.perform_quality_check()
         analyst.perform_outlier_check()
 
-        # for entry in answers:
-        #     n_outliers = answers[entry]["number_of_outliers"]
-        #     n_sequences = answers[entry]["number_of_sequences"]
-        #     longest_sequence = answers[entry]["longest_sequence"]
-        #
-        #     outs = np.count_nonzero(analyst.outlier_results[entry]["is_outlier"])
-        #     nseqs = len(analyst.outlier_seqs[entry])
-        #     lseq = 0
-        #     for seq in analyst.outlier_seqs[entry]:
-        #         if seq["sequence_length"] > lseq:
-        #             lseq = seq["sequence_length"]
-        #
-        #     assert n_outliers == outs
-        #     assert n_sequences == nseqs
-        #     assert longest_sequence == lseq
+        for entry in answers:
+            n_outliers = answers[entry]["number_of_outliers"]
+            n_sequences = answers[entry]["number_of_sequences"]
+            longest_sequence = answers[entry]["longest_sequence"]
+
+            outs = np.count_nonzero(analyst.outlier_results[entry]["is_outlier"])
+            nseqs = len(analyst.outlier_seqs[entry])
+            lseq = 0
+            for seq in analyst.outlier_seqs[entry]:
+                if seq["sequence_length"] > lseq:
+                    lseq = seq["sequence_length"]
+
+            assert n_outliers == outs
+            assert n_sequences == nseqs
+            assert longest_sequence == lseq
 
 class BadLightCurvesTest:
     """
