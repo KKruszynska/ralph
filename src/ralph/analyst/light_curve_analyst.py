@@ -428,3 +428,4 @@ class LightCurveAnalyst(BaseAnalyst):
                 )
 
         self.log.info("LC Analyst: Outlier check ended.")
+        return self.outlier_results, self.outlier_seqs

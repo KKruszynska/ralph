@@ -30,6 +30,14 @@ class FitAnalyst(BaseAnalyst):
     :param log: A logger instance started by the Event Analyst.
     :type log: logging.Logger
 
+    :param outlier_results: A dictionary with the results of outlier detection procedure
+        done by the Light Curve Analyst.
+    :type outlier_results: dict, optional
+
+    :param outlier_seqs: A list of dictionaries with sequences of outliers found
+        by the Light Curve Analyst.
+    :type outlier_seqs: list, optional
+
     :param config_dict: A dictionary with the Event Analyst configuration.
     :type config_dict: dict, optional
 
@@ -86,6 +94,7 @@ class FitAnalyst(BaseAnalyst):
     """
 
     def __init__(self, event_name, analyst_path, light_curves, log,
+                 outlier_results=None, outlier_seqs=None,
                  config_dict=None, config_path=None
                  ):
 
@@ -364,7 +373,6 @@ class FitAnalyst(BaseAnalyst):
         starting_params["piEN"] = 0.0
         starting_params["piEE"] = 0.0
 
-        self.log.info("Fit Analyst: Using default fitting setup.")
         results = self.fit_pspl(
             "PSPL_blend_piE",
             os.path.join(self.analyst_path, "PSPL_blend_piE"),
@@ -540,6 +548,13 @@ class FitAnalyst(BaseAnalyst):
             a dictionary only with the best fitting model.
         :rtype: dict
         """
+
+        # TODO: Add outlier removal here before first fits. Sequences of outliers will be
+        #       evaluated to check if they aren't true anomalies here.
+        # TODO: Add Hampel filter for residuals of best fitting model.
+        # TODO: Add sorting input into a pd.DataFrame required by SIGNALMEN and check if
+        #       outlier sequences are occurring at the same time.
+        #
 
         self.log.debug("Fit Analyst: Performing a fit.")
         ongoing, t_0 = self.perform_ongoing_check()

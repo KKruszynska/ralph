@@ -85,6 +85,8 @@ class EventAnalyst(BaseAnalyst):
 
         super().__init__(event_name, analyst_path, config_dict=config_dict, config_path=config_path)
         self.light_curves = []
+        self.outlier_results = None
+        self.outlier_seqs = None
 
         # start
         self.log = logs.start_log(self.analyst_path, log_level, event_name=self.event_name, stream=stream)
@@ -239,13 +241,12 @@ class EventAnalyst(BaseAnalyst):
         )
         self.log.debug("Event Analyst: Light Curve Analyst Created.")
         self.log.debug("Event Analyst: Starting Light Curve quality check.")
-        lc_quality_status = lc_analyst.perform_quality_check()
+        lc_analyst.perform_quality_check()
         self.log.debug("Event Analyst: Light Curve quality check ended.")
 
-        if lc_quality_status:
-            self.log.info("Event Analyst: Lc quality procedures finished successfully.")
-        else:
-            self.log.info("Event Analyst: LC Analyst finished with errors.")
+        self.log.debug("Event Analyst: Starting Light Curve outlier check.")
+        self.outlier_results, self.outlier_seqs = lc_analyst.perform_outlier_check()
+        self.log.debug("Event Analyst: Light Curve outlier check ended.")
 
     def run_fit_analyst(self):
         """
@@ -256,7 +257,9 @@ class EventAnalyst(BaseAnalyst):
 
         self.log.info("Event Analyst: Starting Fit Analyst.")
         fit_analyst = FitAnalyst(
-            self.event_name, self.analyst_path, self.light_curves, self.log, config_dict=self.config
+            self.event_name, self.analyst_path, self.light_curves, self.log,
+            outlier_results=self.outlier_results, outlier_seqs=self.outlier_seqs,
+            config_dict=self.config
         )
         self.log.debug("Event Analyst: Fit Analyst created.")
         self.log.debug("Event Analyst: Starting fitting.")
