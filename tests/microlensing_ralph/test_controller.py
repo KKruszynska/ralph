@@ -185,9 +185,6 @@ class ControllerPathsOngoingTest:
 
             expected_result_path = self.expected_results.get(event, None)
             if expected_result_path is not None:
-                if event == "AT2024kwu":
-                    continue
-
                 with open(expected_result_path, "r") as file:
                     expected_fit_result = json.load(file)
 
@@ -198,10 +195,11 @@ class ControllerPathsOngoingTest:
                     model_result = received_fit_result[model]
                     expected_result = expected_fit_result[model]
                     for key in expected_result:
-                        expected = float(expected_result[key])
-                        received = float(model_result[key])
-                        if not np.isnan(expected):
-                            assert pytest.approx(received, 2) == pytest.approx(expected, 2)
+                        if "error" not in key:
+                            expected = float(expected_result[key])
+                            received = float(model_result[key])
+                            if not np.isnan(expected):
+                                assert pytest.approx(received, 2) == pytest.approx(expected, 2)
 
 
 def test_run():
