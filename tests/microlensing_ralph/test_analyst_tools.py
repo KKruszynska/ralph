@@ -1,7 +1,12 @@
+import  os
+
 import pytest
 
 from microlensing_ralph.toolbox import input_tools
 from microlensing_ralph.analyst import analyst_tools
+
+ralph_input = os.path.join("tests", "microlensing_ralph", "data", "input")
+ralph_light_curves = os.path.join(ralph_input, "light_curves")
 
 scenario_gaia = {
     "event_name": "GDR3_ULENS_025",
@@ -10,25 +15,25 @@ scenario_gaia = {
         {
             "survey": "Gaia",
             "band": "G",
-            "ephemeris": "tests/microlensing_ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/microlensing_ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_G.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_G.dat"),
         },
         {
             "survey": "Gaia",
             "band": "BP",
-            "ephemeris": "tests/microlensing_ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/microlensing_ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_BP.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_BP.dat"),
         },
         {
             "survey": "Gaia",
             "band": "RP",
-            "ephemeris": "tests/microlensing_ralph/data/input/ephemeris/gaia_jpl_horizons_results.txt",
-            "path": "tests/microlensing_ralph/data/input/light_curves/GaiaDR3_ULENS_025_Gaia_RP.dat",
+            "ephemeris": os.path.join(ralph_input, "ephemeris", "gaia_jpl_horizons_results.txt"),
+            "path": os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_Gaia_RP.dat"),
         },
         {
             "survey": "OGLE",
             "band": "I",
-            "path": "tests/microlensing_ralph/data/input/light_curves/GaiaDR3_ULENS_025_OGLE.dat",
+            "path":  os.path.join(ralph_light_curves, "GaiaDR3_ULENS_025_OGLE.dat"),
         },
     ],
 }
@@ -40,22 +45,22 @@ scenario_gsa = {
         {
             "survey": "Gaia",
             "band": "G",
-            "path": "tests/microlensing_ralph/data/input/light_curves/Gaia24amo_Gaia_G.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_Gaia_G.dat"),
         },
         {
             "survey": "LCO",
             "band": "g",
-            "path": "tests/microlensing_ralph/data/input/light_curves/Gaia24amo_LCO_g.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_g.dat"),
         },
         {
             "survey": "LCO",
             "band": "r",
-            "path": "tests/microlensing_ralph/data/input/light_curves/Gaia24amo_LCO_r.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_r.dat"),
         },
         {
             "survey": "LCO",
             "band": "i",
-            "path": "tests/microlensing_ralph/data/input/light_curves/Gaia24amo_LCO_i.dat",
+            "path": os.path.join(ralph_light_curves, "Gaia24amo_LCO_i.dat"),
         },
     ],
 }
