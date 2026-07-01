@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
-import weightedstats as wst
 
 import json
 import os
 
 from microlensing_ralph.analyst.analyst import BaseAnalyst
+from microlensing_ralph.analyst.analyst_tools import hampel_filter, vet_outliers
 from microlensing_ralph.toolbox.output_tools import plot_outlier_results
 
 
@@ -258,117 +257,6 @@ class LightCurveAnalyst(BaseAnalyst):
 
         self.log.info("LC Analyst: Quality check ended.")
 
-    def hampel_filter(self, light_curve, window='3D', n_sigma=3.0, use_weighted=False):
-        """
-        A Hampel filter with a time-based window. More about Hampel filter can be
-        found [here](https://medium.com/@migueloteropedrido/hampel-filter-with-python-17db1d265375).
-        This method was created with the help of Claude.ai, and modified to resemble the output
-        of the [hampel](https://github.com/MichaelisTrofficus/hampel_filter/tree/master) package.
-
-        :param light_curve: An array containing Julian Days, magnitudes and errors
-                for the whole light curve.
-        :type light_curve: numpy ndarray
-
-        :param window: Window size (in days), as a `pandas` offset string (e.g. '3D' is 3 days),
-            half of this is applied on each side of each point.
-        :type window: str
-
-        :param n_sigma: Number of standard deviations to use for Hampel filter, used as a threshold in
-            scaled Median Absolute Deviation for flagging outliers.
-        :type n_sigma: float
-
-        :param use_weighted: If `True` weighted median is used.
-        :type use_weighted: bool
-
-        :return: A dictionary with the light curve, an array of points marked as outliers, array of
-            (weighted) medians for each window, array of MADs for each window, and array
-            of thresholds for each window.
-        thresholds for each window.
-        :rtype: dict
-        """
-        datetime = pd.to_datetime(light_curve[:, 0], origin='julian', unit='D')
-        series = pd.Series(light_curve[:, 1], index=datetime)
-        series = series.sort_index()
-        times = series.index
-        values = series.to_numpy()
-        half_window = pd.Timedelta(window) / 2
-        k = 1.4826  # scales MAD to be comparable to std dev for normal data
-
-        is_outlier = np.zeros(len(values), dtype=bool)
-        medians = np.zeros(len(values), dtype=float)
-        mads = np.zeros(len(values), dtype=float)
-        thresholds = np.zeros(len(values), dtype=float)
-        weights = 1.0 / (light_curve[:, 2]**2)
-
-        for i, t in enumerate(times):
-            left = times.searchsorted(t - half_window, side='left')
-            right = times.searchsorted(t + half_window, side='right')
-            window_vals = values[left:right]
-
-            if use_weighted:
-                window_weights = weights[left:right]
-                med = wst.numpy_weighted_median(window_vals, weights=window_weights)
-            else:
-                med = np.median(window_vals)
-
-            mad = k * np.median(np.abs(window_vals - med))
-            thresh = n_sigma * mad
-
-            if mad > 0 and np.abs(values[i] - med) > thresh:
-                is_outlier[i] = True
-
-            medians[i] = med
-            mads[i] = mad
-            thresholds[i] = thresh
-
-        result = {
-            'light_curve': light_curve,
-            'is_outlier': is_outlier,
-            'medians': medians,
-            'mads': mads,
-            'thresholds': thresholds,
-        }
-
-        return result
-
-    def vet_outliers(self, light_curve, is_outlier):
-        """
-        Function that checks if found outliers form a sequence of consecutive points
-        in the light curve. Doesn't take into time-skips between data.
-
-        :param light_curve: An array containing Julian Days, magnitudes and errors
-                for the whole light curve.
-        :type light_curve: numpy ndarray
-
-        :param is_outlier: An array indicating whether point at this index is considered
-            an outlier by the outlier flagging procedure
-            (e.g., :meth:`microlensing_ralph.analyst.light_curve_analyst.LightCurveAnalyst.hampel_filter`).
-
-        :return: A list of dictionaries with all found sequences of outliers, marking their
-            start time, end time and length of the sequence.
-        """
-        groups = []
-        n_seqs = 0
-        n_pts_in_seq = 0
-        t_start, t_end = 0.0, 0.0
-        for i in range(len(light_curve[:, 0])):
-            if is_outlier[i]:
-                n_pts_in_seq += 1
-                if n_pts_in_seq == 1:
-                    t_start = light_curve[i, 0]
-            else:
-                t_end = light_curve[i, 0]
-                if n_pts_in_seq > 1:
-                    n_seqs += 1
-                    new_sequence = {
-                        't_start': t_start,
-                        't_end': t_end,
-                        'sequence_length': n_pts_in_seq,
-                    }
-                    groups.append(new_sequence)
-                n_pts_in_seq = 0
-        return groups
-
     def perform_outlier_check(self):
         """
         Checks for outliers in the light curve using the Hampel filter.
@@ -392,14 +280,14 @@ class LightCurveAnalyst(BaseAnalyst):
                 )
             else:
                 self.outlier_results[f"{entry["survey"]}_{entry["band"]}"] = (
-                    self.hampel_filter(lc)
+                    hampel_filter(lc)
                 )
 
             self.log.debug(f"LC Analyst: Hampel filter to look for outliers for: {entry["survey"]}_{entry["band"]}.")
 
             outlier_flags = self.outlier_results[f"{entry["survey"]}_{entry["band"]}"]["is_outlier"]
             self.outlier_seqs[f"{entry["survey"]}_{entry["band"]}"] = (
-                self.vet_outliers(lc, outlier_flags)
+                vet_outliers(lc, outlier_flags)
             )
             self.log.debug(f"LC Analyst: Outliers vetted for: {entry["survey"]}_{entry["band"]}.")
             self.log.info(
